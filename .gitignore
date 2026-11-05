@@ -3,6 +3,9 @@ node_modules/
 .output/
 dist/
 .font-cache/
+.audit/
+.data/
+.scratch/
 .DS_Store
 *.log
 .env

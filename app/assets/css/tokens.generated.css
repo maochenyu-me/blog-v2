@@ -1,0 +1,102 @@
+/* ---------------------------------------------------------------
+ * 自动生成，请勿手动编辑。
+ * 唯一来源：app/theme.config.ts    生成器：modules/design-tokens.ts
+ * ------------------------------------------------------------- */
+
+/* --- 静态 token：不随明暗切换 --- */
+@theme {
+  --font-sans: 'Inter Variable', 'LXGW WenKai Lite', 'LXGW WenKai', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'LXGW WenKai Lite', ui-monospace, monospace;
+
+  --radius-base: 0.5rem;
+
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 1.25;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.75;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.5;
+  --text-code: 0.875rem;
+  --text-code--line-height: 1.7;
+
+  --spacing-section: 4rem;
+  --spacing-block: 2.5rem;
+  --spacing-item: 1.5rem;
+
+  --ease-base: ease-out;
+
+  /* --- 语义色：映射到动态变量，使 .dark 覆盖生效 --- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+}
+
+/* --- 明色 --- */
+:root {
+  --background: #ffffff;
+  --foreground: #18181b;
+  --muted: #fafafa;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --accent: #a94f33;
+
+  --radius: 0.5rem;
+  --content-max-width: 764px;
+  --wide-max-width: 1000px;
+  --toc-width: 200px;
+  --toc-gap: 3rem;
+
+  --fs-h1: 1.75rem;
+  --lh-h1: 1.25;
+  --fw-h1: 700;
+  --fs-body: 1.0625rem;
+  --lh-body: 1.75;
+  --fw-body: 400;
+  --fs-body-h: 1.0625rem;
+  --lh-body-h: 1.4;
+  --fw-body-h: 700;
+  --fs-body-h-minor: 1.0625rem;
+  --lh-body-h-minor: 1.4;
+  --fw-body-h-minor: 400;
+  --fs-list-title: 1.0625rem;
+  --lh-list-title: 1.5;
+  --fw-list-title: 400;
+  --fs-meta: 0.8125rem;
+  --lh-meta: 1.5;
+  --fs-code: 0.875rem;
+  --lh-code: 1.7;
+
+  --space-section: 4rem;
+  --space-block: 2.5rem;
+  --space-item: 1.5rem;
+  --space-gutter: 1.5rem;
+
+  --duration-base: 200ms;
+  --easing-base: ease-out;
+
+  --paragraph-spacing: 1.2em;
+
+  color-scheme: light;
+}
+
+/* --- 暗色 --- */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --accent: #cc785c;
+
+  color-scheme: dark;
+}
+
+/* 暗色模式禁用所有阴影（提示词 §5.2） */
+.dark *,
+.dark *::before,
+.dark *::after {
+  box-shadow: none !important;
+}

@@ -1,0 +1,12 @@
+/**
+ * 自托管字体。
+ * - Inter Variable：拉丁字母与数字
+ * - LXGW WenKai Lite：汉字，582 个 unicode-range 分片，浏览器只下载实际用到的
+ * - JetBrains Mono：只给真实数据（日期/时长/代码/kbd）
+ *
+ * 全部来自 node_modules，构建时被打包进产物，零第三方请求。
+ */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import 'lxgw-wenkai-lite-webfont/lxgwwenkailite-regular.css';
+@import 'lxgw-wenkai-lite-webfont/lxgwwenkailite-bold.css';
