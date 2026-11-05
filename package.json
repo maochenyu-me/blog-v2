@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build && node scripts/fix-shiki-hydration.mjs",
-    "generate": "nuxt generate && node scripts/fix-shiki-hydration.mjs",
+    "build": "nuxt build && node scripts/fix-contrast.mjs",
+    "generate": "nuxt generate && node scripts/fix-contrast.mjs",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "fix:shiki": "node scripts/fix-shiki-hydration.mjs",
-    "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs"
+    "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs",
+    "fix:post": "node scripts/fix-contrast.mjs"
   },
   "dependencies": {
     "@nuxt/content": "^3.16.2",
