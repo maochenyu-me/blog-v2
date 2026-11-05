@@ -12,7 +12,7 @@ import puppeteer from 'puppeteer-core'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-const BASE = process.argv[2] || 'http://127.0.0.1:3201'
+const BASE = process.argv[2] || 'http://127.0.0.1:3300'
 const OUT = resolve(process.cwd(), '.audit')
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 
