@@ -16,7 +16,7 @@ useHead({ title: ui.pages.categories })
 
       <ul class="cat-list">
         <li v-for="cat in data ?? []" :key="cat.name" class="cat-row">
-          <NuxtLink :to="`/categories/${cat.name}`" class="cat-link">
+          <NuxtLink :to="`/categories/${cat.slug}`" class="cat-link">
             <span class="cat-name">{{ cat.name }}</span>
             <span class="cat-count">{{ cat.count }}</span>
           </NuxtLink>

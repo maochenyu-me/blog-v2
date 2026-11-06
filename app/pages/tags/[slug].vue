@@ -1,20 +1,33 @@
 <script setup lang="ts">
+import { fromSlugParam } from '~/utils/taxonomy'
+
 const route = useRoute()
 const { ui, t } = useUi()
 const posts = usePosts()
-const tag = computed(() => decodeURIComponent(route.params.slug as string))
+const slug = computed(() => fromSlugParam(route.params.slug as string))
 
+/*
+ * slug 是有损转换（去掉了标点与大小写），不能直接当标签名用。
+ * 必须先拿 slug 反查出原始标签名，再用原名查文章，
+ * 否则「View Transitions」这类标签会查不到任何文章。
+ */
 const { data } = await useAsyncData(
-  () => `tag-${tag.value}`,
-  () => posts.byTag(tag.value),
-  { watch: [tag] },
+  () => `tag-${slug.value}`,
+  async () => {
+    const name = await posts.tagBySlug(slug.value)
+    if (!name) return { name: slug.value, posts: [] }
+    return { name, posts: await posts.byTag(name) }
+  },
+  { watch: [slug] },
 )
 
-if (!data.value?.length) {
+if (!data.value?.posts.length) {
   throw createError({ statusCode: 404, statusMessage: ui.collection.notFoundTag })
 }
 
-useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tag.value })) })
+const tagName = computed(() => data.value?.name ?? slug.value)
+
+useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tagName.value })) })
 </script>
 
 <template>
@@ -22,11 +35,11 @@ useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tag.value })) 
     <div class="container">
       <header class="page-head">
         <NuxtLink to="/tags" class="back-link">{{ ui.collection.backToTags }}</NuxtLink>
-        <h1 class="page-title">{{ tag }}</h1>
-        <p class="page-meta">{{ t(ui.common.count, { n: data?.length ?? 0 }) }}</p>
+        <h1 class="page-title">{{ tagName }}</h1>
+        <p class="page-meta">{{ t(ui.common.count, { n: data?.posts.length ?? 0 }) }}</p>
       </header>
 
-      <PostList :posts="data ?? []" :show-tags="false" />
+      <PostList :posts="data?.posts ?? []" :show-tags="false" />
     </div>
   </div>
 </template>

@@ -1,20 +1,29 @@
 <script setup lang="ts">
+import { fromSlugParam } from '~/utils/taxonomy'
+
 const route = useRoute()
 const { ui, t } = useUi()
 const posts = usePosts()
-const slug = computed(() => decodeURIComponent(route.params.slug as string))
+const slug = computed(() => fromSlugParam(route.params.slug as string))
 
+/* 同 tags/[slug]：slug 有损，必须反查原始分类名再查询 */
 const { data } = await useAsyncData(
   () => `category-${slug.value}`,
-  () => posts.byCategory(slug.value),
+  async () => {
+    const name = await posts.categoryBySlug(slug.value)
+    if (!name) return { name: slug.value, posts: [] }
+    return { name, posts: await posts.byCategory(name) }
+  },
   { watch: [slug] },
 )
 
-if (!data.value?.length) {
+if (!data.value?.posts.length) {
   throw createError({ statusCode: 404, statusMessage: ui.collection.notFoundCategory })
 }
 
-useHead({ title: computed(() => t(ui.collection.categoryTitle, { name: slug.value })) })
+const categoryName = computed(() => data.value?.name ?? slug.value)
+
+useHead({ title: computed(() => t(ui.collection.categoryTitle, { name: categoryName.value })) })
 </script>
 
 <template>
@@ -22,11 +31,11 @@ useHead({ title: computed(() => t(ui.collection.categoryTitle, { name: slug.valu
     <div class="container">
       <header class="page-head">
         <NuxtLink to="/categories" class="back-link">{{ ui.collection.backToCategories }}</NuxtLink>
-        <h1 class="page-title">{{ slug }}</h1>
-        <p class="page-meta">{{ t(ui.common.count, { n: data?.length ?? 0 }) }}</p>
+        <h1 class="page-title">{{ categoryName }}</h1>
+        <p class="page-meta">{{ t(ui.common.count, { n: data?.posts.length ?? 0 }) }}</p>
       </header>
 
-      <PostList :posts="data ?? []" :show-tags="true" />
+      <PostList :posts="data?.posts ?? []" :show-tags="true" />
     </div>
   </div>
 </template>

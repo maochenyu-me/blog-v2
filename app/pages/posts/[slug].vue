@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { toSlug } from '~/utils/taxonomy'
+
 const route = useRoute()
 const { site } = useBlogConfig()
 const { ui, t } = useUi()
@@ -97,14 +99,14 @@ useHead({
               {{ t(ui.post.readingTime, { n: readingMinutes }) }}
             </span>
 
-            <NuxtLink :to="`/categories/${post.category}`" class="meta-category">
+            <NuxtLink :to="`/categories/${toSlug(post.category)}`" class="meta-category">
               {{ post.category }}
             </NuxtLink>
           </div>
 
           <ul v-if="post.tags?.length" class="post-tags">
             <li v-for="tag in post.tags" :key="tag">
-              <NuxtLink :to="`/tags/${tag}`" class="post-tag">{{ tag }}</NuxtLink>
+              <NuxtLink :to="`/tags/${toSlug(tag)}`" class="post-tag">{{ tag }}</NuxtLink>
             </li>
           </ul>
         </header>

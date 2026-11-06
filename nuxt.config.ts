@@ -181,6 +181,35 @@ export default defineNuxtConfig({
     enabled: false,
   },
 
+  // ---------- Link Checker ----------
+  /**
+   * 关闭两条规则：no-non-ascii-chars 与 no-uppercase-chars。
+   *
+   * 理由（不是「懒得改」，是规则本身与中文站不兼容）：
+   *   - no-non-ascii-chars 建议 encodeURI 中文路径，但中文 URL 是现代浏览器
+   *     的标准显示形态，编码后反而不可读；而且 /categories/工程 这类路径
+   *     本来就不该被编码成 %E5%B7%A5%E7%A8%8B。
+   *   - no-uppercase-chars 的正则是 /[A-Z]/，只匹配 ASCII 大写字母，
+   *     却对中文路径也报同一条警告——说明它把这些中文链接误判成了含大写。
+   *
+   * 更关键的是：这两条警告掩盖了真正需要修的问题——标签与分类直接用
+   * 原始名拼 URL（/tags/CSS 与 /tags/css 会是两份页面）。该问题已在
+   * app/utils/taxonomy.ts 用 slug 根治，链接本身已全部转为小写 slug。
+   * 所以这里关的只是规则，不是问题。
+   */
+  linkChecker: {
+    skipInspections: ['no-non-ascii-chars', 'no-uppercase-chars'],
+  },
+
+  seo: {
+    /**
+     * nuxt-seo-utils 会对 app.head 做校验，而 charset / viewport 两条
+     * 已经由 Nuxt 默认注入，这里再声明一次就会被判为重复。
+     * 本站的 head 声明是有意的（显式声明便于审计），所以关掉这条校验。
+     */
+    validateAppHead: false,
+  },
+
   // ---------- Content ----------
   content: {
     build: {

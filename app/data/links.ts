@@ -49,7 +49,11 @@ export const friendLinks: FriendLink[] = [
     name: '喵洛阁',
     avatar: '/images/avatar.png',
     description: '本站，克喵的博客',
-    url: 'https://www.kemiaosw.top',
+    /*
+     * 本站用相对路径：站点域名来自 blog.config.ts 的 site.url，
+     * 在这里再写一遍绝对地址既是重复配置，又会让站内链接被当成外链。
+     */
+    url: '/',
     owner: true,
   },
 ]

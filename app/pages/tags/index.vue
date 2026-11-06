@@ -46,7 +46,7 @@ useHead({ title: ui.pages.tags })
       <ul class="cloud">
         <li v-for="tag in scale" :key="tag.name">
           <NuxtLink
-            :to="`/tags/${tag.name}`"
+            :to="`/tags/${tag.slug}`"
             class="cloud-tag"
             :style="{ fontSize: tag.fontSize }"
           >

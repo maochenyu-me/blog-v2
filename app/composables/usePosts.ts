@@ -6,6 +6,8 @@
  * 如果散落在 8 个页面里，必然有地方漏。
  */
 
+import { toSlug } from '~/utils/taxonomy'
+
 export interface PostSummary {
   path: string
   title: string
@@ -82,25 +84,41 @@ export function usePosts() {
     return all.filter((p) => p.tags.includes(tag))
   }
 
+  /**
+   * 用 URL slug 反查分类原名。
+   * slug 转换是有损的（去掉了标点），不能直接 decode 反推，
+   * 必须拿 slug 和已知分类列表比对。
+   */
+  async function categoryBySlug(slug: string): Promise<string | null> {
+    const all = await categories()
+    return all.find((c) => toSlug(c.name) === slug)?.name ?? null
+  }
+
+  /** 用 URL slug 反查标签原名 */
+  async function tagBySlug(slug: string): Promise<string | null> {
+    const all = await tags()
+    return all.find((t) => toSlug(t.name) === slug)?.name ?? null
+  }
+
   /** 全部分类 + 篇数 */
-  async function categories(): Promise<Array<{ name: string; count: number }>> {
+  async function categories(): Promise<Array<{ name: string; count: number; slug: string }>> {
     const all = await list()
     const map = new Map<string, number>()
     for (const p of all) map.set(p.category, (map.get(p.category) ?? 0) + 1)
     return [...map.entries()]
-      .map(([name, count]) => ({ name, count }))
+      .map(([name, count]) => ({ name, count, slug: toSlug(name) }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
   }
 
   /** 全部标签 + 篇数 */
-  async function tags(): Promise<Array<{ name: string; count: number }>> {
+  async function tags(): Promise<Array<{ name: string; count: number; slug: string }>> {
     const all = await list()
     const map = new Map<string, number>()
     for (const p of all) {
       for (const t of p.tags) map.set(t, (map.get(t) ?? 0) + 1)
     }
     return [...map.entries()]
-      .map(([name, count]) => ({ name, count }))
+      .map(([name, count]) => ({ name, count, slug: toSlug(name) }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
   }
 
@@ -167,5 +185,18 @@ export function usePosts() {
     return scored.slice(0, limit).map((x) => x.post)
   }
 
-  return { list, pinned, latest, byCategory, byTag, categories, tags, byYear, prevNext, related }
+  return {
+    list,
+    pinned,
+    latest,
+    byCategory,
+    byTag,
+    categoryBySlug,
+    tagBySlug,
+    categories,
+    tags,
+    byYear,
+    prevNext,
+    related,
+  }
 }

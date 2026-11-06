@@ -30,7 +30,31 @@ useHead({ title: ui.pages.links })
 
       <ul class="link-grid" :style="gridStyle">
         <li v-for="link in friendLinks" :key="link.url" class="link-cell">
-          <a :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
+          <!-- 站内链接（owner）用 NuxtLink 做客户端跳转，外链才开新窗口 -->
+          <NuxtLink
+            v-if="link.owner"
+            :to="link.url"
+            class="link-card"
+          >
+            <NuxtImg
+              v-if="pageCfg.showAvatar"
+              :src="link.avatar"
+              :alt="t(ui.links.avatarAlt, { name: link.name })"
+              class="link-avatar"
+              width="48"
+              height="48"
+              loading="lazy"
+            />
+            <span class="link-body">
+              <span class="link-name">
+                {{ link.name }}
+                <span v-if="link.owner" class="link-badge">{{ ui.links.self }}</span>
+              </span>
+              <span class="link-desc">{{ link.description }}</span>
+            </span>
+          </NuxtLink>
+
+          <a v-else :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
             <NuxtImg
               v-if="pageCfg.showAvatar"
               :src="link.avatar"
