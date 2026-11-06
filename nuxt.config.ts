@@ -108,6 +108,39 @@ export default defineNuxtConfig({
 
   // ---------- Content ----------
   content: {
+    /**
+     * 显式声明 D1 数据库配置，消除构建时的警告。
+     *
+     * ── 为什么会有那条警告 ────────────────────────────
+     * @nuxt/content 的 cloudflare preset 在 nitro:config 里判断：
+     *   if (runtimeConfig.content.database.type === 'sqlite') {
+     *     logger.warn('Deploying to Cloudflare requires using D1 database, ...')
+     *     runtimeConfig.content.database = { type: 'd1', bindingName: 'DB' }
+     *   }
+     * 我们的配置原本是默认的 sqlite，于是命中警告分支。
+     *
+     * ── 为什么这里直接写 d1 是安全的 ─────────────────
+     * 上面那段代码在警告之后做的**正是**把配置改成
+     * { type: 'd1', bindingName: 'DB' }。这里提前写成同一个值，
+     * 等于跳过「检测 → 改写」这一步，最终生效的配置与自动切换完全相同，
+     * 只是不再打印警告。
+     *
+     * 本项目是纯 SSG：所有页面在构建期渲染完成，产物里没有
+     * dist/_worker.js、也没有 .sqlite 文件，运行时不存在任何
+     * queryCollection() 调用，因此 D1 绑定只是配置占位，
+     * 不需要在 Cloudflare 控制台真的创建数据库或绑定。
+     *
+     * ── 注意 ───────────────────────────────────────
+     * 构建期内容查询走的是 options._localDatabase（仍是本地 sqlite），
+     * 不受这里影响，所以 pnpm generate 的渲染结果不变。
+     *
+     * 若将来改成 SSR 并真的要在运行时查库，才需要在 Cloudflare
+     * 创建 D1 数据库、把 binding 命名为 DB 并挂到 Pages 项目上。
+     */
+    database: {
+      type: 'd1',
+      bindingName: 'DB',
+    },
     build: {
       markdown: {
         highlight: {
