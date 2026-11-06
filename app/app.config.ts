@@ -14,4 +14,15 @@ export default defineAppConfig({
   ...blog,
   ...theme,
   ...pages,
+  /**
+   * @nuxt/icon 在 css 模式下的字形规则写在 --nuxt-icon 专属的 @layer 里。
+   * Tailwind v4 的 @layer 顺序由首次声明决定，不显式指定 cssLayer 时
+   * iconify 的字形规则会被 tailwind 的 preflight 与 utilities 压掉，
+   * 表现为 span 只剩类名、content 解析为 normal、全站图标空白。
+   * 官方文档明确要求 Tailwind v4 + css 模式必须设置此项。
+   */
+  icon: {
+    mode: 'css',
+    cssLayer: 'base',
+  },
 })

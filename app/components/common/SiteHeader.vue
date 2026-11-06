@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { NavItem } from '~/composables/useBlogConfig'
+
 const { site } = useBlogConfig()
 const { ui } = useUi()
 const route = useRoute()
@@ -7,6 +9,16 @@ function isActive(to: string): boolean {
   if (to === '/') return route.path === '/'
   return route.path === to || route.path.startsWith(to + '/')
 }
+
+/**
+ * 桌面导航按叶子节点平铺。
+ * 配置里「归档」是含三个子项的分组，但桌面横向导航有空间直接摆开，
+ * 再套一层下拉纯属多余 —— 所以这里把 children 抽平，
+ * 让桌面的 6 个链接和改造前逐项一致，不产生视觉回归。
+ */
+const desktopNav = computed<NavItem[]>(() =>
+  site.nav.flatMap((item) => (item.children?.length ? item.children : [item])),
+)
 </script>
 
 <template>
@@ -18,7 +30,7 @@ function isActive(to: string): boolean {
 
       <nav class="nav-desktop" :aria-label="ui.nav.main">
         <NuxtLink
-          v-for="item in site.nav"
+          v-for="item in desktopNav"
           :key="item.to"
           :to="item.to"
           class="nav-link"
@@ -32,7 +44,7 @@ function isActive(to: string): boolean {
       <div class="header-actions">
         <SearchTrigger />
         <ThemeToggle />
-        <MobileNav />
+        <MobileDrawer />
       </div>
     </div>
   </header>

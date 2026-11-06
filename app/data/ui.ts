@@ -19,6 +19,8 @@ export const ui = {
     menuOpen: '打开菜单',
     menuDialog: '导航菜单',
     menuClose: '关闭菜单',
+    /** 站外链接的无障碍说明，紧跟外链图标之后朗读 */
+    externalLink: '（站外链接，新窗口打开）',
     themeLabel: '主题：{label}，点击切换',
     themeTitle: '主题：{label}',
   },

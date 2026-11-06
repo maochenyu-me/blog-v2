@@ -48,7 +48,6 @@ useHead({ link: feedLinks })
     </main>
 
     <SiteFooter />
-    <MobileTabBar />
     <SearchDialog />
   </div>
 </template>
@@ -62,12 +61,5 @@ useHead({ link: feedLinks })
 
 .app-main {
   flex: 1;
-}
-
-/* 移动端底部 Tab 栏占位，避免内容被遮住 */
-@media (max-width: 767px) {
-  .app-shell {
-    padding-bottom: 3.25rem;
-  }
 }
 </style>

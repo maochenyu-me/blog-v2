@@ -37,11 +37,27 @@ export default {
       { label: 'Email', url: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail' },
     ],
 
+    /**
+     * 主导航 —— 单一层级树，桌面与移动端共用。
+     *
+     * 带 children 的项是「分组」：桌面端按叶子节点平铺展开（视觉与
+     * 单层导航完全一致），移动端抽屉里渲染成可展开的多级列表。
+     * 这样同一份配置能喂两个断点，不必维护两套菜单定义。
+     *
+     * 叶子项上的 external: true 表示站外链接，抽屉里加外链图标。
+     */
     nav: [
       { label: '首页', to: '/', icon: 'tabler:home' },
-      { label: '归档', to: '/archive', icon: 'tabler:archive' },
-      { label: '分类', to: '/categories', icon: 'tabler:folder' },
-      { label: '标签', to: '/tags', icon: 'tabler:tag' },
+      {
+        label: '归档',
+        to: '/archive',
+        icon: 'tabler:archive',
+        children: [
+          { label: '归档', to: '/archive', icon: 'tabler:archive' },
+          { label: '分类', to: '/categories', icon: 'tabler:folder' },
+          { label: '标签', to: '/tags', icon: 'tabler:tag' },
+        ],
+      },
       { label: '友链', to: '/links', icon: 'tabler:link' },
       { label: '关于', to: '/about', icon: 'tabler:user' },
     ],

@@ -21,6 +21,10 @@ export interface NavItem {
   label: string
   to: string
   icon?: string
+  /** 站外链接：抽屉里加外链图标，新标签页打开 */
+  external?: boolean
+  /** 子项：有 children 的项是分组，桌面端平铺其叶子，移动端渲染多级列表 */
+  children?: NavItem[]
 }
 
 export interface SiteConfig {

@@ -146,6 +146,21 @@ export default defineNuxtConfig({
     serverBundle: {
       collections: ['tabler'],
     },
+    /**
+     * scan —— 构建期扫描源码里出现过的 tabler 图标名，打包进客户端 bundle。
+     * 不开这项时，抽屉等「客户端才挂载」的图标不在 SSR 输出里，
+     * 浏览器会现场向 api.iconify.design 请求 JSON 才拿到 mask，
+     * 表现为首屏图标空白一下、断网或被墙时永久空白。
+     *
+     * globInclude 必须补上 ts：@nuxt/icon 默认只扫
+     * `**​/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml}`，而本站的导航图标
+     * 全部声明在 app/blog.config.ts 里，默认值一个都扫不到。
+     */
+    clientBundle: {
+      scan: {
+        globInclude: ['**/*.{vue,ts,mdc,md}'],
+      },
+    },
   },
 
   // ---------- shadcn-vue ----------
