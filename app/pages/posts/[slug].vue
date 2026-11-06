@@ -64,15 +64,19 @@ useHead({
 const toc = computed(() => post.value?.body?.toc?.links ?? [])
 
 /**
- * 规范化 Shiki 内联样式标签的逗号空格，消除正文 hydration 失配。
- * Vue 水合会按 CSS 规则重新序列化样式文本（逗号后补空格），
- * 与 SSR 原文逐字不等就触发 mismatch。这里让两端用同一份规范文本。
+ * 把 Shiki 写进正文末尾的 style 节点摘出来，改由 head 注入。
+ * 该节点的文本在 SSR HTML 与 _payload.json 里并不逐字相同
+ * （构建期 CSS 压缩会吃掉 `{`、`:` 前后的空格），Vue 水合比对必然失配。
  * 详见 app/composables/useProseBody.ts 顶部注释。
  */
-const normalizedBody = useNormalizedBody(post.value?.body)
+const prose = useProseBody(post.value?.body)
 const renderValue = computed(() =>
-  post.value ? { ...post.value, body: normalizedBody } : post.value,
+  post.value ? { ...post.value, body: prose.body } : post.value,
 )
+
+useHead({
+  style: prose.css ? [{ key: 'shiki', textContent: prose.css }] : [],
+})
 </script>
 
 <template>
