@@ -26,6 +26,19 @@ const extraLinks = computed(() =>
   }),
 )
 
+/**
+ * extraLinks 既可能指向站内路由（/privacy），也可能指向静态文件（/rss.xml、/atom.xml）。
+ * 静态文件不在 Vue Router 的路由表里，用 NuxtLink 渲染会让每次页面渲染都刷一条
+ * "No match found for location with path" 警告，且客户端路由会把地址栏推到 404。
+ * 因此这里判定类型：静态文件与站外链接直出 <a>，站内路由才用 NuxtLink。
+ */
+function isDirectLink(to: string) {
+  if (/^(https?:)?\/\//.test(to) || to.startsWith('mailto:')) return true
+  const path = to.split(/[?#]/)[0] ?? ''
+  const lastSegment = path.split('/').pop() ?? ''
+  return lastSegment.includes('.')
+}
+
 const beianItems = computed(() => {
   const b = site.beian ?? {}
   return [
@@ -57,15 +70,20 @@ const beianItems = computed(() => {
             <Icon :name="link.icon" aria-hidden="true" />
           </a>
 
-          <NuxtLink
-            v-for="link in extraLinks"
-            :key="link.to"
-            :to="link.to"
-            class="footer-extra"
-            no-prefetch
-          >
-            {{ link.label }}
-          </NuxtLink>
+          <template v-for="link in extraLinks" :key="link.to">
+            <a
+              v-if="isDirectLink(link.to)"
+              :href="link.to"
+              class="footer-extra"
+              :target="link.to.startsWith('http') ? '_blank' : undefined"
+              :rel="link.to.startsWith('http') ? 'noopener noreferrer' : undefined"
+            >
+              {{ link.label }}
+            </a>
+            <NuxtLink v-else :to="link.to" class="footer-extra" no-prefetch>
+              {{ link.label }}
+            </NuxtLink>
+          </template>
         </div>
       </div>
 
