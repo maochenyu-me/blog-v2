@@ -1,24 +1,5 @@
 <script setup lang="ts">
-import type { NavItem } from '~/composables/useBlogConfig'
-
 const { site } = useBlogConfig()
-const { ui } = useUi()
-const route = useRoute()
-
-function isActive(to: string): boolean {
-  if (to === '/') return route.path === '/'
-  return route.path === to || route.path.startsWith(to + '/')
-}
-
-/**
- * 桌面导航按叶子节点平铺。
- * 配置里「归档」是含三个子项的分组，但桌面横向导航有空间直接摆开，
- * 再套一层下拉纯属多余 —— 所以这里把 children 抽平，
- * 让桌面的 6 个链接和改造前逐项一致，不产生视觉回归。
- */
-const desktopNav = computed<NavItem[]>(() =>
-  site.nav.flatMap((item) => (item.children?.length ? item.children : [item])),
-)
 </script>
 
 <template>
@@ -28,18 +9,7 @@ const desktopNav = computed<NavItem[]>(() =>
         {{ site.name }}
       </NuxtLink>
 
-      <nav class="nav-desktop" :aria-label="ui.nav.main">
-        <NuxtLink
-          v-for="item in desktopNav"
-          :key="item.to"
-          :to="item.to"
-          class="nav-link"
-          :class="{ 'is-active': isActive(item.to) }"
-          :aria-current="isActive(item.to) ? 'page' : undefined"
-        >
-          {{ item.label }}
-        </NuxtLink>
-      </nav>
+      <NavDropdown :items="site.nav" />
 
       <div class="header-actions">
         <SearchTrigger />
@@ -81,27 +51,6 @@ const desktopNav = computed<NavItem[]>(() =>
   align-items: center;
   gap: 1.5rem;
   margin-inline-start: auto;
-}
-
-.nav-link {
-  font-size: var(--fs-meta);
-  line-height: 1;
-  color: var(--muted-foreground);
-  padding-block: 0.25rem;
-  border-bottom: 1px solid transparent;
-  transition:
-    color var(--duration-base) var(--easing-base),
-    border-color var(--duration-base) var(--easing-base);
-}
-
-.nav-link:hover {
-  color: var(--foreground);
-}
-
-/* 强调色使用的四处之一：当前导航项的下划线 */
-.nav-link.is-active {
-  color: var(--foreground);
-  border-bottom-color: var(--accent);
 }
 
 .header-actions {

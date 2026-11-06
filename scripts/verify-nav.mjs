@@ -70,12 +70,24 @@ for (const [vpName, width, height] of VIEWPORTS) {
         ? { x: tr.x, y: tr.y, width: tr.width, height: tr.height, right: tr.right, left: tr.left }
         : null,
       desktopNavDisplay: desktopNav ? getComputedStyle(desktopNav).display : null,
+      /*
+       * 桌面端一级项既可能是链接，也可能是「点击展开」的分组按钮，
+       * 所以按 children 逐个取代表元素，不能只查 a。
+       */
       desktopLinks: desktopNav
-        ? [...desktopNav.querySelectorAll('a')].map((a) => ({
-            text: a.textContent.trim(),
-            href: a.getAttribute('href'),
-          }))
+        ? [...desktopNav.children].map((el) => {
+            const isGroup = el.classList.contains('nav-group')
+            const el2 = isGroup ? el.querySelector('.nav-group__trigger') : el
+            return {
+              text: (el2?.textContent || '').replace(/\s+/g, ' ').trim(),
+              href: isGroup ? null : el.getAttribute('href'),
+              isGroup,
+            }
+          })
         : [],
+      hasGroup: !!desktopNav?.querySelector('.nav-group__trigger'),
+      groupExpanded:
+        desktopNav?.querySelector('.nav-group__trigger')?.getAttribute('aria-expanded') ?? null,
       overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }
   })
@@ -84,15 +96,20 @@ for (const [vpName, width, height] of VIEWPORTS) {
     record(`[${vpName}] 触发按钮在桌面端隐藏`, !shell.triggerVisible, `display≠none? ${shell.triggerVisible}`)
     record(`[${vpName}] 桌面导航条可见`, shell.desktopNavDisplay === 'flex', `display=${shell.desktopNavDisplay}`)
     record(
-      `[${vpName}] 桌面导航平铺 6 项`,
-      shell.desktopLinks.length === 6,
+      `[${vpName}] 桌面导航一级项 4 项`,
+      shell.desktopLinks.length === 4,
       `实际 ${shell.desktopLinks.length} 项: ${shell.desktopLinks.map((l) => l.text).join('/')}`,
     )
-    const expectHrefs = ['/', '/archive', '/categories', '/tags', '/links', '/about']
+    const expectHrefs = ['/', null, '/links', '/about']
     record(
-      `[${vpName}] 桌面导航叶子顺序正确`,
+      `[${vpName}] 桌面导航一级项顺序正确`,
       JSON.stringify(shell.desktopLinks.map((l) => l.href)) === JSON.stringify(expectHrefs),
       `实际 ${shell.desktopLinks.map((l) => l.href).join(',')}`,
+    )
+    record(
+      `[${vpName}] 桌面端「归档」为可展开分组`,
+      shell.hasGroup,
+      `group=${shell.hasGroup} expanded=${shell.groupExpanded}`,
     )
   } else {
     record(`[${vpName}] 触发按钮可见`, shell.triggerVisible, `display≠none? ${shell.triggerVisible}`)
