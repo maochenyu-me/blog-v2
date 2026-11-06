@@ -70,6 +70,25 @@ export default defineNuxtConfig({
      * content.database 只是 @nuxt/content 的配置项，无需触碰。
      * 构建期索引默认落在 .data/content/contents.sqlite（Nuxt Content
      * 内部的本地构建产物），与 Cloudflare D1 没有关系。
+     *
+     * ── 已知：CF Pages 构建环境下仍会打印一次该警告 ──────────
+     * 实测（设 CF_PAGES=1 模拟）：
+     *   Nitro preset: cloudflare-pages-static
+     *   [warn] [@nuxt/content] Deploying to Cloudflare requires using D1 database...
+     * 原因同上：只要 preset 含 cloudflare 且 content.database 是默认
+     * sqlite，内容模块就会打印。这是它假定 SSR 的误报，与产物无关。
+     *
+     * 产物本身完全正常（已实测）：56 个 HTML、_headers 正常生成、
+     * 无 _worker.js、无 .sqlite。也就是说警告纯属噪音，不影响部署。
+     *
+     * 因此**不做处理**：本地构建干净，CI 里那一条读过即可。
+     * 如果确实不想在 CI 日志里看到它，两种做法：
+     *   a) 构建命令加环境变量过滤日志（推荐，不改配置）；
+     *   b) 在 CF_PAGES 为真时显式声明 content.database 为
+     *      { type: 'd1', bindingName: 'DB' } —— 即 preset 本就会
+     *      切换成的值，只是提前声明以跳过警告分支。
+     * 两者都属于「压掉一条误报」，不改变任何运行行为，
+     * 故默认都不做，保持配置最小。
      */
     prerender: {
       crawlLinks: true,
