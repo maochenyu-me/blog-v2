@@ -44,11 +44,52 @@ export default defineNuxtConfig({
   ssr: true,
 
   nitro: {
-    preset: 'cloudflare_pages',
+    /**
+     * 不在此写死 preset。
+     *
+     * ── 为什么原来写了 「cloudflare_pages」，现在去掉 ──────────
+     * 写死 preset 会让**每次本地构建**都走 @nuxt/content 的 cloudflare 分支：
+     *   findPreset() 里 preset.includes('cloudflare') → 返回 cloudflare preset
+     * 而该 preset 发现 content.database 是默认的 sqlite 就会输出
+     * "Deploying to Cloudflare requires using D1 database..." 警告。
+     *
+     * 本地构建本来就不需要 Cloudflare preset —— 我们要的只是
+     * `nuxt generate` 产出一份纯静态 dist/。preset 只影响产物形态
+     * （_worker.js / _routes.json 等），纯 SSG 不需要服务端部分。
+     *
+     * ── 部署时怎么让 Cloudflare 识别 ───────────────────────
+     * 由部署平台自动决定，不必写死：
+     *   - Cloudflare Pages 的构建环境会设置 CLOUDFLARE_PAGES=true，
+     *     Nuxt 会自动选用 cloudflare_pages preset；
+     *   - 或在 CI / 本地手动指定环境变量 NITRO_PRESET=cloudflare_pages。
+     * 这也与 blog-v3（L33Z22L11/blog-v3）的做法一致：
+     * 它的 nuxt.config 里 preset 出现 0 次、content.database 出现 0 次。
+     *
+     * ── 与数据库无关 ────────────────────────────────────
+     * 本项目纯 SSG，构建完成后不存在任何运行时 queryCollection() 调用，
+     * content.database 只是 @nuxt/content 的配置项，无需触碰。
+     * 构建期索引默认落在 .data/content/contents.sqlite（Nuxt Content
+     * 内部的本地构建产物），与 Cloudflare D1 没有关系。
+     */
     prerender: {
       crawlLinks: true,
       routes: ['/', '/rss.xml', '/atom.xml', '/api/search-index.json'],
       failOnError: false,
+    },
+
+    /**
+     * 固定静态产物目录为 dist/。
+     *
+     * 不写 preset 时，默认 preset 是 node-server，`nuxt generate` 会把
+     * 静态产物输出到 .output/public。而本项目的验收脚本
+     * （scripts/verify.mjs、scripts/fix-contrast.mjs）以及部署说明
+     * 都以 dist/ 为约定路径，这里显式指回去，保持单一事实来源。
+     *
+     * 注意 output.publicDir 只影响静态文件落盘位置，
+     * 不会引入任何服务端产物（纯 SSG 依然不生成 _worker.js）。
+     */
+    output: {
+      publicDir: 'dist',
     },
   },
 
@@ -108,39 +149,6 @@ export default defineNuxtConfig({
 
   // ---------- Content ----------
   content: {
-    /**
-     * 显式声明 D1 数据库配置，消除构建时的警告。
-     *
-     * ── 为什么会有那条警告 ────────────────────────────
-     * @nuxt/content 的 cloudflare preset 在 nitro:config 里判断：
-     *   if (runtimeConfig.content.database.type === 'sqlite') {
-     *     logger.warn('Deploying to Cloudflare requires using D1 database, ...')
-     *     runtimeConfig.content.database = { type: 'd1', bindingName: 'DB' }
-     *   }
-     * 我们的配置原本是默认的 sqlite，于是命中警告分支。
-     *
-     * ── 为什么这里直接写 d1 是安全的 ─────────────────
-     * 上面那段代码在警告之后做的**正是**把配置改成
-     * { type: 'd1', bindingName: 'DB' }。这里提前写成同一个值，
-     * 等于跳过「检测 → 改写」这一步，最终生效的配置与自动切换完全相同，
-     * 只是不再打印警告。
-     *
-     * 本项目是纯 SSG：所有页面在构建期渲染完成，产物里没有
-     * dist/_worker.js、也没有 .sqlite 文件，运行时不存在任何
-     * queryCollection() 调用，因此 D1 绑定只是配置占位，
-     * 不需要在 Cloudflare 控制台真的创建数据库或绑定。
-     *
-     * ── 注意 ───────────────────────────────────────
-     * 构建期内容查询走的是 options._localDatabase（仍是本地 sqlite），
-     * 不受这里影响，所以 pnpm generate 的渲染结果不变。
-     *
-     * 若将来改成 SSR 并真的要在运行时查库，才需要在 Cloudflare
-     * 创建 D1 数据库、把 binding 命名为 DB 并挂到 Pages 项目上。
-     */
-    database: {
-      type: 'd1',
-      bindingName: 'DB',
-    },
     build: {
       markdown: {
         highlight: {
