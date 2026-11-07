@@ -72,6 +72,12 @@ export const ui = {
     copyAria: '复制代码',
   },
 
+  math: {
+    copy: '复制公式',
+    copied: '已复制',
+    copyAria: '复制公式源码',
+  },
+
   /** 图片灯箱 */
   lightbox: {
     close: '关闭',

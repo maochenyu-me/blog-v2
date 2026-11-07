@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './fonts.css';
 @import './tokens.generated.css';
+@import './katex.generated.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

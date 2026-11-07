@@ -104,19 +104,20 @@ function renderAttributes(
   return parts.length ? ' ' + parts.join(' ') : ''
 }
 
+/** 取节点的 className 列表：minimark 里可能是字符串，也可能是字符串数组 */
+function classNames(props: Record<string, unknown>): string[] {
+  const c = props.className
+  if (typeof c === 'string') return c.split(/\s+/).filter(Boolean)
+  if (Array.isArray(c)) return c.map(String)
+  return []
+}
+
 /** 代码块语言：优先 props.language，其次 className 里的 language-xxx */
 function resolveLanguage(props: Record<string, unknown>): string {
   if (typeof props.language === 'string' && props.language) return props.language
-  const className = props.className
-  if (typeof className === 'string') {
-    const m = className.match(/language-([\w-]+)/)
+  for (const c of classNames(props)) {
+    const m = c.match(/language-([\w-]+)/)
     if (m) return m[1]!
-  }
-  if (Array.isArray(className)) {
-    for (const c of className) {
-      const m = String(c).match(/language-([\w-]+)/)
-      if (m) return m[1]!
-    }
   }
   return ''
 }
@@ -126,6 +127,24 @@ function textContent(node: MinimarkNode): string {
   if (typeof node === 'string') return node
   const [, , ...children] = node
   return children.map(textContent).join('')
+}
+
+/**
+ * 找 <annotation> 里的原始 LaTeX。
+ *
+ * KaTeX 把「作者原本写的源码」放在 MathML 的
+ * <annotation encoding="application/x-tex"> 里，其余节点都是为了显示。
+ * 对 feed 与搜索索引来说，这份源码才是唯一有价值的那一串。
+ */
+function findAnnotation(node: MinimarkNode): string {
+  if (typeof node === 'string') return ''
+  const [tag, , ...children] = node
+  if (tag === 'annotation') return textContent(node).trim()
+  for (const child of children) {
+    const hit = findAnnotation(child)
+    if (hit) return hit
+  }
+  return ''
 }
 
 /** 递归序列化一个节点列表 */
@@ -142,6 +161,11 @@ function renderNode(node: MinimarkNode, options: RenderOptions): string {
   const props = (rawProps ?? {}) as Record<string, unknown>
 
   if (SKIP_TAGS.has(tag)) return ''
+
+  // KaTeX 的视觉层（.katex-html，本来就被 aria-hidden 的 span 堆叠）在 feed 里
+  // 毫无意义：它的样式属性会被下面的白名单剥光，剩下的只是一堆裸 span，
+  // 还会把前一棵 MathML 里的字母重复显示一遍。整块丢。
+  if (classNames(props).includes('katex-html')) return ''
 
   // 代码块：直接用 props.code（原始代码文本）重建，不输出 shiki 的 span 高亮层。
   // 理由：① 高亮 span 对 feed 阅读器毫无意义，只会把正文体积放大 5–10 倍；
@@ -201,6 +225,22 @@ function collectText(node: MinimarkNode, opts: PlainTextOptions, out: string[]):
   if (opts.stripCodeBlocks && (tag === 'pre' || tag === 'code')) {
     // 留一个空格边界，避免前后词粘连成新词
     out.push(' ')
+    return
+  }
+
+  // 公式：KaTeX 一口气输出三份文本 —— MathML 的结构化字母、视觉层的 span 文本、
+  // 以及 annotation 里的原始 LaTeX。直接抽会得到
+  // "E=mc2E = mc^2E=mc2" 这种三连（实测一篇压测文 1751 字全是公式碎片）。
+  // 只保留原始 LaTeX：它既是作者写的形态，也是真正会被搜到的关键词。
+  // 外层 .katex-display 与内层 .katex 都命中，取到内容后直接 return，不重复进。
+  const cls = classNames(rawProps as Record<string, unknown>)
+  if (cls.includes('katex') || cls.includes('katex-display')) {
+    const tex = findAnnotation(node)
+    if (tex) {
+      out.push(' ')
+      out.push(tex)
+      out.push(' ')
+    }
     return
   }
 

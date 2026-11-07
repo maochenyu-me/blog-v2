@@ -253,6 +253,22 @@ export default defineNuxtConfig({
             'css', 'html', 'md', 'yaml', 'diff', 'xml', 'sql', 'go', 'rust', 'python',
           ],
         },
+        remarkPlugins: {
+          'remark-math': {},
+        },
+        rehypePlugins: {
+          // 选项必须嵌在 options 里：@nuxt/content 的 importPlugins 只读
+          // `{ instance, options }` 这两个键，直接摊平写会被当成空对象丢掉。
+          //
+          // errorColor 直接给 CSS 变量：KaTeX 会把它写进内联 style（style="color:var(--accent)"），
+          // 这样写错的公式能跟着明暗主题走。用固定色值做不到——KaTeX 只有一个 errorColor，
+          // 而明暗两套背景需要的红不一样（默认 #cc0000 在暗色底上只有 3.38:1）。
+          'rehype-katex': {
+            options: {
+              errorColor: 'var(--accent)',
+            },
+          },
+        },
       },
     },
   },

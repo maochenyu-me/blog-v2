@@ -126,6 +126,7 @@ useHead({
         </ImageLightbox>
 
         <CodeCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
+        <MathCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
 
         <CommentSlot />
       </article>

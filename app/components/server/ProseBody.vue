@@ -245,6 +245,40 @@
   color: var(--muted-foreground);
 }
 
+/* ---------- 数学公式（KaTeX） ---------- */
+
+/*
+ * 行内公式与正文同号。
+ * KaTeX 默认 .katex { font-size: 1.21em }，那是给纯数学排版留的余量；
+ * 放进 17px 的中文正文里会大出 21%（实测 20.57px vs 17px），
+ * 字形比汉字重一截，还会把行距顶开。
+ */
+.prose :deep(.katex) {
+  font-size: 1em;
+}
+
+/*
+ * 块级公式：上下留白对齐段落间距（.prose p 的 1.2em），超宽时在公式内部滚动。
+ * 不处理 overflow 的后果实测过：长公式把文档撑到 547px，
+ * 390px 的视口整页横向滚动，正文跟着一起漂。
+ * padding-block 给滚动条和 \sum 的上下限留余量，否则会被裁掉。
+ */
+.prose :deep(.katex-display) {
+  margin-block: 1.2em;
+  padding-block: 0.25em;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/*
+ * 公式写错时的标红。KaTeX 默认 #cc0000 在暗色底上只有 3.35:1，
+ * 达不到正文级的 4.5:1；改用强调色（实测 5.45 / 6.07），
+ * 也避免在「只有一处强调色」的体系里再引入第二种红。
+ */
+.prose :deep(.katex-error) {
+  color: var(--accent);
+}
+
 /* ---------- 移动端 ---------- */
 
 @media (max-width: 767px) {

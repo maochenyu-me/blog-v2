@@ -13,7 +13,9 @@
     "typecheck": "nuxt typecheck",
     "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs",
     "fix:post": "node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
-    "verify:font": "node scripts/verify-font-flash.mjs"
+    "verify:font": "node scripts/verify-font-flash.mjs",
+    "verify:math": "node scripts/verify-math.mjs",
+    "katex": "node scripts/katex-assets.mjs"
   },
   "dependencies": {
     "@nuxt/content": "^3.16.2",
@@ -22,6 +24,8 @@
     "@nuxtjs/seo": "^6.0.1",
     "minisearch": "^7.2.0",
     "nuxt": "^4.6.4",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "shadcn-nuxt": "^2.9.0",
     "vue": "^3.5.45",
     "vue-router": "^4.5.1"
