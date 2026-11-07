@@ -241,6 +241,20 @@ export default defineNuxtConfig({
 
   // ---------- Content ----------
   content: {
+    experimental: {
+      // 用 Node 内置的 node:sqlite，而不是 better-sqlite3。
+      //
+      // 这个数据库只是「构建期的内容索引」：把 markdown 解析结果灌进 SQLite，
+      // queryCollection() 用 SQL 查它，预渲染时把结果烘进 HTML / payload，
+      // 最终 dist/ 里没有任何数据库文件。它仅在 dev 与 build 阶段存在。
+      //
+      // 换掉的理由：better-sqlite3 是按 Node ABI 编译的原生模块，机器上装了两个
+      // Node（系统 24 / 工具链 22）就会报 NODE_MODULE_VERSION 127 vs 137。
+      // node:sqlite 是 Node 自带的，不绑定版本，无需编译。
+      // Node < 22.5 或 node:sqlite 不可用时会自动回退到 better-sqlite3，
+      // 所以依赖仍保留在 devDependencies 里做兜底。
+      sqliteConnector: 'native',
+    },
     build: {
       markdown: {
         highlight: {
