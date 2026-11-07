@@ -1,21 +1,5 @@
 [
   {
-    "name": "CWorld Site",
-    "avatar": "/images/links/cworld.png",
-    "description": "求知若愚，虚怀若谷",
-    "url": "https://cworld0.com/",
-    "daysSince": "2026-03-05",
-    "recommended": true
-  },
-  {
-    "name": "Tianli",
-    "avatar": "/images/links/tianli.jpg",
-    "description": "自知之明是最可贵的知识！",
-    "url": "https://blog.tianli0.top/",
-    "daysSince": "2026-03-05",
-    "recommended": true
-  },
-  {
     "name": "纸鹿摸鱼处",
     "avatar": "/images/links/zhilu.png",
     "description": "纸鹿至麓不知路，支炉制露不止漉",
@@ -32,12 +16,28 @@
     "recommended": true
   },
   {
+    "name": "Luxynth",
+    "avatar": "/images/links/lost-fallback.svg",
+    "description": "我心匪石不可转",
+    "url": "https://www.luxynth.cn",
+    "daysSince": "2025-09-09",
+    "lost": true
+  },
+  {
     "name": "UTOPIA",
     "avatar": "/images/links/utopia.jpg",
     "description": "散落在世界一角的故事",
     "url": "https://ishya.top",
     "daysSince": "2025-09-24",
     "recommended": true
+  },
+  {
+    "name": "喜之梁",
+    "avatar": "/images/links/lost-fallback.svg",
+    "description": "多点关心多点爱",
+    "url": "https://blog.liang.one",
+    "daysSince": "2025-10-08",
+    "lost": true
   },
   {
     "name": "阿叶Ayeez的小站",
@@ -54,6 +54,22 @@
     "daysSince": "2025-12-11"
   },
   {
+    "name": "CWorld Site",
+    "avatar": "/images/links/cworld.png",
+    "description": "求知若愚，虚怀若谷",
+    "url": "https://cworld0.com/",
+    "daysSince": "2026-03-05",
+    "recommended": true
+  },
+  {
+    "name": "Tianli",
+    "avatar": "/images/links/tianli.jpg",
+    "description": "自知之明是最可贵的知识！",
+    "url": "https://blog.tianli0.top/",
+    "daysSince": "2026-03-05",
+    "recommended": true
+  },
+  {
     "name": "LHL's Blog",
     "avatar": "/images/links/lhl.jpg",
     "description": "能烂尾的结局，过程一定很精彩",
@@ -68,19 +84,14 @@
     "daysSince": "2026-07-15"
   },
   {
-    "name": "Luxynth",
-    "avatar": "/images/links/lost-fallback.svg",
-    "description": "我心匪石不可转",
-    "url": "https://www.luxynth.cn",
-    "daysSince": "2025-09-09",
-    "lost": true
-  },
-  {
-    "name": "喜之梁",
-    "avatar": "/images/links/lost-fallback.svg",
-    "description": "多点关心多点爱",
-    "url": "https://blog.liang.one",
-    "daysSince": "2025-10-08",
-    "lost": true
+    "name": "清羽飞扬",
+    "avatar": "https://blog.liushen.fun/info/avatar.ico",
+    "description": "柳影曳曳，清酒孤灯，扬笔撒墨，心境如霜",
+    "url": "https://blog.liushen.fun",
+    "daysSince": "2026-11-07",
+    "issue": 1,
+    "rss": "https://blog.liushen.fun/atom.xml",
+    "screenshot": "https://blog.liushen.fun/info/siteshot.jpg",
+    "friendPage": "https://blog.liushen.fun/link"
   }
 ]
