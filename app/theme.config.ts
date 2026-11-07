@@ -37,6 +37,12 @@ export default {
     contentMaxWidth: '764px',
     /** 宽内容（表格 / 图片 / 代码）允许越界的上限 */
     wideMaxWidth: '1000px',
+    /**
+     * 顶部导航高度。
+     * 文章页目录的吸顶偏移、标题的锚点避让都从它推导，
+     * 所以 SiteHeader / MobileDrawer 也必须消费这个 token，禁止各处再写 3.5rem。
+     */
+    headerHeight: '3.5rem',
     /** 文章页目录旁栏宽度，≥1280px 时挂在正文右侧沟槽外 */
     tocWidth: '200px',
     tocGap: '3rem',
@@ -44,7 +50,17 @@ export default {
 
     fontFamily: {
       // 字体名必须与 @fontsource 实际注册的 family 一致（'Inter Variable' 带空格）
-      sans: "'Inter Variable', 'LXGW WenKai Lite', 'LXGW WenKai', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+      //
+      // 回退栈里为什么先排系统楷体、再排黑体：
+      //   弱网首访（实测 3G 下 webfont 要 10s 才到）会先拿回退字体渲染，
+      //   font-display: optional 在字体未赶上的那一轮直接整轮放弃。此时若回退是黑体，
+      //   站点会退化成「普通黑体博客」，手写体的视觉身份彻底丢失。
+      //   楷体与文楷同属楷体骨架，即使最终没换成 webfont，观感依然是楷体。
+      //   KaiTi/macOS 的楷体族名各不相同，逐个别名列出；Android 无楷体，
+      //   落到 sans-serif 兜底。
+      // 'LXGW WenKai' 各族名放在 webfont 之后：装了本地文楷时由 fonts.css 的
+      // local() 直接命中，这里是 local() 未命中时的二次保险。
+      sans: "'Inter Variable', 'LXGW WenKai Lite', 'LXGW WenKai', 'LXGW WenKai Screen', 'Kaiti SC', 'STKaiti', 'KaiTi', '楷体', 'PingFang SC', 'Microsoft YaHei', sans-serif",
       mono: "'JetBrains Mono', 'LXGW WenKai Lite', ui-monospace, monospace",
     },
 
@@ -87,9 +103,13 @@ export default {
     toc: {
       enabled: true,
       position: 'right' as const,
-      mobileCollapsible: true,
       minDepth: 2,
       maxDepth: 3,
+      /**
+       * 吸顶时目录与顶部导航之间保留的间距。
+       * 目录贴顶位置 = headerHeight + stickyOffset。
+       */
+      stickyOffset: '1.5rem',
     },
 
     reading: {

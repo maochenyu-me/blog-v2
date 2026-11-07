@@ -1,12 +1,71 @@
 /**
  * 自托管字体。
- * - Inter Variable：拉丁字母与数字
- * - LXGW WenKai Lite：汉字，582 个 unicode-range 分片，浏览器只下载实际用到的
- * - JetBrains Mono：只给真实数据（日期/时长/代码/kbd）
  *
- * 全部来自 node_modules，构建时被打包进产物，零第三方请求。
+ * ── 拉丁与数字：Inter Variable / JetBrains Mono ─────────────
+ * 来自 @fontsource，按 unicode-range 分了 7 / 6 片。拉丁字母的分片很小
+ * （每片几 KB），且首屏通常只命中 latin 一片，不存在「分批替换」的问题，
+ * 所以保持 fontsource 原样，不额外处理。
+ *
+ * ── 汉字：LXGW WenKai Lite（本项目唯一的自定义处理）─────────
+ * 原方案 @import lxgw-wenkai-lite-webfont 会引入 97 个 @font-face 分片，
+ * 每片独立触发 font-display:swap。它们不同时到达 → 字形分 4 批替换 →
+ * 刷新时整页「闪几下」（实测帧差 4.62 / 4.80 / 1.30 / 0.93）。
+ *
+ * 现方案：构建前把 97 片合并为 2 个单文件（400 / 700），只含全站真实用字
+ * （约 1100 字 / 240 KB）。一次 swap 完成，视觉上只有一次整体替换，
+ * 配合 nuxt.config 里的 preload 可压到首帧之前。
+ *
+ * ⚠ 但 localhost 上「0 帧差」是假象 —— 字体瞬到，测不出真实网络的表现。
+ * 用 CDP 节流复测：4G 下 FCP 448ms、字体 2252ms 才到；3G 下字体 9639ms。
+ * 即真实首访有 2~9 秒的 FOUT 窗口，swap 下会看到三次字形替换
+ * （拉丁 / 中文400 / 中文700），3G 那次更是用户读到一半整页突变。
+ * 因此单文件只解决「分批替换」，还得三件事一起收尾：
+ *   · font-display: optional —— 唯一能保证晚到字体不被应用的取值（实测见下）
+ *   · local() 优先 —— 本机装了文楷则零下载、零换字
+ *   · 回退栈系统楷体优先 —— 「放弃换字」也仍是楷体，不丢视觉身份
+ *
+ * 三种 font-display 的实测（CDP 节流 + 逐帧像素差）：
+ *   swap      4G: 2.2s 换一次(2.58) / 3G: 9.4s 换一次(2.58)
+ *   fallback  4G: 2.2s 换一次(2.58) / 3G: 9.4s 换一次(2.58)  ← 3s 窗口未生效
+ *   optional  4G: 无跳变且文楷生效(放行/阻断像素差 3.95) / 3G: 无跳变、退回系统楷体
+ * 所以只有 optional 同时满足「不闪」与「快网仍是文楷」。
+ *
+ * 内容改动后若出现回退字体，执行 `pnpm fonts` 重新生成子集。
+ * 生成逻辑见 scripts/font-subset.py，构建期校验见 modules/local-fonts.ts。
  */
 @import '@fontsource-variable/inter/wght.css';
 @import '@fontsource/jetbrains-mono/400.css';
-@import 'lxgw-wenkai-lite-webfont/lxgwwenkailite-regular.css';
-@import 'lxgw-wenkai-lite-webfont/lxgwwenkailite-bold.css';
+
+@font-face {
+  font-family: 'LXGW WenKai Lite';
+  font-style: normal;
+  font-weight: 400;
+  /* optional 而非 swap / fallback（实测数据见文件头注释）：
+     只有 optional 能保证「晚到的字体绝不被应用」。
+     swap：3G 下字体 9.5s 到，用户读了半屏后整页字形突变。
+     fallback：规范说 3s 窗口后放弃，但实测 Chrome 在 9.4s 仍然换了一次
+               （帧差 2.58，变化区域正是正文文字），靠不住。
+     optional：4G 下字体 2.2s 到仍会用上（放行/阻断像素差 3.95，说明文楷确实生效），
+               3G 下 9.7s 到则整页不换 —— 快网照常给文楷，慢网直接退回系统楷体。 */
+  font-display: optional;
+  /* local() 优先：本机装了文楷就零下载、零 swap（借鉴 blog-v3 的 local() 方案）。
+     逐个别名列出，因为不同分发包注册的族名不一致。 */
+  src:
+    local('LXGW WenKai Lite'),
+    local('LXGW WenKai Lite Regular'),
+    local('霞鹜文楷 Lite'),
+    url('/fonts/lxgw-wenkai-lite-400.woff2') format('woff2');
+  unicode-range: U+3000-303F, U+4E00-9FFF, U+FF00-FFEF, U+2010-2027, U+00B7;
+}
+
+@font-face {
+  font-family: 'LXGW WenKai Lite';
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+  src:
+    local('LXGW WenKai Lite Bold'),
+    local('霞鹜文楷 Lite Bold'),
+    url('/fonts/lxgw-wenkai-lite-700.woff2') format('woff2');
+  unicode-range: U+3000-303F, U+4E00-9FFF, U+FF00-FFEF, U+2010-2027, U+00B7;
+}

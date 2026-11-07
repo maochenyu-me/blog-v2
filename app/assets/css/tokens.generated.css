@@ -5,7 +5,7 @@
 
 /* --- 静态 token：不随明暗切换 --- */
 @theme {
-  --font-sans: 'Inter Variable', 'LXGW WenKai Lite', 'LXGW WenKai', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-sans: 'Inter Variable', 'LXGW WenKai Lite', 'LXGW WenKai', 'LXGW WenKai Screen', 'Kaiti SC', 'STKaiti', 'KaiTi', '楷体', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --font-mono: 'JetBrains Mono', 'LXGW WenKai Lite', ui-monospace, monospace;
 
   --radius-base: 0.5rem;
@@ -48,6 +48,10 @@
   --wide-max-width: 1000px;
   --toc-width: 200px;
   --toc-gap: 3rem;
+
+  /* 目录吸顶与标题锚点避让共用：贴顶位置 = --header-height + --toc-sticky-offset */
+  --header-height: 3.5rem;
+  --toc-sticky-offset: 1.5rem;
 
   --fs-h1: 1.75rem;
   --lh-h1: 1.25;

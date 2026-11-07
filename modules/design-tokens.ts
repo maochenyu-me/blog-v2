@@ -86,6 +86,10 @@ export default defineNuxtModule({
   --toc-width: ${theme.tocWidth};
   --toc-gap: ${theme.tocGap};
 
+  /* 目录吸顶与标题锚点避让共用：贴顶位置 = --header-height + --toc-sticky-offset */
+  --header-height: ${theme.headerHeight};
+  --toc-sticky-offset: ${theme.toc.stickyOffset};
+
   --fs-h1: ${fontSize.h1.size};
   --lh-h1: ${fontSize.h1.lineHeight};
   --fw-h1: ${fontSize.h1.weight};

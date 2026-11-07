@@ -130,6 +130,35 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/images/avatar-32.png' },
         { rel: 'icon', type: 'image/png', sizes: '180x180', href: '/images/avatar-180.png' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/images/avatar-180.png' },
+        // 字体 preload：让中文 webfont 与 CSS 并行下载，而不是等 CSS 解析完才发起。
+        //
+        // 为什么需要它：CSS 里的 @font-face 只有被样式匹配到才会触发下载，
+        // 此时 HTML 往往已经开始渲染首帧 —— 首帧用回退字体，webfont 到达后再换一次。
+        // 提前 preload 可把这个窗口压到首帧之前，刷新时（字体已在 HTTP 缓存）
+        // 基本能做到「首帧即最终字形」。
+        //
+        // 为什么 400 和 700 一起 preload，而不是只 preload 正文用的 400：
+        //   fonts.css 现在是 font-display: optional。若只 preload 400，
+        //   400 赶在首次渲染前到达会换成文楷，而 700 没赶上就被整轮放弃 ——
+        //   结果是「正文文楷 + 标题系统楷体」的混排，比整页都不换更难看。
+        //   两个一起 preload 才能同进同退（optional 是整轮判定，见 fonts.css 头注释）。
+        //
+        // crossorigin 不可省：字体按 CORS 规则请求，缺了它 preload 与真实请求
+        // 不匹配，浏览器会重复下载一次。
+        {
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/lxgw-wenkai-lite-400.woff2',
+          crossorigin: '',
+        },
+        {
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/lxgw-wenkai-lite-700.woff2',
+          crossorigin: '',
+        },
       ],
       // 防 FOUC：首帧前同步读取主题偏好。
       // 放在 app.head 而不是布局里，因为 404 / error 页不渲染布局，

@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build && node scripts/fix-contrast.mjs",
-    "generate": "nuxt generate && node scripts/fix-contrast.mjs",
+    "build": "nuxt build && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
+    "generate": "nuxt generate && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
+    "fonts": "node scripts/build-fonts.mjs",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs",
-    "fix:post": "node scripts/fix-contrast.mjs"
+    "fix:post": "node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
+    "verify:font": "node scripts/verify-font-flash.mjs"
   },
   "dependencies": {
     "@nuxt/content": "^3.16.2",
@@ -27,7 +29,9 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@iconify-json/tabler": "^1.2.43",
+    "@nuxt/kit": "^4.6.4",
     "@tailwindcss/vite": "^4.3.4",
+    "@types/node": "^26.6.6",
     "better-sqlite3": "^12.5.0",
     "jiti": "^2.7.0",
     "lxgw-wenkai-lite-webfont": "^1.7.0",
