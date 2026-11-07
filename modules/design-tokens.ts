@@ -83,6 +83,8 @@ export default defineNuxtModule({
   --radius: ${theme.radius};
   --content-max-width: ${theme.contentMaxWidth};
   --wide-max-width: ${theme.wideMaxWidth};
+  --home-max-width: ${theme.homeMaxWidth};
+  --home-sidebar-width: ${theme.homeSidebarWidth};
   --toc-width: ${theme.tocWidth};
   --toc-gap: ${theme.tocGap};
 
@@ -116,6 +118,7 @@ export default defineNuxtModule({
   --space-gutter: ${theme.spacing.gutter};
 
   --duration-base: ${theme.animation.duration}ms;
+  --duration-slow: ${theme.animation.durationSlow}ms;
   --easing-base: ${theme.animation.easing};
 
   --paragraph-spacing: ${theme.paragraphSpacing};

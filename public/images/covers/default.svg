@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <!-- 无封面文章的默认占位图：主题中性灰底 + 喵爪印记，明暗两种模式下都成立 -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e4e4e7"/>
+      <stop offset="1" stop-color="#a1a1aa"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#g)"/>
+  <g fill="#71717a" opacity="0.55">
+    <!-- 主掌垫 -->
+    <ellipse cx="400" cy="248" rx="56" ry="46"/>
+    <!-- 四趾 -->
+    <ellipse cx="332" cy="182" rx="18" ry="24"/>
+    <ellipse cx="378" cy="164" rx="18" ry="24"/>
+    <ellipse cx="424" cy="164" rx="18" ry="24"/>
+    <ellipse cx="470" cy="182" rx="18" ry="24"/>
+  </g>
+</svg>

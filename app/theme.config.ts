@@ -38,6 +38,14 @@ export default {
     /** 宽内容（表格 / 图片 / 代码）允许越界的上限 */
     wideMaxWidth: '1000px',
     /**
+     * 宽壳层上限：首页（主内容 + 侧栏）、顶部导航、页脚共用的宽容器，
+     * 三者对齐构成 Dusklight 式通栏格局。窄于该值时流体占满（减去 gutter），
+     * verify.mjs 对 home 路由的宽度上限单独放宽到本值 + 20px 余量。
+     */
+    homeMaxWidth: '1400px',
+    /** 首页侧栏宽度（≥1024px 时挂在主内容右侧） */
+    homeSidebarWidth: '340px',
+    /**
      * 顶部导航高度。
      * 文章页目录的吸顶偏移、标题的锚点避让都从它推导，
      * 所以 SiteHeader / MobileDrawer 也必须消费这个 token，禁止各处再写 3.5rem。
@@ -96,6 +104,8 @@ export default {
 
     animation: {
       duration: 200,
+      /** 卡片 hover 这类从容的微交互用慢一档的时长（友链页引入） */
+      durationSlow: 300,
       easing: 'ease-out',
       transitionName: 'page',
     },

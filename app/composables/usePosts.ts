@@ -19,6 +19,7 @@ export interface PostSummary {
   cover?: string
   draft: boolean
   pinned: boolean
+  featured: boolean
 }
 
 export function usePosts() {
@@ -50,6 +51,7 @@ export function usePosts() {
         'cover',
         'draft',
         'pinned',
+        'featured',
       )
       .order('pinned', 'DESC')
       .order('date', 'DESC')
@@ -64,6 +66,16 @@ export function usePosts() {
   async function pinned(limit: number): Promise<PostSummary[]> {
     const all = await list()
     return all.filter((p) => p.pinned).slice(0, limit)
+  }
+
+  /**
+   * 推荐文章（首页轮播）。
+   * 双重条件：featured 标记 + 必须有 cover（轮播是宽幅封面版式，无图不可用），
+   * 排序沿用全站规则（pinned DESC, date DESC）。
+   */
+  async function featuredPosts(limit: number): Promise<PostSummary[]> {
+    const all = await list()
+    return all.filter((p) => p.featured && p.cover).slice(0, limit)
   }
 
   /** 最新文章（排除置顶） */
@@ -189,6 +201,7 @@ export function usePosts() {
     list,
     pinned,
     latest,
+    featuredPosts,
     byCategory,
     byTag,
     categoryBySlug,

@@ -46,6 +46,8 @@
   --radius: 0.5rem;
   --content-max-width: 764px;
   --wide-max-width: 1000px;
+  --home-max-width: 1400px;
+  --home-sidebar-width: 340px;
   --toc-width: 200px;
   --toc-gap: 3rem;
 
@@ -79,6 +81,7 @@
   --space-gutter: 1.5rem;
 
   --duration-base: 200ms;
+  --duration-slow: 300ms;
   --easing-base: ease-out;
 
   --paragraph-spacing: 1.2em;

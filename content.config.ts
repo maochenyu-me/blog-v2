@@ -15,6 +15,8 @@ export default defineContentConfig({
         cover: z.string().optional(),
         draft: z.boolean().default(false),
         pinned: z.boolean().default(false),
+        /** 推荐文章：首页轮播只展示 featured 且带 cover 的文章 */
+        featured: z.boolean().default(false),
       }),
     }),
 

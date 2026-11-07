@@ -5,6 +5,7 @@ date: 2025-09-18
 category: 前端
 tags: [动画, 浏览器, CSS]
 cover: /images/covers/view-transition.png
+featured: true
 ---
 
 第一次看到 `document.startViewTransition` 的时候，我以为它就是个更简单的 GSAP。

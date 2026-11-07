@@ -1,0 +1,12 @@
+{
+  // Nuxt 4 标准根配置：类型检查按 project references 分域执行（app / server / shared / node），
+  // 实际编译选项全部由 `nuxt prepare` 在 .nuxt/ 下生成，这里只做引用入口。
+  // 缺失此文件时 vue-tsc 找不到项目，会打印 tsc help 并以 exit 1 退出。
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}

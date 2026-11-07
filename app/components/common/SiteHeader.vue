@@ -32,7 +32,8 @@ const { site } = useBlogConfig()
 }
 
 .header-inner {
-  max-width: var(--wide-max-width);
+  /* 与内容区同宽（--home-max-width 1400px），Dusklight 式通栏对齐 */
+  max-width: var(--home-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
   height: var(--header-height);

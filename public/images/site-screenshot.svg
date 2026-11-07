@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <!-- 本站「网站截图」占位图：替换为真实站点截图（建议 1200×750）后删除此文件并同步 pages.config.ts 的 links.screenshot -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fafafa"/>
+      <stop offset="1" stop-color="#d4d4d8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#g)"/>
+  <!-- 浏览器窗口示意 -->
+  <rect x="140" y="120" width="920" height="510" rx="16" fill="#ffffff" stroke="#a1a1aa" stroke-width="2"/>
+  <rect x="140" y="120" width="920" height="56" rx="16" fill="#f4f4f5"/>
+  <circle cx="176" cy="148" r="8" fill="#a1a1aa"/>
+  <circle cx="200" cy="148" r="8" fill="#d4d4d8"/>
+  <circle cx="224" cy="148" r="8" fill="#e4e4e7"/>
+  <rect x="260" y="136" width="600" height="24" rx="12" fill="#e4e4e7"/>
+  <!-- 内容骨架 -->
+  <rect x="180" y="212" width="500" height="36" rx="8" fill="#d4d4d8"/>
+  <rect x="180" y="272" width="840" height="18" rx="6" fill="#e4e4e7"/>
+  <rect x="180" y="306" width="760" height="18" rx="6" fill="#e4e4e7"/>
+  <rect x="180" y="340" width="800" height="18" rx="6" fill="#e4e4e7"/>
+  <rect x="180" y="416" width="260" height="180" rx="12" fill="#f4f4f5" stroke="#d4d4d8"/>
+  <rect x="470" y="416" width="260" height="180" rx="12" fill="#f4f4f5" stroke="#d4d4d8"/>
+  <rect x="760" y="416" width="260" height="180" rx="12" fill="#f4f4f5" stroke="#d4d4d8"/>
+  <!-- 喵爪印记 -->
+  <g fill="#71717a" opacity="0.35" transform="translate(600 560) scale(1.4)">
+    <ellipse cx="0" cy="14" rx="22" ry="17"/>
+    <ellipse cx="-30" cy="-12" rx="8" ry="11"/>
+    <ellipse cx="-10" cy="-20" rx="8" ry="11"/>
+    <ellipse cx="12" cy="-20" rx="8" ry="11"/>
+    <ellipse cx="32" cy="-12" rx="8" ry="11"/>
+  </g>
+</svg>

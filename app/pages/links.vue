@@ -1,109 +1,408 @@
 <script setup lang="ts">
+import { badgeConfigs, getBadge, recommendedColor, type FriendLink } from '~/data/links'
+
 const { ui, t } = useUi()
 const pageCfg = usePageConfig('links')
+const { site, feed } = useBlogConfig()
 const { friendLinks } = await import('~/data/links')
 
-const dialogOpen = ref(false)
+useHead({ title: ui.pages.links })
 
-/**
- * 列数来自配置。用 CSS 变量传进 grid-template-columns，
- * 避免在样式里写死 2/3/4。
- */
-const gridStyle = computed(() => ({
+/** 建交天数与等级印记：SSG 期计算，客户端不重算 */
+const daysOf = (link: FriendLink) => {
+  if (link.owner || !link.daysSince) return null
+  return Math.max(0, Math.floor((Date.now() - new Date(link.daysSince).getTime()) / 86_400_000))
+}
+const badgeOf = (link: FriendLink) => getBadge(daysOf(link) ?? 0, link.lost)
+
+/** 分组：本站 → 朋友们 → 失联。组内按建交天数降序（老朋友在前） */
+const groups = computed(() => {
+  const self = friendLinks.filter((l) => l.owner)
+  const lost = friendLinks.filter((l) => l.lost && !l.owner)
+  const active = friendLinks.filter((l) => !l.lost && !l.owner)
+  const byDays = (a: FriendLink, b: FriendLink) => (daysOf(b) ?? 0) - (daysOf(a) ?? 0)
+  return [
+    { key: 'self' as const, list: [...self].sort(byDays) },
+    { key: 'active' as const, list: [...active].sort(byDays) },
+    { key: 'lost' as const, list: [...lost].sort(byDays) },
+  ].filter((g) => g.list.length > 0)
+})
+
+const friendCount = friendLinks.filter((l) => !l.owner).length
+
+/** 本站信息卡的字段（Dusklight 式逐行盒子，点击复制）。
+ *  顺序按访客复制频率排：链接/头像/RSS 常显，其余折进「更多本站字段」。 */
+const siteFields = computed(() => [
+  { key: 'url', label: ui.links.fieldLabels.url, value: site.url },
+  { key: 'avatar', label: ui.links.fieldLabels.avatar, value: `${site.url}${site.author.avatar}` },
+  { key: 'rss', label: ui.links.fieldLabels.rss, value: `${site.url}${feed.rss.path}` },
+  { key: 'name', label: ui.links.fieldLabels.name, value: site.name },
+  { key: 'desc', label: ui.links.fieldLabels.desc, value: site.description },
+  { key: 'screenshot', label: ui.links.fieldLabels.screenshot, value: `${site.url}${pageCfg.screenshot}` },
+])
+const primaryFields = computed(() => siteFields.value.slice(0, pageCfg.expandedFields))
+const moreFields = computed(() => siteFields.value.slice(pageCfg.expandedFields))
+
+/** 复制状态：字段级，1.5s 后归还 */
+const copiedKey = ref('')
+let copyTimer: ReturnType<typeof setTimeout> | undefined
+async function copyField(key: string, value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+  } catch {
+    return
+  }
+  copiedKey.value = key
+  clearTimeout(copyTimer)
+  copyTimer = setTimeout(() => (copiedKey.value = ''), 1500)
+}
+
+/** 随机拜访：避开上一次抽中的，连续点也有新鲜感 */
+const randomOpen = ref(false)
+const randomPick = ref<FriendLink | null>(null)
+let lastPicked = -1
+function pickRandom() {
+  const pool = friendLinks.filter((l) => !l.owner && !l.lost)
+  if (pool.length === 0) return
+  let i = Math.floor(Math.random() * pool.length)
+  if (pool.length > 1 && i === lastPicked) i = (i + 1) % pool.length
+  lastPicked = i
+  randomPick.value = pool[i] ?? null
+  randomOpen.value = true
+  nextTick(() => dialogEl.value?.focus())
+}
+function confirmRandom() {
+  const target = randomPick.value
+  if (target) window.open(target.url, '_blank', 'noopener')
+  randomOpen.value = false
+}
+
+/** 模态关闭时把焦点还给触发按钮 */
+const randomBtnEl = ref<HTMLButtonElement | null>(null)
+const dialogEl = ref<HTMLElement | null>(null)
+function closeRandom() {
+  randomOpen.value = false
+  nextTick(() => randomBtnEl.value?.focus())
+}
+
+/** 印记图例：完整 16 级，按建交天数区间划分（数据与颜色来自 links.ts） */
+const legendBadges = computed(() =>
+  badgeConfigs.map((b) => ({
+    key: b.icon,
+    zh: b.name.split('/')[0],
+    en: b.name.split('/')[1] ?? '',
+    color: b.color,
+    icon: b.icon,
+    range:
+      b.maxDays === 0
+        ? '—'
+        : b.maxDays === Number.POSITIVE_INFINITY
+          ? t(ui.links.legendDaysPlus, { min: b.minDays })
+          : t(ui.links.legendDaysRange, { min: b.minDays, max: b.maxDays }),
+  })),
+)
+
+const applyRules = pageCfg.applyRules
+const gridVars = computed(() => ({
   '--cols-mobile': String(pageCfg.columns.mobile),
   '--cols-tablet': String(pageCfg.columns.tablet),
   '--cols-desktop': String(pageCfg.columns.desktop),
 }))
-
-useHead({ title: ui.pages.links })
 </script>
 
 <template>
   <div class="page-links">
     <div class="container">
+      <!-- ── 页头：标题 + 计数副题 + 随机拜访 ── -->
       <header class="page-head">
-        <h1 class="page-title">{{ ui.pages.links }}</h1>
-        <button type="button" class="apply-btn" @click="dialogOpen = true">
-          {{ ui.links.apply }}
+        <div class="page-head-text">
+          <h1 class="page-title">{{ ui.pages.links }}</h1>
+          <p class="page-sub">{{ t(ui.links.subtitle, { n: friendCount }) }}</p>
+        </div>
+        <button
+          v-if="pageCfg.randomVisit && friendCount > 0"
+          ref="randomBtnEl"
+          type="button"
+          class="random-btn"
+          :aria-label="ui.links.randomAria"
+          @click="pickRandom"
+        >
+          <Icon name="tabler:dice-5" aria-hidden="true" />
+          <span>{{ ui.links.randomVisit }}</span>
         </button>
       </header>
 
-      <ul class="link-grid" :style="gridStyle">
-        <li v-for="link in friendLinks" :key="link.url" class="link-cell">
-          <!-- 站内链接（owner）用 NuxtLink 做客户端跳转，外链才开新窗口 -->
-          <NuxtLink
-            v-if="link.owner"
-            :to="link.url"
-            class="link-card"
-          >
-            <NuxtImg
-              v-if="pageCfg.showAvatar"
-              :src="link.avatar"
-              :alt="t(ui.links.avatarAlt, { name: link.name })"
-              class="link-avatar"
-              width="48"
-              height="48"
-              loading="eager"
+      <!-- ── 本站信息 ‖ 申请须知（窄屏上下堆叠） ── -->
+      <div class="info-grid">
+        <section class="info-card" :aria-label="ui.links.infoTitle">
+          <h2 class="section-label">{{ ui.links.infoTitle }}</h2>
+          <div class="info-identity">
+            <img
+              :src="site.author.avatar"
+              :alt="site.name"
+              class="info-avatar"
+              width="56"
+              height="56"
+              loading="lazy"
               decoding="async"
             />
-            <span class="link-body">
-              <span class="link-name">
-                {{ link.name }}
-                <span v-if="link.owner" class="link-badge">{{ ui.links.self }}</span>
-              </span>
-              <span class="link-desc">{{ link.description }}</span>
-            </span>
-          </NuxtLink>
-
-          <a v-else :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
-            <NuxtImg
-              v-if="pageCfg.showAvatar"
-              :src="link.avatar"
-              :alt="t(ui.links.avatarAlt, { name: link.name })"
-              class="link-avatar"
-              width="48"
-              height="48"
-              loading="eager"
-              decoding="async"
-            />
-            <span class="link-body">
-              <span class="link-name">
-                {{ link.name }}
-                <span v-if="link.owner" class="link-badge">{{ ui.links.self }}</span>
-              </span>
-              <span class="link-desc">{{ link.description }}</span>
-            </span>
-          </a>
-        </li>
-      </ul>
-    </div>
-
-    <Teleport to="body">
-      <div v-if="dialogOpen" class="dialog-overlay" @click.self="dialogOpen = false">
-        <div
-          class="dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="apply-title"
-          @keydown.esc="dialogOpen = false"
-        >
-          <div class="dialog-head">
-            <h2 id="apply-title" class="dialog-title">{{ ui.links.applyTitle }}</h2>
-            <button
-              type="button"
-              class="dialog-close"
-              :aria-label="ui.common.close"
-              @click="dialogOpen = false"
-            >
-              <Icon name="tabler:x" aria-hidden="true" />
-            </button>
+            <div class="info-identity-text">
+              <span class="info-name">{{ site.name }}</span>
+              <span class="info-motto">{{ site.description }}</span>
+            </div>
           </div>
+          <ul class="info-fields">
+            <li v-for="field in primaryFields" :key="field.key" class="info-field">
+              <span class="field-label">{{ field.label }}</span>
+              <span class="field-value" :title="field.value">{{ field.value }}</span>
+              <button
+                type="button"
+                class="field-copy"
+                :class="{ 'is-copied': copiedKey === field.key }"
+                :aria-label="copiedKey === field.key ? t(ui.links.copiedAria, { name: field.label }) : t(ui.links.copyAria, { name: field.label })"
+                @click="copyField(field.key, field.value)"
+              >
+                <Icon :name="copiedKey === field.key ? 'tabler:check' : 'tabler:copy'" aria-hidden="true" />
+              </button>
+            </li>
+          </ul>
 
+          <!-- 其余字段默认折叠，防止左栏远高于右栏（申请须知）造成大面积留白 -->
+          <details v-if="moreFields.length > 0" class="info-more">
+            <summary class="info-more-summary">
+              <span>{{ ui.links.moreFields }}</span>
+              <Icon name="tabler:chevron-down" class="disclaimer-chevron" aria-hidden="true" />
+            </summary>
+            <ul class="info-fields info-fields-more">
+              <li v-for="field in moreFields" :key="field.key" class="info-field">
+                <span class="field-label">{{ field.label }}</span>
+                <span class="field-value" :title="field.value">{{ field.value }}</span>
+                <button
+                  type="button"
+                  class="field-copy"
+                  :class="{ 'is-copied': copiedKey === field.key }"
+                  :aria-label="copiedKey === field.key ? t(ui.links.copiedAria, { name: field.label }) : t(ui.links.copyAria, { name: field.label })"
+                  @click="copyField(field.key, field.value)"
+                >
+                  <Icon :name="copiedKey === field.key ? 'tabler:check' : 'tabler:copy'" aria-hidden="true" />
+                </button>
+              </li>
+            </ul>
+          </details>
+        </section>
+
+        <section class="rules-card" :aria-label="ui.links.rulesTitle">
+          <h2 class="section-label">{{ ui.links.rulesTitle }}</h2>
           <ol class="rule-list">
-            <li v-for="(rule, i) in pageCfg.applyRules" :key="i" class="rule-item">
+            <li v-for="(rule, i) in applyRules" :key="i" class="rule-item">
               {{ rule }}
             </li>
           </ol>
+
+          <!-- 申请方式：邮箱字段盒 + mailto CTA，补齐右栏高度并给出真实申请通道 -->
+          <div class="apply-channel">
+            <span class="channel-label">{{ ui.links.applyChannel }}</span>
+            <div class="info-field">
+              <span class="field-label">{{ ui.links.emailLabel }}</span>
+              <span class="field-value" :title="site.author.email">{{ site.author.email }}</span>
+              <button
+                type="button"
+                class="field-copy"
+                :class="{ 'is-copied': copiedKey === 'email' }"
+                :aria-label="copiedKey === 'email' ? t(ui.links.copiedAria, { name: ui.links.emailLabel }) : t(ui.links.copyAria, { name: ui.links.emailLabel })"
+                @click="copyField('email', site.author.email)"
+              >
+                <Icon :name="copiedKey === 'email' ? 'tabler:check' : 'tabler:copy'" aria-hidden="true" />
+              </button>
+            </div>
+            <a
+              class="apply-mail"
+              :href="`mailto:${site.author.email}?subject=${encodeURIComponent(ui.links.emailSubject)}`"
+            >
+              <Icon name="tabler:mail" aria-hidden="true" />
+              <span>{{ ui.links.sendEmail }}</span>
+            </a>
+          </div>
+
+          <p class="rules-note">{{ ui.links.rulesNote }}</p>
+        </section>
+      </div>
+
+      <!-- ── 免责声明（details 折叠，非弹层） ── -->
+      <details class="disclaimer">
+        <summary class="disclaimer-summary">
+          <span>{{ ui.links.disclaimerTitle }}</span>
+          <Icon name="tabler:chevron-down" class="disclaimer-chevron" aria-hidden="true" />
+        </summary>
+        <div class="disclaimer-body">
+          <p>{{ ui.links.disclaimerIntro }}</p>
+          <ul>
+            <li v-for="item in ui.links.disclaimerItems" :key="item">{{ item }}</li>
+          </ul>
+          <p>{{ ui.links.disclaimerOutro }}</p>
+        </div>
+      </details>
+
+      <!-- ── 友链卡片墙：本站 / 朋友们 / 失联 三段 ── -->
+      <section v-for="group in groups" :key="group.key" class="friend-section">
+        <h2 class="section-label friend-section-label">
+          <template v-if="group.key === 'self'">
+            {{ ui.links.self }}
+          </template>
+          <template v-else>
+            {{ group.key === 'active' ? ui.links.friendsTitle : ui.links.legendLost }}
+            <span class="section-count">{{ t(ui.links.friendsCount, { n: group.list.length }) }}</span>
+          </template>
+        </h2>
+
+        <ul class="link-grid" :style="gridVars">
+          <li v-for="link in group.list" :key="link.url" class="link-cell">
+            <!-- 本站卡：站内跳转，无出站动效 -->
+            <NuxtLink v-if="link.owner" :to="link.url" class="link-card is-self">
+              <span class="avatar-wrap">
+                <NuxtImg
+                  :src="link.avatar"
+                  :alt="t(ui.links.avatarAlt, { name: link.name })"
+                  class="link-avatar"
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+              <span class="link-body">
+                <span class="link-name">
+                  {{ link.name }}
+                  <span class="link-badge">{{ ui.links.self }}</span>
+                </span>
+                <span class="link-desc">{{ link.description }}</span>
+              </span>
+            </NuxtLink>
+
+            <!-- 朋友卡：1:1 移植 Saneko FriendList —— 圆角独立卡 + hover 遮罩箭头 +
+                 头像水墨背景 + 右上角 40px 裁切印章 + 右下 DAYS -->
+            <a v-else :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
+              <span class="avatar-wrap">
+                <NuxtImg
+                  :src="link.avatar"
+                  :alt="t(ui.links.avatarAlt, { name: link.name })"
+                  class="link-avatar"
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="avatar-veil" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="veil-arrow"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" class="arrow-line" />
+                    <polyline points="12 5 19 12 12 19" class="arrow-head" />
+                  </svg>
+                </span>
+              </span>
+              <span class="link-body">
+                <span class="link-name">
+                  {{ link.name }}
+                  <Icon
+                    v-if="link.recommended"
+                    name="tabler:thumb-up"
+                    class="rec-icon"
+                    :style="{ color: recommendedColor }"
+                    aria-hidden="true"
+                  />
+                  <span v-if="link.recommended" class="visually-hidden">{{ ui.links.recommendedAria }}</span>
+                </span>
+                <span class="link-desc">{{ link.description }}</span>
+                <span class="days-label">
+                  {{ link.lost ? ui.links.daysLost : t(ui.links.daysBadge, { n: daysOf(link) ?? 0 }) }}
+                </span>
+              </span>
+              <!-- 等级印章：40px 徽标色图标溢出右上角，hover 逆转放大（Saneko 式） -->
+              <span class="days-stamp" :style="{ color: badgeOf(link).color }" aria-hidden="true">
+                <Icon :name="`tabler:${badgeOf(link).icon}`" class="stamp-icon" />
+              </span>
+              <span
+                class="avatar-watermark"
+                :style="{ backgroundImage: `url(${link.avatar})` }"
+                aria-hidden="true"
+              />
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ── 友链等级 · 印记图例（16 级） ── -->
+      <details v-if="pageCfg.showLegend" class="legend">
+        <summary class="legend-summary">
+          <span>{{ ui.links.legendTitle }}</span>
+          <Icon name="tabler:chevron-down" class="disclaimer-chevron" aria-hidden="true" />
+        </summary>
+        <div class="legend-grid">
+          <div v-for="badge in legendBadges" :key="badge.key" class="legend-item">
+            <span class="legend-medal" :style="{ color: badge.color }" aria-hidden="true">
+              <Icon :name="`tabler:${badge.icon}`" class="legend-medal-icon" />
+            </span>
+            <span class="legend-meta">
+              <span class="legend-name" :style="{ color: badge.color }">
+                {{ badge.zh }}<span class="legend-en">{{ badge.en }}</span>
+              </span>
+              <span class="legend-range">{{ badge.range }}</span>
+            </span>
+          </div>
+        </div>
+      </details>
+
+      <CommentSlot />
+    </div>
+
+    <!-- ── 随机拜访确认模态 ── -->
+    <Teleport to="body">
+      <div v-if="randomOpen" class="dialog-overlay" @click.self="closeRandom">
+        <div
+          ref="dialogEl"
+          class="dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="random-visit-title"
+          tabindex="-1"
+          @keydown.esc="closeRandom"
+        >
+          <div class="dialog-head">
+            <h2 id="random-visit-title" class="dialog-title">{{ ui.links.modalHeading }}</h2>
+            <button type="button" class="dialog-close" :aria-label="ui.links.modalCloseAria" @click="closeRandom">
+              <Icon name="tabler:x" aria-hidden="true" />
+            </button>
+          </div>
+          <div v-if="randomPick" class="random-pick">
+            <img
+              :src="randomPick.avatar"
+              :alt="t(ui.links.avatarAlt, { name: randomPick.name })"
+              class="pick-avatar"
+              width="48"
+              height="48"
+              decoding="async"
+            />
+            <div class="pick-text">
+              <span class="pick-name">{{ randomPick.name }}</span>
+              <span class="pick-url">{{ randomPick.url }}</span>
+            </div>
+          </div>
+          <p class="pick-desc" :aria-label="ui.links.modalDescAria">{{ randomPick?.description }}</p>
+          <div class="pick-actions">
+            <button type="button" class="pick-cancel" @click="closeRandom">
+              {{ ui.links.modalCancel }}
+            </button>
+            <button type="button" class="pick-confirm" @click="confirmRandom">
+              {{ ui.links.modalVisit }}
+            </button>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -116,14 +415,14 @@ useHead({ title: ui.pages.links })
 }
 
 .container {
-  max-width: var(--content-max-width);
+  max-width: var(--wide-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
 }
 
 .page-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: var(--space-block);
@@ -136,34 +435,346 @@ useHead({ title: ui.pages.links })
   letter-spacing: -0.02em;
 }
 
-.apply-btn {
+.page-sub {
+  margin-top: 0.375rem;
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.125rem;
+}
+
+.random-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: none;
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
   cursor: pointer;
   transition:
     color var(--duration-base) var(--easing-base),
     border-color var(--duration-base) var(--easing-base);
 }
 
-.apply-btn:hover {
-  color: var(--foreground);
-  border-bottom-color: var(--accent);
+.random-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
-/* 网格列数全部来自 pages.config.ts */
-.link-grid {
+/* ── 信息区：双栏（信息 ‖ 须知），窄屏堆叠 ── */
+.info-grid {
   display: grid;
-  grid-template-columns: repeat(var(--cols-mobile, 2), minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 1px;
   background-color: var(--border);
   border: 1px solid var(--border);
 }
 
 @media (min-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.info-card,
+.rules-card {
+  /* grid item 的自动最小尺寸归零：让 1fr 轨道能被窄视口压缩，
+     内部 nowrap 的 URL 字段靠 overflow + ellipsis 截断 */
+  min-width: 0;
+  background-color: var(--background);
+  padding: var(--space-item);
+}
+
+.section-label {
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  margin-bottom: 1rem;
+}
+
+.info-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-avatar {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.info-identity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.info-name {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.info-motto {
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.info-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 字段行：Dusklight 式独立圆角盒子（label + 值 + 复制按钮） */
+.info-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background-color: var(--muted);
+  min-width: 0;
+}
+
+.field-label {
+  flex: none;
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+}
+
+.field-value {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field-copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--muted-foreground);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-base) var(--easing-base);
+}
+
+.field-copy:hover,
+.field-copy.is-copied {
+  color: var(--accent);
+}
+
+/* 「更多本站字段」折叠块：摘要做成字段行同款盒子，视觉上连成一组 */
+.info-more {
+  margin-top: 0.5rem;
+}
+
+.info-more-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background-color: var(--muted);
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--duration-base) var(--easing-base);
+}
+
+.info-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.info-more-summary:hover {
+  color: var(--accent);
+}
+
+.info-fields-more {
+  margin-top: 0.5rem;
+}
+
+/* ── 申请须知 ── */
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  counter-reset: rule;
+}
+
+.rule-item {
+  display: flex;
+  gap: 0.625rem;
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  counter-increment: rule;
+}
+
+.rule-item::before {
+  content: counter(rule);
+  flex: none;
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+/* ── 申请方式：邮箱字段盒 + mailto CTA（字段盒样式与左栏 info-field 同款，左右呼应） ── */
+.apply-channel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.channel-label {
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+  margin-bottom: 0.125rem;
+}
+
+.apply-mail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  font-size: var(--fs-meta);
+  color: var(--foreground);
+  transition:
+    color var(--duration-base) var(--easing-base),
+    border-color var(--duration-base) var(--easing-base);
+}
+
+.apply-mail:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.rules-note {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+/* ── 免责声明 / 图例：贴在信息区网格之下的折叠条 ── */
+.disclaimer,
+.legend {
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+.disclaimer-summary,
+.legend-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem var(--space-item);
+  font-size: var(--fs-meta);
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--duration-base) var(--easing-base);
+}
+
+.disclaimer-summary::-webkit-details-marker,
+.legend-summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclaimer-summary:hover,
+.legend-summary:hover {
+  color: var(--accent);
+}
+
+.disclaimer-chevron {
+  flex: none;
+  transition: transform var(--duration-base) var(--easing-base);
+}
+
+details[open] .disclaimer-chevron,
+details[open] .legend-summary .disclaimer-chevron {
+  transform: rotate(180deg);
+}
+
+.disclaimer-body {
+  padding: 0 var(--space-item) var(--space-item);
+  font-size: var(--fs-meta);
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+.disclaimer-body p {
+  margin-bottom: 0.625rem;
+}
+
+.disclaimer-body ul {
+  margin: 0.625rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.disclaimer-body li {
+  margin-bottom: 0.375rem;
+}
+
+/* ── 友链区段标题 ── */
+.friend-section {
+  margin-top: var(--space-block);
+}
+
+.friend-section-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-count {
+  font-family: var(--font-mono);
+}
+
+/* ── 卡墙：2/3/4 列，独立圆角卡片（Saneko 式），卡片间留缝 ──
+   末行不满时空轨道就是页面底色，卡片不强行补满。 */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols-mobile, 1), minmax(0, 1fr));
+  gap: 0.875rem;
+}
+
+@media (min-width: 768px) {
   .link-grid {
     grid-template-columns: repeat(var(--cols-tablet, 3), minmax(0, 1fr));
+    gap: 1rem;
   }
 }
 
@@ -173,35 +784,105 @@ useHead({ title: ui.pages.links })
   }
 }
 
-/* 网格用 1px 间隙 + 底色形成分隔线，避免每个格子都画边框导致双线 */
-.link-cell {
-  background-color: var(--background);
-}
-
+/* 卡片：rounded-2xl 边框卡，底色 muted 与页面区分，hover 再深一档 */
 .link-card {
+  position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background-color: var(--muted);
   transition: background-color var(--duration-base) var(--easing-base);
 }
 
 .link-card:hover {
-  background-color: var(--muted);
+  background-color: color-mix(in srgb, var(--muted) 85%, var(--foreground));
+}
+
+/* 头像区：圆形 + hover 遮罩箭头（Saneko 式出站动效） */
+.avatar-wrap {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .link-avatar {
-  flex: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: calc(var(--radius) / 2);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+  background-color: var(--muted);
+}
+
+.avatar-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--foreground);
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--easing-base);
+}
+
+.veil-arrow {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--background);
+}
+
+.arrow-line {
+  transform: translateX(1rem) scaleX(0);
+  transition: transform var(--duration-slow) var(--easing-base);
+}
+
+.arrow-head {
+  transition: transform var(--duration-slow) var(--easing-base);
+}
+
+.link-card:hover .avatar-veil {
+  opacity: 0.55;
+}
+
+.link-card:hover .arrow-line {
+  transform: translateX(0.25rem) scaleX(1);
+}
+
+.link-card:hover .arrow-head {
+  transform: translateX(0.25rem);
+}
+
+/* 头像水墨背景：左浓右淡渐隐 mask，正文区 zIndex 压在其上（Saneko 口径 opacity-15） */
+.avatar-watermark {
+  position: absolute;
+  left: -0.5rem;
+  top: 0;
+  z-index: 0;
+  width: 66%;
+  height: 100%;
+  background-size: cover;
+  background-position: left center;
+  opacity: 0.15;
+  mask-image: linear-gradient(to left, transparent 0%, black 100%);
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 100%);
+  pointer-events: none;
 }
 
 .link-body {
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  justify-content: center;
   gap: 0.25rem;
   min-width: 0;
 }
@@ -211,8 +892,14 @@ useHead({ title: ui.pages.links })
   align-items: center;
   gap: 0.375rem;
   font-size: var(--fs-meta);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.4;
+}
+
+.rec-icon {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .link-badge {
@@ -226,12 +913,121 @@ useHead({ title: ui.pages.links })
   line-height: 1.5;
   color: var(--muted-foreground);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* 天数角标：右下角，10px mono（Saneko 口径 self-end text-[10px]） */
+.days-label {
+  align-self: flex-end;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 等级印章：40px 徽标色图标，96px 容器溢出右上角裁切，hover 逆转放大 */
+.days-stamp {
+  position: absolute;
+  right: -1.25rem;
+  top: -1.5625rem;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 6rem;
+  transition: transform var(--duration-slow) var(--easing-base);
+  pointer-events: none;
+}
+
+.stamp-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.2;
+  transition: opacity var(--duration-slow) var(--easing-base);
+}
+
+.link-card:hover .days-stamp {
+  transform: rotate(-12deg) scale(1.1);
+}
+
+.link-card:hover .stamp-icon {
+  opacity: 0.3;
+}
+
+/* ── 友链等级图例（16 级网格） ── */
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0 var(--space-item) var(--space-item);
+}
+
+@media (min-width: 768px) {
+  .legend-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) / 2);
+  min-width: 0;
+}
+
+.legend-medal {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.legend-medal-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.legend-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.legend-name {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.legend-en {
+  margin-left: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 400;
+  opacity: 0.65;
+}
+
+.legend-range {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 随机拜访模态 ── */
 .dialog-overlay {
   position: fixed;
   inset: 0;
@@ -245,12 +1041,11 @@ useHead({ title: ui.pages.links })
 
 .dialog {
   width: 100%;
-  max-width: 30rem;
+  max-width: 24rem;
   background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-item);
-  /* 弹层是唯一允许阴影的地方（提示词 §5.2），暗色下已被全局禁用 */
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
@@ -270,33 +1065,93 @@ useHead({ title: ui.pages.links })
   color: var(--muted-foreground);
   cursor: pointer;
   font-size: 1.125rem;
+  background: none;
+  border: none;
 }
 
 .dialog-close:hover {
   color: var(--foreground);
 }
 
-.rule-list {
+.random-pick {
   display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  counter-reset: rule;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
-.rule-item {
+.pick-avatar {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--muted);
+}
+
+.pick-text {
   display: flex;
-  gap: 0.625rem;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.pick-name {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+}
+
+.pick-url {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pick-desc {
   font-size: var(--fs-meta);
   line-height: 1.6;
   color: var(--muted-foreground);
-  counter-increment: rule;
+  margin-bottom: 1.25rem;
 }
 
-/* 规则是真实的有序列表，允许编号 */
-.rule-item::before {
-  content: counter(rule);
-  flex: none;
-  font-family: var(--font-mono);
-  color: var(--accent);
+.pick-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.pick-cancel,
+.pick-confirm {
+  font-size: var(--fs-meta);
+  cursor: pointer;
+  border-radius: calc(var(--radius) / 2);
+  padding: 0.5rem 1rem;
+  transition:
+    color var(--duration-base) var(--easing-base),
+    border-color var(--duration-base) var(--easing-base),
+    background-color var(--duration-base) var(--easing-base);
+}
+
+.pick-cancel {
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  background: none;
+}
+
+.pick-cancel:hover {
+  color: var(--foreground);
+}
+
+.pick-confirm {
+  color: var(--background);
+  border: 1px solid var(--accent);
+  background-color: var(--accent);
+}
+
+.pick-confirm:hover {
+  opacity: 0.9;
 }
 </style>

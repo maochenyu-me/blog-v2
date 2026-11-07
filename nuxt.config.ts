@@ -38,6 +38,7 @@ export default defineNuxtConfig({
     { path: '~/components/common', pathPrefix: false },
     { path: '~/components/server', pathPrefix: false },
     { path: '~/components/ui', pathPrefix: false },
+    { path: '~/components/home', pathPrefix: false },
   ],
 
   // ---------- 渲染模式：纯 SSG ----------

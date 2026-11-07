@@ -202,8 +202,11 @@ for (const r of report.routes) {
   if (r.scheme === 'light' && m.isDark) fails.push(`${tag}: 明色却处于暗色`)
 
   // 内容宽度与居中（只在有 probe 的页面检查）
+  // 上限按路由区分：正文类页面受 --wide-max-width（1000px）约束；
+  // 首页是 Dusklight 式宽版式（主内容 + 侧栏），受 --home-max-width（1400px）约束。
   if (m.contentWidth !== null && r.viewport === 'desktop') {
-    if (m.contentWidth > 1010) fails.push(`${tag}: 内容宽度 ${m.contentWidth} 超上限`)
+    const limit = r.route === 'home' ? 1420 : 1010
+    if (m.contentWidth > limit) fails.push(`${tag}: 内容宽度 ${m.contentWidth} 超上限 ${limit}`)
   }
 
   if (r.consoleErrors.length && r.route !== '404') {

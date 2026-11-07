@@ -106,7 +106,8 @@ const beianItems = computed(() => {
 }
 
 .footer-inner {
-  max-width: var(--wide-max-width);
+  /* 与内容区同宽（--home-max-width 1400px），Dusklight 式通栏对齐 */
+  max-width: var(--home-max-width);
   margin-inline: auto;
   padding: var(--space-block) var(--space-gutter);
   padding-bottom: calc(var(--space-block) + 4rem);
