@@ -103,7 +103,8 @@ async function reachable(url, { expectImage = false } = {}) {
 
 /**
  * 全量校验。existing = 现有友链数组；offline = 跳过网络检查（本地测试）。
- * 返回 { ok, entry?, errors[], comment }
+ * 选填字段（RSS/截图/友链页面）：格式错误阻断，可达性只警告不阻断。
+ * 返回 { ok, entry?, errors[], warnings[], comment }
  */
 async function validate({ issue, body, created, existing, offline }) {
   const fields = parseIssueBody(body)
@@ -112,13 +113,30 @@ async function validate({ issue, body, created, existing, offline }) {
   const urlRes = normalizeUrl(fields['站点链接'])
   const avatarRes = normalizeUrl(fields['头像图片链接'])
 
+  // 选填字段：label → 数据键
+  const optionalDefs = [
+    { label: 'RSS 地址', key: 'rss' },
+    { label: '站点截图', key: 'screenshot' },
+    { label: '友链页面', key: 'friendPage' },
+  ]
+
   const errors = []
+  const warnings = []
   if (!name) errors.push('缺少「站点名称」')
   else if (name.length > 40) errors.push('站点名称过长（> 40 字）')
   if (!desc) errors.push('缺少「站点介绍」')
   else if (desc.length > 100) errors.push('站点介绍过长（> 100 字）')
   if (urlRes.error) errors.push(`站点链接无效：${urlRes.error}`)
   if (avatarRes.error) errors.push(`头像链接无效：${avatarRes.error}`)
+
+  const entryOpts = {}
+  for (const def of optionalDefs) {
+    const raw = (fields[def.label] ?? '').trim()
+    if (!raw) continue
+    const res = normalizeUrl(raw)
+    if (res.error) errors.push(`${def.label}无效：${res.error}`)
+    else entryOpts[def.key] = res.url
+  }
 
   let entry = null
   if (!errors.length) {
@@ -130,6 +148,11 @@ async function validate({ issue, body, created, existing, offline }) {
   if (!errors.length && !offline) {
     errors.push(await reachable(urlRes.url))
     errors.push(await reachable(avatarRes.url, { expectImage: true }))
+    // 选填字段可达性：只警告，不阻断收录
+    for (const [key, url] of Object.entries(entryOpts)) {
+      const problem = await reachable(url)
+      if (problem) warnings.push(`${optionalDefs.find((d) => d.key === key).label}：${problem}`)
+    }
   }
 
   const realErrors = errors.filter(Boolean)
@@ -141,14 +164,18 @@ async function validate({ issue, body, created, existing, offline }) {
       url: urlRes.url,
       daysSince: String(created ?? '').slice(0, 10),
       issue,
+      ...entryOpts,
     }
   }
 
   const ok = realErrors.length === 0
-  const lines = ok
+  const commentLines = ok
     ? [`✅ 校验通过（issue #${issue}）：**${name}**`, '', '等待管理员审核收录。']
     : [`❌ 校验未通过（issue #${issue}），请修正后重新打开议题：`, '', ...realErrors.map((e) => `- ${e}`)]
-  return { ok, issue, entry, errors: realErrors, comment: lines.join('\n') }
+  if (ok && warnings.length) {
+    commentLines.push('', '⚠️ 以下选填字段暂时无法访问（不影响收录，管理员会人工复核）：', ...warnings.map((w) => `- ${w}`))
+  }
+  return { ok, issue, entry, errors: realErrors, warnings, comment: commentLines.join('\n') }
 }
 
 // ---- 子命令 ----

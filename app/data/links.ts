@@ -28,6 +28,12 @@ export interface FriendLink {
   recommended?: boolean
   /** 来源议题号：GitHub issue 申请流程写入，用于「推荐」标记的定位；手写条目可省略 */
   issue?: number
+  /** 站点 RSS（可选，issue 选填字段），供后续订阅聚合 */
+  rss?: string
+  /** 站点截图（可选，issue 选填字段） */
+  screenshot?: string
+  /** 申请者放置本站友链的页面（可选，issue 选填字段），供收录前人工复核回链 */
+  friendPage?: string
 }
 
 /** 印记配置：按建交天数区间划分等级 */

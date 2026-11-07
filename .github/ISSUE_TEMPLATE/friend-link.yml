@@ -46,3 +46,30 @@ body:
       placeholder: '例如：记录学习历程，记录美好生活'
     validations:
       required: true
+
+  - type: input
+    id: rss
+    attributes:
+      label: RSS 地址
+      description: 选填，站点订阅地址，便于聚合朋友们的最新文章
+      placeholder: 'https://example.com/rss.xml'
+    validations:
+      required: false
+
+  - type: input
+    id: screenshot
+    attributes:
+      label: 站点截图
+      description: 选填，站点截图图片直链（png / jpg / webp）
+      placeholder: 'https://example.com/screenshot.png'
+    validations:
+      required: false
+
+  - type: input
+    id: friend-page
+    attributes:
+      label: 友链页面
+      description: 选填，你站点上放置本站友链的页面地址
+      placeholder: 'https://example.com/links'
+    validations:
+      required: false
