@@ -36,6 +36,7 @@ jobs:
         run: printf '%s' "$ISSUE_BODY" > /tmp/issue-body.md
 
       - name: 重校验并写入数据
+        id: add
         run: |
           node scripts/friend-link-manager.mjs add \
             --issue "${{ github.event.issue.number }}" \
@@ -43,9 +44,10 @@ jobs:
             --created "${{ github.event.issue.created_at }}" \
             > /tmp/result.json || true
           cat /tmp/result.json
+          echo "ok=$(jq -r '.ok // false' /tmp/result.json)" >> "$GITHUB_OUTPUT"
 
       - name: 复核失败则回帖说明（不写入、不开 PR）
-        if: jq -e '.ok == false' /tmp/result.json > /dev/null
+        if: steps.add.outputs.ok == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.issue.number }}
@@ -55,7 +57,7 @@ jobs:
 
       - name: 提交并开 PR
         id: pr
-        if: jq -e '.ok == true' /tmp/result.json > /dev/null
+        if: steps.add.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.issue.number }}
@@ -89,7 +91,7 @@ jobs:
           fi
 
       - name: 回帖告知
-        if: jq -e '.ok == true' /tmp/result.json > /dev/null
+        if: steps.add.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.issue.number }}
