@@ -1,0 +1,83 @@
+name: 友链推荐标记
+# 给已收录的申请议题加 / 移除「推荐」标签 → 对应友链的 recommended 置 true / false。
+# 数据走 PR（白名单自动合并）。未收录的议题打标签只会有警告评论。
+
+on:
+  issues:
+    types: [labeled, unlabeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: friend-link-issue-${{ github.event.issue.number }}
+
+jobs:
+  recommend:
+    if: github.event.label.name == '推荐'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 更新推荐标记
+        id: rec
+        env:
+          ACTION: ${{ github.event.action }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          VALUE=$([ "$ACTION" = "labeled" ] && echo true || echo false)
+          node scripts/friend-link-manager.mjs recommend \
+            --issue "$ISSUE" --value "$VALUE" > /tmp/result.json || true
+          cat /tmp/result.json
+          echo "ok=$(jq -r '.ok // false' /tmp/result.json)" >> "$GITHUB_OUTPUT"
+
+      - name: 提交并开 PR
+        id: pr
+        if: steps.rec.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+          BRANCH: friend-link/recommend-issue-${{ github.event.issue.number }}-${{ github.event.action }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add app/data/friend-links.json
+          git commit -m "chore(links): 推荐标记变更（issue #$ISSUE）"
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create \
+            --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" \
+            --title "友链推荐标记：issue #$ISSUE" \
+            --body "来自议题 #$ISSUE 的「推荐」标签变更。")
+          echo "pr=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: 自动审核合并（白名单：仅 friend-links.json）
+        if: steps.pr.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.pr }}
+        run: |
+          FILES=$(gh pr view "$PR" --json files -q '[.files[].path] | sort | join(",")')
+          if [ "$FILES" = "app/data/friend-links.json" ]; then
+            gh pr merge "$PR" --merge
+          else
+            echo "::warning::PR 改动了白名单之外的文件，转人工审核：$FILES"
+            gh pr edit "$PR" --add-label "需人工审核" || true
+          fi
+
+      - name: 回帖告知
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          [ -s /tmp/result.json ] || exit 0
+          jq -r .comment /tmp/result.json > /tmp/comment.md 2>/dev/null || exit 0
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md

@@ -1,0 +1,98 @@
+name: 友链申请 · 收录
+# 管理员（仓库所有者）以 completed 状态关闭议题 = 批准收录：
+# 重校验 → 写入 friend-links.json（daysSince 取议题创建日期）→ 开 PR →
+# 自动审核（PR 只允许改动 friend-links.json）→ 自动合并 → 回帖告知。
+# 校验失败关闭（not planned）或申请者自行关闭的议题不会触发写入。
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: friend-link-issue-${{ github.event.issue.number }}
+
+jobs:
+  add:
+    if: >-
+      contains(github.event.issue.labels.*.name, '友链申请') &&
+      github.event.issue.state_reason == 'completed' &&
+      github.event.issue.closed_by.login == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 导出议题正文
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue-body.md
+
+      - name: 重校验并写入数据
+        run: |
+          node scripts/friend-link-manager.mjs add \
+            --issue "${{ github.event.issue.number }}" \
+            --body-file /tmp/issue-body.md \
+            --created "${{ github.event.issue.created_at }}" \
+            > /tmp/result.json || true
+          cat /tmp/result.json
+
+      - name: 复核失败则回帖说明（不写入、不开 PR）
+        if: jq -e '.ok == false' /tmp/result.json > /dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          jq -r .comment /tmp/result.json > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md
+
+      - name: 提交并开 PR
+        id: pr
+        if: jq -e '.ok == true' /tmp/result.json > /dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+          BRANCH: friend-link/issue-${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add app/data/friend-links.json
+          git commit -m "chore(links): 收录友链（issue #$ISSUE）"
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create \
+            --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" \
+            --title "友链收录：issue #$ISSUE" \
+            --body "来自议题 #$ISSUE 的友链收录，数据写入 \`app/data/friend-links.json\`。")
+          echo "pr=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: 自动审核合并（白名单：仅 friend-links.json）
+        if: steps.pr.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.pr }}
+        run: |
+          FILES=$(gh pr view "$PR" --json files -q '[.files[].path] | sort | join(",")')
+          if [ "$FILES" = "app/data/friend-links.json" ]; then
+            gh pr merge "$PR" --merge
+          else
+            echo "::warning::PR 改动了白名单之外的文件，转人工审核：$FILES"
+            gh pr edit "$PR" --add-label "需人工审核" || true
+          fi
+
+      - name: 回帖告知
+        if: jq -e '.ok == true' /tmp/result.json > /dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          jq -r .comment /tmp/result.json > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md

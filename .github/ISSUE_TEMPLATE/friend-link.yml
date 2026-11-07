@@ -1,0 +1,48 @@
+name: 友链申请
+description: 申请把你的站点加入喵洛阁的友链
+title: '友链申请'
+labels: ['友链申请']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎交换友链！提交前请确认：
+
+        1. 站点为原创个人博客，内容健康、持续更新
+        2. 已在自己站点添加本站友链（名称：喵洛阁 · 链接：https://www.kemiaosw.top）
+        3. 提交后脚本会自动校验链接与头像的可达性，通过后等待管理员审核
+
+  - type: input
+    id: name
+    attributes:
+      label: 站点名称
+      placeholder: '例如：纸鹿摸鱼处'
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: 站点链接
+      description: 含 https:// 的完整地址
+      placeholder: 'https://example.com'
+    validations:
+      required: true
+
+  - type: input
+    id: avatar
+    attributes:
+      label: 头像图片链接
+      description: 图片直链（png / jpg / webp），提交时会校验可达性
+      placeholder: 'https://example.com/avatar.png'
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 站点介绍
+      description: 一句话介绍（不超过 100 字）
+      placeholder: '例如：记录学习历程，记录美好生活'
+    validations:
+      required: true

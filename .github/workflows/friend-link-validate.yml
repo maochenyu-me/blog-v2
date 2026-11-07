@@ -1,0 +1,53 @@
+name: 友链申请 · 校验
+# 议题创建/重开时自动校验：通过则评论等待审核；失败则评论原因并关闭。
+# 申请者修正后「重开议题」会再次触发本工作流。
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: friend-link-issue-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    # 只处理带「友链申请」标签、且不是 bot 自己发出的议题
+    if: >-
+      contains(github.event.issue.labels.*.name, '友链申请') &&
+      github.event.issue.user.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 导出议题正文
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue-body.md
+
+      - name: 校验
+        run: |
+          node scripts/friend-link-manager.mjs validate \
+            --issue "${{ github.event.issue.number }}" \
+            --body-file /tmp/issue-body.md \
+            --created "${{ github.event.issue.created_at }}" \
+            > /tmp/result.json
+          cat /tmp/result.json
+
+      - name: 张贴结果（失败时关闭议题）
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          jq -r .comment /tmp/result.json > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md
+          if [ "$(jq -r .ok /tmp/result.json)" != "true" ]; then
+            gh issue close "$ISSUE" --reason "not planned"
+          fi
