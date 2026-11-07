@@ -17,9 +17,6 @@
  */
 import puppeteer from 'puppeteer-core'
 import sharp from 'sharp'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 
 const BASE = process.argv[2] || 'http://localhost:4173'
 const CHROME = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe'
@@ -87,18 +84,25 @@ const browser = await puppeteer.launch({
   defaultViewport: { width: 1280, height: 900 },
 })
 
-const dir = await mkdtemp(join(tmpdir(), 'fontflash-'))
-
-/** 录一段 reload 的帧，返回帧间平均像素差序列 */
-async function measure(page, tag) {
+/**
+ * 录一段 reload 的帧，返回帧间平均像素差序列。
+ *
+ * 帧直接留在内存里解码：早先版本把每帧写成 png 临时文件，跑到四十多个文件后
+ * 写盘会被系统拒掉（EPERM），整个门禁中途崩掉、只跑完前几页。内存里处理没有
+ * 这个上限，也省掉一次编码解码。
+ *
+ * 每段录屏的前两帧固定丢弃：reload 起始时排空旧画面会先出一帧白板，
+ * 白板→首个真实画面的差值在浅色页是 1.1~1.4、暗色页是 3.3~3.6，
+ * 而且是否被截到纯属运气 —— 同一份产物连跑两次，一次报 dark /、一次报 light /。
+ * 真正的字形跳变发生在页面已经画出来之后，从第 3 帧起比对不影响判定。
+ */
+async function measure(page) {
   const client = await page.createCDPSession()
   const frames = []
 
   await client.send('Page.startScreencast', { format: 'png', everyNthFrame: 1 })
-  client.on('Page.screencastFrame', async (f) => {
-    const file = join(dir, `${tag.replace(/[^a-z0-9]/gi, '_')}-${frames.length}.png`)
-    await writeFile(file, Buffer.from(f.data, 'base64'))
-    frames.push(file)
+  client.on('Page.screencastFrame', (f) => {
+    frames.push(Buffer.from(f.data, 'base64'))
     client.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => {})
   })
 
@@ -108,7 +112,7 @@ async function measure(page, tag) {
 
   const diffs = []
   let prev = null
-  for (const f of frames) {
+  for (const f of frames.slice(2)) {
     const { data } = await sharp(f).removeAlpha().raw().toBuffer({ resolveWithObject: true })
     if (prev) {
       let acc = 0
@@ -137,7 +141,7 @@ for (const theme of THEMES) {
     await page.evaluate(() => document.fonts.ready)
     await sleep(800)
 
-    const diffs = await measure(page, `${theme}${route}`)
+    const diffs = await measure(page)
     const peak = Math.max(...diffs, 0)
     const ok = peak <= THRESHOLD
 
@@ -150,7 +154,6 @@ for (const theme of THEMES) {
 }
 
 await browser.close()
-await rm(dir, { recursive: true, force: true })
 
 if (failures.length) {
   console.error(`\n字体闪烁检测失败：${failures.length}/${THEMES.length * ROUTES.length} 个组合超过阈值 ${THRESHOLD}`)
