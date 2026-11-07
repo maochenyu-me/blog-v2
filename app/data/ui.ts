@@ -59,6 +59,9 @@ export const ui = {
     related: '相关',
     toc: '目录',
     tocAria: '目录',
+    tocOpen: '打开目录',
+    tocClose: '关闭目录',
+    tocDialog: '文章目录',
   },
 
   /** 代码块 */

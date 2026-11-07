@@ -28,7 +28,8 @@
   font-weight: var(--fw-body-h);
   margin-top: 2.5em;
   margin-bottom: 0.75em;
-  scroll-margin-top: 5rem;
+  /* 锚点跳转时避开吸顶导航：与目录贴顶位置用同一组 token，避免三处硬编码漂移 */
+  scroll-margin-top: calc(var(--header-height) + var(--toc-sticky-offset));
 }
 
 /* h3 用 400 + 次级色：文楷只有 400/700 两档，同字号下必须靠色阶区分 */
@@ -39,7 +40,7 @@
   color: var(--muted-foreground);
   margin-top: 2em;
   margin-bottom: 0.5em;
-  scroll-margin-top: 5rem;
+  scroll-margin-top: calc(var(--header-height) + var(--toc-sticky-offset));
 }
 
 .prose :deep(h4) {
@@ -127,9 +128,14 @@
 
 /* ---------- 代码块 ---------- */
 
+/*
+ * padding-top 让出一条 2.25rem 的头部带，供 CodeCopyButton 的语言标签与
+ * 复制按钮落脚（那个组件用 Teleport 把按钮浮在代码块上方，尺寸与这里对应）。
+ * 不留这条带子，按钮就会压在首行代码上。
+ */
 .prose :deep(pre) {
   margin-block: var(--paragraph-spacing);
-  padding: 1rem;
+  padding: 2.25rem 1rem 1rem;
   background-color: var(--muted);
   border: 1px solid var(--border);
   border-radius: 0;
@@ -137,6 +143,7 @@
   font-size: var(--fs-code);
   line-height: var(--lh-code);
   tab-size: 2;
+  overscroll-behavior-x: contain;
 }
 
 .prose :deep(pre code) {
@@ -245,9 +252,19 @@
     margin-top: 2em;
   }
 
+  /*
+   * 代码块留在正文栏内，不再用负 margin 撑到屏幕边缘：
+   * 满屏宽度换来的是「一条横穿屏幕的长条」，左右边线消失后
+   * 代码块与正文失去边界，反而更难扫读。窄屏下宽度本来也吃不满，
+   * 把 24px 的沟槽留给呼吸感更划算。
+   *
+   * padding-top 让出 CodeCopyButton 的头部条高度（2.25rem），
+   * 使语言与复制按钮落在代码上方的空白带里，而不是压在首行代码上。
+   */
   .prose :deep(pre) {
-    margin-inline: calc(var(--space-gutter) * -1);
-    border-inline: none;
+    padding: 2.25rem 0.75rem 0.75rem;
+    font-size: 0.8125rem;
+    overscroll-behavior-x: contain;
   }
 }
 </style>

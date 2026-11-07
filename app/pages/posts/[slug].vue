@@ -66,6 +66,14 @@ useHead({
 const toc = computed(() => post.value?.body?.toc?.links ?? [])
 
 /**
+ * 目录数据上报给共享状态：顶栏的目录按钮在 layout 里，与本文页是兄弟关系，
+ * 拿不到这篇的 toc —— 只能这样交接（同 useSearch 的做法）。
+ */
+const postToc = usePostToc()
+watchEffect(() => postToc.setLinks(toc.value as any))
+onBeforeUnmount(() => postToc.clear())
+
+/**
  * 把 Shiki 写进正文末尾的 style 节点摘出来，改由 head 注入。
  * 该节点的文本在 SSR HTML 与 _payload.json 里并不逐字相同
  * （构建期 CSS 压缩会吃掉 `{`、`:` 前后的空格），Vue 水合比对必然失配。
@@ -111,9 +119,6 @@ useHead({
           </ul>
         </header>
 
-        <!-- 移动端目录折叠在正文顶部（<1280px） -->
-        <ProseToc :toc="toc" variant="inline" />
-
         <ImageLightbox :enabled="pageCfg.showImageViewer">
           <ProseBody>
             <ContentRenderer v-if="renderValue" :value="renderValue" />
@@ -125,9 +130,9 @@ useHead({
         <CommentSlot />
       </article>
 
-      <!-- 桌面端目录旁栏，挂在正文右侧沟槽外 -->
+      <!-- 桌面端目录旁栏，挂在正文右侧沟槽外（<1280px 时目录在顶栏按钮里） -->
       <aside class="post-aside">
-        <ProseToc :toc="toc" variant="aside" />
+        <ProseToc />
       </aside>
     </div>
 
@@ -306,13 +311,19 @@ useHead({
     align-items: start;
   }
 
+  /*
+   * 目录吸顶必须挂在 grid item（aside）上，不能挂在它内部的 <nav> 上：
+   * grid item 的包含块是整个 grid area（由正文列撑开的整行高度），才有滑动区间。
+   */
   .post-aside {
     display: block;
-  }
-
-  /* 桌面端隐藏正文顶部的折叠目录，避免重复 */
-  .post-article :deep(.toc-mobile) {
-    display: none;
+    position: sticky;
+    top: calc(var(--header-height) + var(--toc-sticky-offset));
+    align-self: start;
+    /* 目录比视口高时内部滚动，上下各留一个 stickyOffset */
+    max-height: calc(100dvh - var(--header-height) - var(--toc-sticky-offset) * 2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 

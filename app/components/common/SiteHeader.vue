@@ -13,6 +13,8 @@ const { site } = useBlogConfig()
 
       <div class="header-actions">
         <SearchTrigger />
+        <!-- 目录按钮只出现在文章页（<1280px），内部自行判断是否显示 -->
+        <MobileToc />
         <ThemeToggle />
         <MobileDrawer />
       </div>
@@ -33,7 +35,7 @@ const { site } = useBlogConfig()
   max-width: var(--wide-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
-  height: 3.5rem;
+  height: var(--header-height);
   display: flex;
   align-items: center;
   gap: 2rem;

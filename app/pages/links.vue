@@ -43,7 +43,8 @@ useHead({ title: ui.pages.links })
               class="link-avatar"
               width="48"
               height="48"
-              loading="lazy"
+              loading="eager"
+              decoding="async"
             />
             <span class="link-body">
               <span class="link-name">
@@ -62,7 +63,8 @@ useHead({ title: ui.pages.links })
               class="link-avatar"
               width="48"
               height="48"
-              loading="lazy"
+              loading="eager"
+              decoding="async"
             />
             <span class="link-body">
               <span class="link-name">

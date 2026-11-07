@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 1rem;
   flex: 0 0 auto;
-  height: 3.5rem;
+  height: var(--header-height);
   padding-inline: var(--space-gutter);
   border-bottom: 1px solid var(--border);
 }
