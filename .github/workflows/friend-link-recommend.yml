@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: friend-link-issue-${{ github.event.issue.number }}
+  group: friend-link-recommend-${{ github.event.issue.number }}
 
 jobs:
   recommend:

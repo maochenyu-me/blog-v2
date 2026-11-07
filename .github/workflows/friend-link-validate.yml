@@ -10,7 +10,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: friend-link-issue-${{ github.event.issue.number }}
+  group: friend-link-validate-${{ github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:

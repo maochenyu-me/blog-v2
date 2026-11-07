@@ -14,14 +14,16 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: friend-link-issue-${{ github.event.issue.number }}
+  group: friend-link-add-${{ github.event.issue.number }}
 
 jobs:
   add:
+    # why sender 而非 closed_by：issues.closed 的 webhook payload 不含 closed_by
+    # （只有 REST 单条 GET 才有），用它判定恒为 null 会导致 job 永远跳过
     if: >-
       contains(github.event.issue.labels.*.name, '友链申请') &&
       github.event.issue.state_reason == 'completed' &&
-      github.event.issue.closed_by.login == github.repository_owner
+      github.event.sender.login == github.repository_owner
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
