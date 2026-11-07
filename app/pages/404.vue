@@ -7,11 +7,13 @@ useHead({ title: `${msg.code} ${msg.title}` })
 
 <template>
   <div class="page-404">
-    <div class="inner">
-      <p class="code">{{ msg.code }}</p>
-      <h1 class="title">{{ msg.title }}</h1>
-      <p class="desc">{{ msg.description }}</p>
-      <NuxtLink :to="msg.action.to" class="action">{{ msg.action.label }}</NuxtLink>
+    <div class="container">
+      <div class="inner">
+        <p class="code">{{ msg.code }}</p>
+        <h1 class="title">{{ msg.title }}</h1>
+        <p class="desc">{{ msg.description }}</p>
+        <NuxtLink :to="msg.action.to" class="action">{{ msg.action.label }}</NuxtLink>
+      </div>
     </div>
   </div>
 </template>
@@ -23,6 +25,14 @@ useHead({ title: `${msg.code} ${msg.title}` })
   justify-content: center;
   min-height: 60vh;
   padding: var(--space-section) var(--space-gutter);
+}
+
+/* Tailwind 的 .container 只按断点给 max-width（桌面 1280px），
+   本项目的正文栏是 764px。其他页面各自覆盖了这条，404 页同样要覆盖，
+   否则整个页面容器会撑到 1280，与全站内容栏对齐不上。 */
+.container {
+  width: 100%;
+  max-width: var(--content-max-width);
 }
 
 .inner {

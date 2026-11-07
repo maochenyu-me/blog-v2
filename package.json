@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
-    "generate": "nuxt generate && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
+    "build": "nuxt build && node scripts/copy-404.mjs && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
+    "generate": "nuxt generate && node scripts/copy-404.mjs && node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
     "fonts": "node scripts/build-fonts.mjs",
     "preview": "nuxt preview",
+    "preview:dist": "node scripts/serve-dist.mjs 4173 dist",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs",
