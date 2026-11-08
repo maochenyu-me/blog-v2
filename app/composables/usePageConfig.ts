@@ -25,6 +25,13 @@ export interface HomePageConfig {
     hideWhenEmpty: boolean
     badge: string
   }
+  /** 说说轮播条配置（数据与 /shuoshuo 共享） */
+  shuoshuoBar: {
+    enabled: boolean
+    count: number
+    interval: number
+    hideWhenEmpty: boolean
+  }
   /** 分类筛选栏配置（轮播下方、文章列表上方的横向分类条） */
   categoryBar: {
     enabled: boolean

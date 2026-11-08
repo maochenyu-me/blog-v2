@@ -47,6 +47,13 @@ export const ui = {
         badgeAria: '推荐标记',
         pauseAria: '轮播已暂停',
       },
+      /** 说说轮播条 */
+      shuoshuoBar: {
+        navLabel: '说说轮播条',
+        linkAria: '最新说说，点击查看全部',
+        photoAria: '该说说包含图片',
+        empty: '还没有说说',
+      },
       /** 文章卡片 */
       card: {
         coverAlt: '{title} 的封面',

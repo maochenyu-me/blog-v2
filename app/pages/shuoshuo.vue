@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { fetchEch0All, type Ech0Echo } from '~/utils/ech0'
+import type { Ech0Echo } from '~/utils/ech0'
 import ShuoshuoCard from '~/components/shuoshuo/ShuoshuoCard.vue'
 
 const { site } = useBlogConfig()
@@ -8,9 +8,11 @@ const { ui, t } = useUi()
 
 useHead({ title: ui.pages.shuoshuo })
 
-const loading = ref(true)
-const failed = ref(false)
-const all = ref<Ech0Echo[]>([])
+/** 数据经 useShuoshuoData 与首页说说轮播条共享同一次请求 */
+const { echos: all, state: dataState, load } = useShuoshuoData()
+const loading = computed(() => dataState.value === 'idle' || dataState.value === 'loading')
+const failed = computed(() => dataState.value === 'failed')
+
 const activeTag = ref<string | null>(null)
 const page = ref(1)
 
@@ -77,18 +79,6 @@ const skeletonCols = computed(() => {
   for (let i = 1; i <= skeletonCount; i++) cols[(i - 1) % colCount.value]!.push(i)
   return cols
 })
-
-async function load() {
-  loading.value = true
-  failed.value = false
-  try {
-    all.value = await fetchEch0All(pageCfg.apiBase)
-  } catch {
-    failed.value = true
-  } finally {
-    loading.value = false
-  }
-}
 
 onMounted(load)
 

@@ -37,7 +37,8 @@ export default defineNuxtConfig({
   components: [
     { path: '~/components/common', pathPrefix: false },
     { path: '~/components/server', pathPrefix: false },
-    { path: '~/components/ui', pathPrefix: false },
+    // ui 目录是 shadcn-vue 预留位，.keep/index.ts 仅占位，忽略之避免注册幽灵组件
+    { path: '~/components/ui', pathPrefix: false, ignore: ['**/.keep/**'] },
     { path: '~/components/home', pathPrefix: false },
     { path: '~/components/about', pathPrefix: false },
   ],

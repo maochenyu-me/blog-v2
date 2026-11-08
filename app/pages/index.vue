@@ -73,6 +73,8 @@ useHead({
             :cfg="pageCfg.carousel"
           />
 
+          <ShuoshuoTicker v-if="pageCfg.shuoshuoBar.enabled" :cfg="pageCfg.shuoshuoBar" />
+
           <div v-if="pageCfg.categoryBar.enabled && (data?.categories.length ?? 0) > 0" class="cat-bar-row">
             <CategoryBar
               :cfg="pageCfg.categoryBar"

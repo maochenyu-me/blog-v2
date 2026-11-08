@@ -40,6 +40,18 @@ export default {
         badge: '全站推荐',
       },
 
+      // ---- 说说轮播条（轮播下方、分类条上方，数据与 /shuoshuo 共享） ----
+      shuoshuoBar: {
+        /** 是否启用说说轮播条 */
+        enabled: true,
+        /** 参与轮播的最新说说条数 */
+        count: 5,
+        /** 自动轮播间隔（毫秒）；0 表示不自动播放 */
+        interval: 5000,
+        /** 数据为空或加载失败时是否隐藏整条（false 时显示占位文案） */
+        hideWhenEmpty: true,
+      },
+
       // ---- 分类筛选栏（轮播下方、文章列表上方的横向分类条，Dusklight 风格） ----
       categoryBar: {
         /** 是否启用分类筛选栏 */
