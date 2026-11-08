@@ -126,7 +126,17 @@ X-Vercel-Id: sfo1::iad1::...
 
 ## 验收记录
 
-- [ ] 本地 `pnpm build` 产物包含 `dist/_headers`（待首次构建确认）
-- [ ] Actions 首次运行：build ✅ / deploy ✅ / 冒烟 200
-- [ ] `https://kemiaosw-blog.pages.dev/` 与 `www.kemiaosw.top` 内容一致
-- [ ] 二次 push 走缓存，build 耗时明显低于首次
+2026-11-08 首次上线实测（run `42448694044`，提交 `6ba404c`）：
+
+- [x] 本地 `pnpm build` 产物包含 `dist/_headers`
+- [x] build job 全绿：安装依赖 / 硬编码审计 / 构建 / 产物断言 / 上传 artifact
+- [x] deploy job 全绿：项目 `kemiaosw-blog` 首次自动创建，366 个文件 8.9 MB 上传完成
+- [x] 冒烟第一次即 200（`https://kemiaosw-blog.pages.dev/`）
+- [x] `_headers` 生效：字体返回 `Cache-Control: public, max-age=31536000, immutable`，
+      首页带 `Strict-Transport-Security` 与 `Permissions-Policy`
+- [x] 未匹配路径返回 **404**（不是 200），说明 `404.html` 被正确识别
+- [ ] `www.kemiaosw.top` 切换完成（当前仍指向 Vercel）
+- [ ] 二次 push 命中缓存，build 耗时下降
+
+CI 产物 HTML 数为 59，本地为 66 —— 差额是本地未纳入 git 的 `content/posts/test-*.md`，
+不是漏渲染。
