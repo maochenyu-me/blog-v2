@@ -10,25 +10,23 @@ useHead({ title: ui.pages.links })
 
 /** 建交天数与等级印记：SSG 期计算，客户端不重算 */
 const daysOf = (link: FriendLink) => {
-  if (link.owner || !link.daysSince) return null
+  if (!link.daysSince) return null
   return Math.max(0, Math.floor((Date.now() - new Date(link.daysSince).getTime()) / 86_400_000))
 }
 const badgeOf = (link: FriendLink) => getBadge(daysOf(link) ?? 0, link.lost)
 
-/** 分组：本站 → 朋友们 → 失联。组内按建交天数降序（老朋友在前） */
+/** 分组：朋友们 → 失联。组内按建交天数降序（老朋友在前） */
 const groups = computed(() => {
-  const self = friendLinks.filter((l) => l.owner)
-  const lost = friendLinks.filter((l) => l.lost && !l.owner)
-  const active = friendLinks.filter((l) => !l.lost && !l.owner)
+  const lost = friendLinks.filter((l) => l.lost)
+  const active = friendLinks.filter((l) => !l.lost)
   const byDays = (a: FriendLink, b: FriendLink) => (daysOf(b) ?? 0) - (daysOf(a) ?? 0)
   return [
-    { key: 'self' as const, list: [...self].sort(byDays) },
     { key: 'active' as const, list: [...active].sort(byDays) },
     { key: 'lost' as const, list: [...lost].sort(byDays) },
   ].filter((g) => g.list.length > 0)
 })
 
-const friendCount = friendLinks.filter((l) => !l.owner).length
+const friendCount = friendLinks.length
 
 /** 本站信息卡的字段（Dusklight 式逐行盒子，点击复制）。
  *  顺序按访客复制频率排：链接/头像/RSS 常显，其余折进「更多本站字段」。 */
@@ -62,7 +60,7 @@ const randomOpen = ref(false)
 const randomPick = ref<FriendLink | null>(null)
 let lastPicked = -1
 function pickRandom() {
-  const pool = friendLinks.filter((l) => !l.owner && !l.lost)
+  const pool = friendLinks.filter((l) => !l.lost)
   if (pool.length === 0) return
   let i = Math.floor(Math.random() * pool.length)
   if (pool.length > 1 && i === lastPicked) i = (i + 1) % pool.length
@@ -234,45 +232,18 @@ const gridVars = computed(() => ({
         </div>
       </details>
 
-      <!-- ── 友链卡片墙：本站 / 朋友们 / 失联 三段 ── -->
+      <!-- ── 友链卡片墙：朋友们 / 失联 两段 ── -->
       <section v-for="group in groups" :key="group.key" class="friend-section">
         <h2 class="section-label friend-section-label">
-          <template v-if="group.key === 'self'">
-            {{ ui.links.self }}
-          </template>
-          <template v-else>
-            {{ group.key === 'active' ? ui.links.friendsTitle : ui.links.legendLost }}
-            <span class="section-count">{{ t(ui.links.friendsCount, { n: group.list.length }) }}</span>
-          </template>
+          {{ group.key === 'active' ? ui.links.friendsTitle : ui.links.legendLost }}
+          <span class="section-count">{{ t(ui.links.friendsCount, { n: group.list.length }) }}</span>
         </h2>
 
         <ul class="link-grid" :style="gridVars">
           <li v-for="link in group.list" :key="link.url" class="link-cell">
-            <!-- 本站卡：站内跳转，无出站动效 -->
-            <NuxtLink v-if="link.owner" :to="link.url" class="link-card is-self">
-              <span class="avatar-wrap">
-                <NuxtImg
-                  :src="link.avatar"
-                  :alt="t(ui.links.avatarAlt, { name: link.name })"
-                  class="link-avatar"
-                  width="56"
-                  height="56"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </span>
-              <span class="link-body">
-                <span class="link-name">
-                  {{ link.name }}
-                  <span class="link-badge">{{ ui.links.self }}</span>
-                </span>
-                <span class="link-desc">{{ link.description }}</span>
-              </span>
-            </NuxtLink>
-
             <!-- 朋友卡：1:1 移植 Saneko FriendList —— 圆角独立卡 + hover 遮罩箭头 +
                  头像水墨背景 + 右上角 40px 裁切印章 + 右下 DAYS -->
-            <a v-else :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
+            <a :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
               <span class="avatar-wrap">
                 <NuxtImg
                   :src="link.avatar"
@@ -893,12 +864,6 @@ details[open] .legend-summary .disclaimer-chevron {
   flex: none;
   width: 0.875rem;
   height: 0.875rem;
-}
-
-.link-badge {
-  font-size: 0.6875rem;
-  font-weight: 400;
-  color: var(--accent);
 }
 
 .link-desc {

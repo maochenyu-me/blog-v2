@@ -4,9 +4,8 @@
  *   16 级按建交天数划分，色彩语义分层 —— 灰(新生/失联) → 绿(成长) → 蓝(深交)
  *   → 银(坚稳) → 橙(热忱) → 红(炽烈) → 紫(传说)。
  *
- * 数据分两层：
- *   - friend-links.json —— GitHub issue 申请流程的写入面，bot 以 PR 维护
- *   - 本文件的 owner 条目 —— 手写
+ * 全部朋友数据都在 friend-links.json（GitHub issue 申请流程的写入面，
+ * bot 以 PR 维护）；本文件只承载类型、印记体系与派生逻辑。
  * 提示词 §4.4：结构化数组，不放 markdown。
  * 颜色是「印记」自己的语义色（类似状态灯），不属于页面装饰，故未入 theme.config.ts；
  * 明暗两种模式下都保持 ≥3:1 的图形对比度。
@@ -19,7 +18,6 @@ export interface FriendLink {
   avatar: string
   description: string
   url: string
-  owner: boolean
   /** 建交起点（ISO 日期），印记据此计算；失联条目也保留原建交日期备查 */
   daysSince?: string
   /** 失联站点：单独分组，印记显示幽灵 */
@@ -100,25 +98,8 @@ export function getBadge(days: number, lost?: boolean): BadgeConfig & { days: nu
 export const recommendedColor = '#f59e0b'
 
 /**
- * issue 申请流程写入的朋友数据。
+ * 全部朋友数据（本站信息由页面顶部的「本站信息」卡承载，不在卡墙内）。
  * why as：JSON 由工作流运行时写入（含 issue 字段），TS 静态推断不含动态键，
  * 结构由 scripts/friend-link-manager.mjs 的写入逻辑保证。
  */
-export const friendData: FriendLink[] = rawFriendData as FriendLink[]
-
-export const friendLinks: FriendLink[] = [
-  // ── 本站 ──
-  {
-    name: '喵洛阁',
-    avatar: '/images/avatar.png',
-    description: '本站，克喵的博客',
-    /*
-     * 本站用相对路径：站点域名来自 blog.config.ts 的 site.url，
-     * 在这里再写一遍绝对地址既是重复配置，又会让站内链接被当成外链。
-     */
-    url: '/',
-    owner: true,
-  },
-  // ── 朋友们：来源 .github issue 申请流程（friend-links.json，由 bot 维护）与手写条目 ──
-  ...friendData,
-]
+export const friendLinks: FriendLink[] = rawFriendData as FriendLink[]

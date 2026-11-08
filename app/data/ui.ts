@@ -175,10 +175,7 @@ export const ui = {
 
   /** 友链 */
   links: {
-    apply: '申请友链',
-    applyTitle: '申请友链',
     avatarAlt: '{name} 的头像',
-    self: '本站',
     /** 页头副题 */
     subtitle: '共 {n} 位朋友 · 排名不分先后',
     /** 本站信息卡 */
