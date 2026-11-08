@@ -1,250 +1,234 @@
 <script setup lang="ts">
+import { aboutConfig as cfg, aboutRows, isBlockEnabled, type AboutBlockKey } from '~/data/about'
+
 const { ui } = useUi()
-const pageCfg = usePageConfig('about')
-const { skills, now, contacts } = await import('~/data/about')
 
 const { data: about } = await useAsyncData('about', () =>
   queryCollection('about').first(),
 )
 
+/** 打赏名单：构建时从 CDN 拉取（SSG 内联），失败回退空态 */
+interface SponsorsPayload {
+  sponsors?: Array<{ name?: string; amount?: string; date?: string }>
+}
+
+const { data: rewardItems } = await useAsyncData('about-reward', async () => {
+  if (!cfg.reward.enabled || !cfg.reward.dataUrl) return []
+  try {
+    const res = await $fetch<SponsorsPayload>(cfg.reward.dataUrl, { timeout: 8000 })
+    return (res.sponsors ?? [])
+      .filter((s): s is { name: string; amount: string; date: string } =>
+        Boolean(s.name && s.amount && s.date))
+      .map((s) => ({ name: s.name, amount: s.amount, date: s.date }))
+  } catch {
+    return []
+  }
+})
+
 useHead({ title: ui.pages.about })
 
-const has = (block: string) => pageCfg.blocks.includes(block)
+const vis = (key: AboutBlockKey) => isBlockEnabled(key)
+
+/** 同行组件按 span/总 span 分配宽度（保留行 gap 的份额）；
+ *  关闭同行某个组件后，剩余组件保持自身原宽并由行居中。 */
+function cell(
+  row: Array<{ key: AboutBlockKey; span: number }> | undefined,
+  key: AboutBlockKey,
+) {
+  const sum = row?.reduce((acc, c) => acc + c.span, 0) ?? 1
+  const span = row?.find((c) => c.key === key)?.span ?? 1
+  return { '--about-basis': `calc((${span} / ${sum}) * (100% - 1.25rem))` }
+}
+
+const rowHello = aboutRows[0]
+const rowSkills = aboutRows[1]
+const rowMbti = aboutRows[2]
+const rowGames = aboutRows[3]
+const rowData = aboutRows[4]
+const rowAboutMe = aboutRows[5]
+const rowReward = aboutRows[6]
 </script>
 
 <template>
   <div class="page-about">
     <div class="container">
-      <header class="page-head">
-        <h1 class="page-title">{{ about?.title ?? ui.pages.about }}</h1>
-      </header>
+      <h1 class="visually-hidden">{{ ui.pages.about }} {{ cfg.hero.name }}</h1>
 
-      <!-- intro：正文来自 content/about.md -->
-      <section v-if="has('intro') && about" class="block">
-        <ContentRenderer :value="about" class="prose" />
-      </section>
+      <AboutHero
+        v-if="cfg.hero.enabled"
+        :avatar="cfg.hero.avatar"
+        :name="cfg.hero.name"
+        :author-tags="cfg.hero.authorTags"
+      />
 
-      <!-- now -->
-      <section v-if="has('now')" class="block">
-        <h2 class="block-label">{{ ui.about.now }}</h2>
-        <dl class="now-list">
-          <div v-for="item in now" :key="item.label" class="now-row">
-            <dt class="now-key">{{ item.label }}</dt>
-            <dd class="now-value">{{ item.value }}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <!-- skills：纯文字列表，禁止进度条 -->
-      <section v-if="has('skills')" class="block">
-        <h2 class="block-label">{{ ui.about.skills }}</h2>
-        <div class="skill-groups">
-          <div v-for="group in skills" :key="group.title" class="skill-group">
-            <h3 class="skill-title">{{ group.title }}</h3>
-            <ul class="skill-items">
-              <li v-for="item in group.items" :key="item" class="skill-item">
-                {{ item }}
-              </li>
-            </ul>
-          </div>
+      <div class="about-rows">
+        <!-- 问候 + 关键词轮播 -->
+        <div v-if="vis('hello') || vis('tips')" class="about-row">
+          <AboutHello
+            v-if="vis('hello')"
+            :style="cell(rowHello, 'hello')"
+            :prefix="cfg.hello.prefix"
+            :tips="cfg.hello.tips"
+            :name="cfg.hello.name"
+            :intro="cfg.hello.intro"
+          />
+          <AboutTips
+            v-if="vis('tips')"
+            :style="cell(rowHello, 'tips')"
+            :lead="cfg.tips.lead"
+            :line1="cfg.tips.line1"
+            :line2="cfg.tips.line2"
+            :words="[...cfg.tips.words]"
+          />
         </div>
-      </section>
 
-      <!-- timeline -->
-      <section v-if="has('timeline')" class="block">
-        <h2 class="block-label">{{ ui.about.timeline }}</h2>
-        <ol class="timeline">
-          <li v-for="item in pageCfg.timeline" :key="item.year" class="timeline-row">
-            <span class="timeline-year">{{ item.year }}</span>
-            <span class="timeline-body">
-              <span class="timeline-title">{{ item.title }}</span>
-              <span v-if="item.detail" class="timeline-detail">{{ item.detail }}</span>
-            </span>
-          </li>
-        </ol>
-      </section>
+        <!-- 技能墙 -->
+        <div v-if="vis('skills')" class="about-row">
+          <AboutSkills
+            :style="cell(rowSkills, 'skills')"
+            :tips="cfg.skills.tips"
+            :title="cfg.skills.title"
+            :icons="[...cfg.skills.icons]"
+          />
+        </div>
 
-      <!-- contact -->
-      <section v-if="has('contact')" class="block">
-        <h2 class="block-label">{{ ui.about.contact }}</h2>
-        <ul class="contact-list">
-          <li v-for="item in contacts" :key="item.label" class="contact-row">
-            <span class="contact-key">{{ item.label }}</span>
-            <a v-if="item.href" :href="item.href" class="contact-value is-link">
-              {{ item.value }}
-            </a>
-            <span v-else class="contact-value">{{ item.value }}</span>
-          </li>
-        </ul>
-      </section>
+        <!-- 性格 + 追番 -->
+        <div v-if="vis('personality') || vis('anime')" class="about-row">
+          <AboutPersonality
+            v-if="vis('personality')"
+            :style="cell(rowMbti, 'personality')"
+            :tips="cfg.personality.tips"
+            :title="cfg.personality.title"
+            :mbti="cfg.personality.mbti"
+            :desc="cfg.personality.desc"
+            :link="cfg.personality.link"
+            :image="cfg.personality.image || undefined"
+          />
+          <AboutCoverWall
+            v-if="vis('anime')"
+            :style="cell(rowMbti, 'anime')"
+            :tips="cfg.anime.tips"
+            :title="cfg.anime.title"
+            :items="[...cfg.anime.items]"
+          />
+        </div>
+
+        <!-- 游戏 + 站点资料 -->
+        <div v-if="vis('games') || vis('siteCards')" class="about-row">
+          <AboutCoverWall
+            v-if="vis('games')"
+            :style="cell(rowGames, 'games')"
+            :tips="cfg.games.tips"
+            :title="cfg.games.title"
+            :items="[...cfg.games.items]"
+          />
+          <AboutSiteCards
+            v-if="vis('siteCards')"
+            :style="cell(rowGames, 'siteCards')"
+            :cards="[...cfg.siteCards.cards]"
+          />
+        </div>
+
+        <!-- 访问统计 + 个人信息 -->
+        <div v-if="vis('visitStats') || vis('selfInfo')" class="about-row">
+          <AboutVisitStats
+            v-if="vis('visitStats')"
+            :style="cell(rowData, 'visitStats')"
+            :tips="cfg.visitStats.tips"
+            :title="cfg.visitStats.title"
+            :data="cfg.visitStats.placeholder"
+            :labels="cfg.visitStats.labels"
+          />
+          <AboutSelfInfo
+            v-if="vis('selfInfo')"
+            :style="cell(rowData, 'selfInfo')"
+            :items="[...cfg.selfInfo.items]"
+          />
+        </div>
+
+        <!-- 关于我（正文来自 content/about.md） -->
+        <div v-if="vis('aboutMe') && about" class="about-row">
+          <AboutCard :style="cell(rowAboutMe, 'aboutMe')" class="aboutme-card">
+            <h2 class="aboutme-title">{{ cfg.aboutMe.title }}</h2>
+            <ContentRenderer :value="about" class="prose aboutme-prose" />
+          </AboutCard>
+        </div>
+
+        <!-- 打赏名单 -->
+        <div v-if="vis('reward')" class="about-row">
+          <AboutReward
+            :style="cell(rowReward, 'reward')"
+            :tips="cfg.reward.tips"
+            :title="cfg.reward.title"
+            :desc="cfg.reward.desc"
+            :items="rewardItems ?? []"
+            :donate-label="cfg.reward.donateLabel"
+            :donate-to="cfg.reward.donateTo || undefined"
+            :empty-text="cfg.reward.emptyText"
+          />
+        </div>
+      </div>
+
+      <CommentSlot v-if="cfg.comments.enabled" class="about-comments" />
     </div>
   </div>
 </template>
 
 <style scoped>
+/* 与首页同款宽版式：卡片行需要横向空间 */
 .page-about {
   padding-block: var(--space-section) var(--space-block);
 }
 
 .container {
-  max-width: var(--content-max-width);
+  max-width: var(--home-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
 }
 
-.page-head {
-  margin-bottom: var(--space-block);
+.about-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.page-title {
-  font-size: var(--fs-h1);
-  line-height: var(--lh-h1);
-  font-weight: var(--fw-h1);
-  letter-spacing: -0.02em;
+.about-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
 }
 
-.block + .block {
-  margin-top: var(--space-section);
+.about-row > * {
+  flex: 0 1 var(--about-basis, 100%);
+  min-width: 0;
 }
 
-.block-label {
-  font-size: var(--fs-meta);
-  line-height: var(--lh-meta);
-  font-weight: 400;
-  font-family: var(--font-mono);
-  color: var(--muted-foreground);
+/* ---- 关于我卡 ---- */
+.aboutme-title {
+  font-size: calc(var(--fs-h1) * 1.15);
+  font-weight: 700;
+  line-height: 1.1;
   margin-bottom: 1rem;
 }
 
-/* now */
-.now-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+.aboutme-prose {
+  max-width: 90ch;
 }
 
-.now-row {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
+/* ---- 评论区 ---- */
+.about-comments {
+  margin-top: var(--space-section);
 }
 
-.now-key {
-  flex: none;
-  width: 3.5rem;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
+/* ---- 响应式：≤768px 单列 ---- */
+@media (max-width: 768px) {
+  .about-row {
+    flex-direction: column;
+  }
 
-.now-value {
-  font-size: var(--fs-body);
-  line-height: 1.6;
-}
-
-/* skills */
-.skill-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.skill-title {
-  font-size: var(--fs-meta);
-  font-weight: 400;
-  color: var(--muted-foreground);
-  margin-bottom: 0.375rem;
-}
-
-.skill-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-}
-
-.skill-item {
-  font-size: var(--fs-body);
-  line-height: 1.6;
-}
-
-/* timeline */
-.timeline {
-  display: flex;
-  flex-direction: column;
-}
-
-.timeline-row {
-  display: flex;
-  gap: 1.25rem;
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.timeline-row:first-child {
-  border-top: 1px solid var(--border);
-}
-
-.timeline-year {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-  padding-top: 0.15rem;
-}
-
-.timeline-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.timeline-title {
-  font-size: var(--fs-body);
-  line-height: 1.5;
-}
-
-.timeline-detail {
-  font-size: var(--fs-meta);
-  line-height: 1.6;
-  color: var(--muted-foreground);
-}
-
-/* contact */
-.contact-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.contact-row {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-  padding-block: 0.625rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.contact-row:first-child {
-  border-top: 1px solid var(--border);
-}
-
-.contact-key {
-  flex: none;
-  width: 4.5rem;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
-
-.contact-value {
-  font-size: var(--fs-body);
-  font-family: var(--font-mono);
-}
-
-.contact-value.is-link {
-  border-bottom: 1px solid var(--border);
-  transition: border-color var(--duration-base) var(--easing-base);
-}
-
-.contact-value.is-link:hover {
-  border-bottom-color: var(--accent);
+  .about-row > * {
+    flex-basis: auto;
+    width: 100%;
+  }
 }
 </style>

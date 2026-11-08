@@ -31,6 +31,7 @@ export const ui = {
     categories: '分类',
     tags: '标签',
     links: '友链',
+    fcircle: '朋友圈',
     shuoshuo: '说说',
     about: '关于',
     home: {
@@ -224,6 +225,28 @@ export const ui = {
     modalCancel: '取消',
     modalCloseAria: '关闭随机拜访',
     modalDescAria: '待拜访站点描述',
+  },
+
+  /** 友链朋友圈（数据源：fcircle.json，构建期爬取） */
+  fcircle: {
+    /** 页头副题 */
+    subtitle: '{n} 位朋友 · 近半年 {m} 篇文章',
+    searchPlaceholder: '搜索标题、摘要或作者…',
+    searchAria: '搜索朋友圈文章',
+    filterLabel: '按作者筛选',
+    filterAll: '全部',
+    avatarAlt: '{name} 的头像',
+    coverAlt: '{title} 的封面',
+    pagerAria: '朋友圈分页',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    pageAria: '第 {n} 页',
+    status: '共 {total} 篇 · 第 {page} / {pages} 页',
+    /** 空态 */
+    empty: '朋友们最近半年还没有更新',
+    emptyFiltered: '没有匹配的文章，换个关键词或作者试试',
+    /** 数据说明 */
+    dataSourceNote: '数据每天自动聚合自朋友们的 RSS 订阅源',
   },
 
   /** 说说（数据源：Ech0） */

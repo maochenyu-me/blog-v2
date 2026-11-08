@@ -10,8 +10,9 @@ CF 侧**不要**接入 Git 集成——两边都构建会互相覆盖，而且 C
 ```
 push master
    │
-   ├─ build（ubuntu, Node 24, pnpm 12.8.1）
+   ├─ build（ubuntu, Node 24, pnpm 12.8.1, Python 3.13）
    │    ├─ pnpm install --frozen-lockfile
+   │    ├─ pip install fonttools brotli && pnpm fonts   # 按构建时内容用字再生字体子集
    │    ├─ node scripts/audit-hardcode.mjs      # 硬编码审计，纯静态扫描
    │    ├─ pnpm build                           # nuxt build + copy-404 + fix-contrast + font-preload
    │    ├─ 产物断言（index/404/_nuxt/rss）

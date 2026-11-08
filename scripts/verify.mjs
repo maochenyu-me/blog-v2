@@ -22,6 +22,8 @@ const ROUTES = [
   ['categories', '/categories'],
   ['tags', '/tags'],
   ['links', '/links'],
+  ['fcircle', '/fcircle'],
+  ['shuoshuo', '/shuoshuo'],
   ['about', '/about'],
   ['post', '/posts/typography-over-color'],
   ['post-stress', '/posts/xml-escaping-stress-test'],

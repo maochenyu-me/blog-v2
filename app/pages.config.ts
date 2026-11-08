@@ -187,6 +187,17 @@ export default {
       randomVisit: true,
     },
 
+    fcircle: {
+      /** 每页卡片数量 */
+      pageSize: 9,
+      /** 摘要截断长度（爬虫端截 120，这里展示层再截一刀兜底） */
+      excerptLength: 84,
+      /** 桌面端（≥1280px）列数；768~1280 固定 2 列，<768 单列 */
+      desktopColumns: 3,
+      /** 搜索防抖毫秒数 */
+      debounceMs: 200,
+    },
+
     post: {
       showToc: true,
       showPrevNext: true,

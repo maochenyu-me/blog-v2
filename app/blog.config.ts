@@ -58,7 +58,16 @@ export default {
           { label: '标签', to: '/tags', icon: 'tabler:tag' },
         ],
       },
-      { label: '友链', to: '/links', icon: 'tabler:link' },
+      {
+        label: '友链',
+        to: '/links',
+        icon: 'tabler:link',
+        children: [
+          { label: '友链', to: '/links', icon: 'tabler:link' },
+          { label: '朋友圈', to: '/fcircle', icon: 'tabler:rss' },
+        ],
+      },
+      { label: '说说', to: '/shuoshuo', icon: 'tabler:messages' },
       { label: '关于', to: '/about', icon: 'tabler:user' },
     ],
 

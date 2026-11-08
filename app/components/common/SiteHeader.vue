@@ -66,11 +66,12 @@ const { site } = useBlogConfig()
 @media (min-width: 1024px) {
   .nav-desktop {
     display: flex;
-    margin-inline-start: 0;
+    /* 桌面端导航靠右（Dusklight 式），紧贴右侧操作区 */
+    margin-inline-start: auto;
   }
 
   .header-actions {
-    margin-inline-start: auto;
+    margin-inline-start: 0;
   }
 }
 </style>

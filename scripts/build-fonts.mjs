@@ -51,7 +51,21 @@ await mkdir('.data', { recursive: true })
 await writeFile('.data/font-charset.txt', [...chars].sort().join(''), 'utf8')
 console.log(`采集到 ${chars.size} 个字符 → .data/font-charset.txt`)
 
-const python = process.env.PYTHON || 'python'
+// python 探测：优先 PYTHON 环境变量，再退 python3（Linux/CI）/python（Windows）
+let python = process.env.PYTHON || null
+if (!python) {
+  for (const candidate of ['python3', 'python']) {
+    try {
+      await exec(candidate, ['--version'])
+      python = candidate
+      break
+    } catch {}
+  }
+}
+if (!python) {
+  console.error('找不到 python3/python，请用 PYTHON 环境变量指定（需已安装 fonttools + brotli）')
+  process.exit(1)
+}
 try {
   const { stdout } = await exec(python, ['scripts/font-subset.py', '.data/font-charset.txt', 'public/fonts'], {
     maxBuffer: 8 * 1024 * 1024,

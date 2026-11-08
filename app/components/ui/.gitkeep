@@ -1,0 +1,4 @@
+# shadcn-vue 组件目录（nuxt.config: shadcn.componentDir 与 components[ui] 都指向这里）。
+# 目前尚未通过 shadcn CLI 添加任何组件，保留 .gitkeep 使目录存在于 git 中，
+# 消除 Nuxt B3001「Components directory not found」警告。
+# 添加组件后：npx shadcn-vue@latest add <component> 会把 .vue 文件放进此目录，本文件可删可留。

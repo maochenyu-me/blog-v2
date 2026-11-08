@@ -75,6 +75,7 @@ watch(() => route.fullPath, close)
           :aria-controls="`nav-menu-${item.label}`"
           @click="toggle(item)"
         >
+          <Icon v-if="item.icon" :name="item.icon" class="nav-link__icon" aria-hidden="true" />
           {{ item.label }}
           <Icon name="tabler:chevron-down" class="nav-group__chevron" aria-hidden="true" />
         </button>
@@ -93,6 +94,7 @@ watch(() => route.fullPath, close)
                 :aria-current="isActive(child.to) ? 'page' : undefined"
                 @click="close"
               >
+                <Icon v-if="child.icon" :name="child.icon" class="nav-menu__icon" aria-hidden="true" />
                 {{ child.label }}
               </NuxtLink>
             </li>
@@ -107,6 +109,7 @@ watch(() => route.fullPath, close)
         :class="{ 'is-active': isActive(item.to) }"
         :aria-current="isActive(item.to) ? 'page' : undefined"
       >
+        <Icon v-if="item.icon" :name="item.icon" class="nav-link__icon" aria-hidden="true" />
         {{ item.label }}
       </NuxtLink>
     </template>
@@ -127,6 +130,9 @@ watch(() => route.fullPath, close)
 }
 
 .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   font-size: var(--fs-meta);
   line-height: 1;
   color: var(--muted-foreground);
@@ -135,6 +141,10 @@ watch(() => route.fullPath, close)
   transition:
     color var(--duration-base) var(--easing-base),
     border-color var(--duration-base) var(--easing-base);
+}
+
+.nav-link__icon {
+  font-size: 1rem;
 }
 
 .nav-link:hover {
@@ -186,12 +196,18 @@ watch(() => route.fullPath, close)
 }
 
 .nav-menu__link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   font-size: var(--fs-meta);
   line-height: 1.5;
   color: var(--muted-foreground);
   transition: color var(--duration-base) var(--easing-base);
+}
+
+.nav-menu__icon {
+  font-size: 1rem;
 }
 
 .nav-menu__link:hover {

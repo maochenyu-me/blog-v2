@@ -15,6 +15,10 @@ const daysOf = (link: FriendLink) => {
 }
 const badgeOf = (link: FriendLink) => getBadge(daysOf(link) ?? 0, link.lost)
 
+/** 头像绝对 URL：友链朋友圈等爬虫不做相对→绝对拼接，相对路径在站外会 404 */
+const absoluteAvatar = (link: FriendLink) =>
+  link.avatar.startsWith('http') ? link.avatar : `${site.url}${link.avatar}`
+
 /** 分组：朋友们 → 失联。组内按建交天数降序（老朋友在前） */
 const groups = computed(() => {
   const lost = friendLinks.filter((l) => l.lost)
@@ -246,7 +250,7 @@ const gridVars = computed(() => ({
             <a :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
               <span class="avatar-wrap">
                 <NuxtImg
-                  :src="link.avatar"
+                  :src="absoluteAvatar(link)"
                   :alt="t(ui.links.avatarAlt, { name: link.name })"
                   class="link-avatar"
                   width="56"
@@ -279,8 +283,9 @@ const gridVars = computed(() => ({
                     :style="{ color: recommendedColor }"
                     aria-hidden="true"
                   />
-                  <span v-if="link.recommended" class="visually-hidden">{{ ui.links.recommendedAria }}</span>
                 </span>
+                <!-- 无障碍文本放 link-name 外：朋友圈爬虫按 .link-name 全后代取文本，放里面会拼进作者名 -->
+                <span v-if="link.recommended" class="visually-hidden">{{ ui.links.recommendedAria }}</span>
                 <span class="link-desc">{{ link.description }}</span>
                 <span class="days-label">
                   {{ link.lost ? ui.links.daysLost : t(ui.links.daysBadge, { n: daysOf(link) ?? 0 }) }}

@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-11-08T14:47:34.517Z",
+  "articles": [
+    {
+      "id": "2e3d86f59e0d1481",
+      "title": "近期开发的四个开源项目",
+      "url": "https://blog.liushen.fun/posts/6a6de263/",
+      "author": "清羽飞扬",
+      "avatar": "https://blog.liushen.fun/info/avatar.ico",
+      "home": "https://blog.liushen.fun",
+      "published": "2026-09-08T18:12:00.000Z",
+      "summary": "这里是清羽AI，这篇文章介绍了站长清羽飞扬近期维护与开发的四个开源项目。首先是对Artalk评论系统的增强，新增了AI内容审核、关键词拦截、AI评论助手及重构后的管理后台，在保留接口兼容的同时提升了反垃圾与互动能力。其次是Memora相册项…",
+      "cover": "https://p.liiiu.cn/i/2026/09/09/6aa04fdf0b05e.webp"
+    },
+    {
+      "id": "e00c1e5963f3a156",
+      "title": "AxonHub - 多模型API智能路由网关",
+      "url": "https://blog.liushen.fun/posts/b404081c/",
+      "author": "清羽飞扬",
+      "avatar": "https://blog.liushen.fun/info/avatar.ico",
+      "home": "https://blog.liushen.fun",
+      "published": "2026-08-06T17:12:00.000Z",
+      "summary": "这里是清羽AI，这篇文章记录了站长清羽飞扬近期的工作动态与技术探索。作者首先介绍了自主开发的清羽认证系统，该项目用于替代原有的Casdoor方案，实现了用户无感迁移与多种登录方式。文章主体部分详细对比了NewAPI、Sub2API、Meta…",
+      "cover": "https://p.liiiu.cn/i/2026/08/02/6a6f4b375fb8d.webp"
+    },
+    {
+      "id": "76c27b34c35b9ce8",
+      "title": "Cloudflare/Vercel项目推荐(6)",
+      "url": "https://blog.liushen.fun/posts/e4a369fc/",
+      "author": "清羽飞扬",
+      "avatar": "https://blog.liushen.fun/info/avatar.ico",
+      "home": "https://blog.liushen.fun",
+      "published": "2026-07-12T16:12:00.000Z",
+      "summary": "这里是清羽AI，这篇文章是 Cloudflare/Vercel 项目推荐系列第六期，推荐了 edgeever、EdgeMirror、edgeone-status、nodewarden、MiSub 和 How-To-Ask-Questions…",
+      "cover": "https://p.liiiu.cn/i/2026/07/12/6a53501d142f0.webp"
+    },
+    {
+      "id": "5d77d802e77257de",
+      "title": "vibe-coding个人实践",
+      "url": "https://blog.liushen.fun/posts/67261b47/",
+      "author": "清羽飞扬",
+      "avatar": "https://blog.liushen.fun/info/avatar.ico",
+      "home": "https://blog.liushen.fun",
+      "published": "2026-06-14T17:00:00.000Z",
+      "summary": "这里是清羽AI，这篇文章记录了站长清羽飞扬在博客重构间隙对Vibe Coding的深度实践与经验总结。作者详细对比了Anthropic、OpenAI、智谱、月之暗面及MiniMax等国内外主流AI模型的编码能力与价格策略，并分享了自用的AP…",
+      "cover": "https://p.liiiu.cn/i/2026/06/15/6a2ed8ed244ac.webp"
+    },
+    {
+      "id": "76b7ef7f827f5084",
+      "title": "建站四年，从Hexo换到Astro",
+      "url": "https://blog.liushen.fun/posts/acf06c11/",
+      "author": "清羽飞扬",
+      "avatar": "https://blog.liushen.fun/info/avatar.ico",
+      "home": "https://blog.liushen.fun",
+      "published": "2026-05-31T18:10:21.000Z",
+      "summary": "这里是清羽AI，这篇文章记录了站长清羽飞扬将博客从Hexo框架迁移至Astro的完整重构历程。作者回顾了因Hexo构建速度缓慢、性能受限而寻求新框架的过程，在对比Hugo、NextJS等方案后最终选择Astro，并借助AI工具大幅缩短开发周…",
+      "cover": "https://p.liiiu.cn/i/2026/05/24/6a12cfa03c4ac.webp"
+    }
+  ]
+}

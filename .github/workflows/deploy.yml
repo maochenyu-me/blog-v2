@@ -45,6 +45,17 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
+      # 字体子集按「构建时的真实内容用字」重新生成：朋友圈数据每天爬取更新，
+      # 说说是运行时拉取，仓库里提交的 woff2/coverage.json 只是本地开发兜底，
+      # 部署产物永远用新鲜子集，杜绝「动态内容缺字回退系统字体」。
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: 再生中文字体子集
+        run: |
+          pip install fonttools brotli
+          pnpm fonts
+
       # 纯静态扫描（不用起服务、不用 Chrome），适合放进 CI 门禁
       - name: 硬编码审计
         run: node scripts/audit-hardcode.mjs

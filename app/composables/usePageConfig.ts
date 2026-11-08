@@ -118,6 +118,17 @@ export interface LinksPageConfig {
   randomVisit: boolean
 }
 
+export interface FcirclePageConfig {
+  /** 每页卡片数量 */
+  pageSize: number
+  /** 展示层摘要截断长度（爬虫端已截 120，这里再截兜底） */
+  excerptLength: number
+  /** 桌面端（≥1280px）列数 */
+  desktopColumns: number
+  /** 搜索防抖毫秒数 */
+  debounceMs: number
+}
+
 export interface PostPageConfig {
   showToc: boolean
   showPrevNext: boolean
@@ -146,6 +157,7 @@ export interface PagesConfig {
   categories: CategoriesPageConfig
   tags: TagsPageConfig
   links: LinksPageConfig
+  fcircle: FcirclePageConfig
   post: PostPageConfig
   shuoshuo: ShuoshuoPageConfig
 }

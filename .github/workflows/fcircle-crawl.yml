@@ -1,0 +1,82 @@
+name: 友链朋友圈 · 爬取
+
+# 每天北京时间 06:00（UTC 22:00）爬取友链 RSS，聚合最近半年文章写入
+# app/data/fcircle.json。有内容变化才提交 master，然后显式触发 deploy.yml
+# 重建站点 —— GITHUB_TOKEN 的 push 不会自动触发其他 workflow（防递归），
+# 必须用 workflow_dispatch 显式唤起。
+
+on:
+  schedule:
+    # GitHub cron 用 UTC：22:00 UTC = 次日 06:00 北京时间
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: fcircle-crawl
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  crawl:
+    name: 爬取友链 RSS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 爬取并生成数据
+        run: node scripts/crawl-fcircle.mjs
+
+      # 数据更新后同步再生字体子集并一并提交：仓库里的 woff2/coverage.json
+      # 是本地开发的兜底；部署侧另有 deploy.yml 构建时再生，双保险。
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: 再生字体子集
+        run: |
+          pip install fonttools brotli
+          node scripts/build-fonts.mjs
+
+      - name: 提交数据变更
+        id: commit
+        run: |
+          if git diff --quiet -- app/data/fcircle.json public/fonts/lxgw-wenkai-lite-400.woff2 public/fonts/lxgw-wenkai-lite-700.woff2 public/fonts/coverage.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "数据无变化，跳过提交与重建"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add app/data/fcircle.json public/fonts
+            git commit -m "chore(fcircle): 更新朋友圈数据与字体子集（$(date -u +%F)）"
+            git push origin HEAD:master
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 摘要
+        if: always()
+        run: |
+          {
+            echo "### 友链朋友圈爬取"
+            echo ""
+            if [ -f app/data/fcircle.json ]; then
+              echo "- 文章数：$(jq '.articles | length' app/data/fcircle.json)"
+              echo "- 数据更新时间：$(jq -r '.generatedAt' app/data/fcircle.json)"
+            fi
+            echo "- 是否触发重建：${{ steps.commit.outputs.changed == 'true' && '是' || '否（无变化）' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 触发站点重建
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref master
