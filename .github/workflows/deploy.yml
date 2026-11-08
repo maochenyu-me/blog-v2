@@ -1,0 +1,159 @@
+name: 部署 · Cloudflare Pages
+
+# 构建在 GitHub Actions 完成，产物通过 wrangler 以「Direct Upload」推到 Cloudflare Pages。
+# 因此 CF 侧不要开启 Git 集成，否则会重复构建（且 CF 构建机没有本项目的字体工具链）。
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 生产部署串行执行、不取消：wrangler 上传中途被 SIGTERM 会留下半份部署。
+# PR 只构建不部署，可以随意取消旧的。
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: '24'
+  PNPM_VERSION: '12.8.1'
+  PAGES_PROJECT: kemiaosw-blog
+  PAGES_BRANCH: master
+
+jobs:
+  build:
+    name: 构建静态产物
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      # 纯静态扫描（不用起服务、不用 Chrome），适合放进 CI 门禁
+      - name: 硬编码审计
+        run: node scripts/audit-hardcode.mjs
+
+      - name: 构建
+        run: pnpm build
+
+      # 构建脚本本身是 failOnError: false，预渲染个别路由失败不会让 build 退出非零。
+      # 这里用产物断言兜住：没有这几个文件就没有可部署的站点。
+      - name: 校验产物
+        run: |
+          set -euo pipefail
+          test -f dist/index.html || { echo "::error::缺少 dist/index.html"; exit 1; }
+          test -f dist/404.html || { echo "::error::缺少 dist/404.html（copy-404 未生效）"; exit 1; }
+          test -d dist/_nuxt || { echo "::error::缺少 dist/_nuxt"; exit 1; }
+          test -f dist/rss.xml || { echo "::error::缺少 dist/rss.xml"; exit 1; }
+          test -f dist/_headers || echo "::warning::缺少 dist/_headers，缓存策略不会生效"
+          echo "HTML $(find dist -name '*.html' | wc -l) 个，总计 $(du -sh dist | cut -f1)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          include-hidden-files: true
+          retention-days: 7
+          compression-level: 6
+
+  deploy:
+    name: 部署到 Cloudflare Pages
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://kemiaosw-blog.pages.dev
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: 检查凭据
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || { echo "::error::未配置 secret CLOUDFLARE_API_TOKEN"; exit 1; }
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::未配置 secret CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+
+      # 项目只建一次。已存在时 wrangler 退出非零，这里按提示文案放行，其余错误照常失败。
+      - name: 确保 Pages 项目存在
+        run: |
+          set -uo pipefail
+          if out=$(npx --yes wrangler@4 pages project create "$PAGES_PROJECT" --production-branch="$PAGES_BRANCH" 2>&1); then
+            echo "$out"
+            echo "已创建项目 $PAGES_PROJECT"
+          else
+            echo "$out"
+            if echo "$out" | grep -qiE 'already exists|already-exists|already been taken'; then
+              echo "项目已存在，继续部署"
+            else
+              echo "::error::创建 Pages 项目失败"
+              exit 1
+            fi
+          fi
+
+      - name: 部署
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy dist \
+            --project-name="$PAGES_PROJECT" \
+            --branch="$PAGES_BRANCH" \
+            --commit-hash="$GITHUB_SHA" \
+            --commit-message="$(git log -1 --pretty=%s | tr -d '"')" \
+            --commit-dirty=true
+
+      # 失败只说明传播慢或站点有问题，值得让人看一眼，不静默吞掉
+      - name: 冒烟检查
+        run: |
+          set -uo pipefail
+          url="https://$PAGES_PROJECT.pages.dev/"
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$url" || echo 000)
+            echo "第 $i 次：$code"
+            if [ "$code" = "200" ]; then
+              echo "首页返回 200"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::首页未返回 200"
+          exit 1
+
+      - name: 摘要
+        if: always()
+        run: |
+          {
+            echo "### Cloudflare Pages 部署"
+            echo ""
+            echo "- 提交：\`${GITHUB_SHA::7}\` $(git log -1 --pretty=%s)"
+            echo "- 站点：https://$PAGES_PROJECT.pages.dev"
+            echo "- 分支：\`$PAGES_BRANCH\`（生产）"
+          } >> "$GITHUB_STEP_SUMMARY"
