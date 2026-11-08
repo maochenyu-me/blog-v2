@@ -167,6 +167,11 @@ export default {
       /** 免责声明是否默认展开（details 的 open 初始值） */
       disclaimerOpen: false,
       /**
+       * 友链申请议题的表单直达链接（申请方式按钮的跳转目标）。
+       * template 参数预选 .github/ISSUE_TEMPLATE/friend-link.yml。
+       */
+      applyIssueUrl: 'https://github.com/maochenyu-me/blog-v2/issues/new?template=friend-link.yml',
+      /**
        * 本站「网站截图」字段指向的图片路径（拼接 site.url 对外展示）。
        * 当前是占位图，替换为真实截图后同步改这里（建议 1200×750 以上）。
        */
@@ -182,15 +187,6 @@ export default {
       randomVisit: true,
     },
 
-    about: {
-      blocks: ['intro', 'now', 'skills', 'timeline', 'contact'] as const,
-      timeline: [
-        { year: 2024, title: '开始写博客', detail: '把散落各处的笔记收拢到一个地方' },
-        { year: 2023, title: '转向前端工程', detail: '从页面还原走向构建、性能与可维护性' },
-        { year: 2021, title: '第一份工作', detail: '写下了第一行会被人使用的代码' },
-      ],
-    },
-
     post: {
       showToc: true,
       showPrevNext: true,
@@ -198,6 +194,23 @@ export default {
       relatedCount: 3,
       showCopyButton: true,
       showImageViewer: true,
+    },
+
+    shuoshuo: {
+      /** Ech0 实例地址（不带尾斜杠），说说数据源 */
+      apiBase: 'https://m.081531.xyz',
+      /** 每页说说数量 */
+      pageSize: 10,
+      /** 卡片显示名称，空串回落到 site.author.name */
+      displayName: '',
+      /** 卡片头像路径，空串回落到 site.author.avatar */
+      avatar: '',
+      /** 桌面端（≥1280px）瀑布流列数；768~1280 固定 2 列，<768 单列 */
+      desktopColumns: 3,
+      /** 是否允许访客写表情反应（false 时仅展示计数） */
+      reactionsEnabled: true,
+      /** 评论区是否启用 */
+      commentsEnabled: true,
     },
   },
 }

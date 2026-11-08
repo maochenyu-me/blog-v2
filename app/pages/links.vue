@@ -199,32 +199,23 @@ const gridVars = computed(() => ({
             </li>
           </ol>
 
-          <!-- 申请方式：邮箱字段盒 + mailto CTA，补齐右栏高度并给出真实申请通道 -->
+          <!-- 申请方式：GitHub 议题表单直达（外链），邮箱作次要渠道备注 -->
           <div class="apply-channel">
             <span class="channel-label">{{ ui.links.applyChannel }}</span>
-            <div class="info-field">
-              <span class="field-label">{{ ui.links.emailLabel }}</span>
-              <span class="field-value" :title="site.author.email">{{ site.author.email }}</span>
-              <button
-                type="button"
-                class="field-copy"
-                :class="{ 'is-copied': copiedKey === 'email' }"
-                :aria-label="copiedKey === 'email' ? t(ui.links.copiedAria, { name: ui.links.emailLabel }) : t(ui.links.copyAria, { name: ui.links.emailLabel })"
-                @click="copyField('email', site.author.email)"
-              >
-                <Icon :name="copiedKey === 'email' ? 'tabler:check' : 'tabler:copy'" aria-hidden="true" />
-              </button>
-            </div>
             <a
-              class="apply-mail"
-              :href="`mailto:${site.author.email}?subject=${encodeURIComponent(ui.links.emailSubject)}`"
+              class="apply-cta"
+              :href="pageCfg.applyIssueUrl"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Icon name="tabler:mail" aria-hidden="true" />
-              <span>{{ ui.links.sendEmail }}</span>
+              <Icon name="tabler:brand-github" aria-hidden="true" />
+              <span>{{ ui.links.applyIssue }}</span>
+              <Icon name="tabler:external-link" class="apply-cta-ext" aria-hidden="true" />
             </a>
+            <p class="channel-note">
+              {{ t(ui.links.applyEmailNote, { email: site.author.email }) }}
+            </p>
           </div>
-
-          <p class="rules-note">{{ ui.links.rulesNote }}</p>
         </section>
       </div>
 
@@ -639,7 +630,7 @@ const gridVars = computed(() => ({
   color: var(--accent);
 }
 
-/* ── 申请方式：邮箱字段盒 + mailto CTA（字段盒样式与左栏 info-field 同款，左右呼应） ── */
+/* ── 申请方式：GitHub 议题直达 CTA（外链） + 邮箱次要备注 ── */
 .apply-channel {
   display: flex;
   flex-direction: column;
@@ -655,7 +646,7 @@ const gridVars = computed(() => ({
   margin-bottom: 0.125rem;
 }
 
-.apply-mail {
+.apply-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -670,15 +661,17 @@ const gridVars = computed(() => ({
     border-color var(--duration-base) var(--easing-base);
 }
 
-.apply-mail:hover {
+.apply-cta:hover {
   color: var(--accent);
   border-color: var(--accent);
 }
 
-.rules-note {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
+.apply-cta-ext {
+  margin-left: auto;
+  color: var(--muted-foreground);
+}
+
+.channel-note {
   font-size: var(--fs-meta);
   line-height: 1.6;
   color: var(--muted-foreground);

@@ -31,6 +31,7 @@ export const ui = {
     categories: '分类',
     tags: '标签',
     links: '友链',
+    shuoshuo: '说说',
     about: '关于',
     home: {
       pinned: '置顶',
@@ -196,10 +197,8 @@ export const ui = {
     /** 申请须知 */
     rulesTitle: '友链申请须知',
     applyChannel: '申请方式',
-    emailLabel: '邮箱',
-    emailSubject: '友链申请',
-    sendEmail: '发送申请邮件',
-    rulesNote: '申请格式：名称 · 链接 · 头像 · 描述',
+    applyIssue: '前往 GitHub 提交申请议题',
+    applyEmailNote: '也可以发送邮件至 {email} 联系我',
     /** 免责声明 */
     disclaimerTitle: '友情链接页免责声明',
     disclaimerIntro: '本页友链均指向第三方站点。收录时我会检查站点内容，但无法持续追踪每个站点之后的变动，包括但不限于：',
@@ -230,11 +229,70 @@ export const ui = {
     modalDescAria: '待拜访站点描述',
   },
 
-  /** 关于页区块 */
-  about: {
-    now: '现在',
-    skills: '技能',
-    timeline: '时间线',
-    contact: '联系',
+  /** 说说（数据源：Ech0） */
+  shuoshuo: {
+    /** 页头副题 */
+    subtitle: '共 {n} 条碎碎念 · 来自 Ech0',
+    loading: '正在加载说说…',
+    loadError: '说说加载失败，请稍后重试',
+    retry: '重试',
+    empty: '还没有说说',
+    avatarAlt: '{name} 的头像',
+    /** 相对时间 */
+    justNow: '刚刚',
+    minutesAgo: '{n} 分钟前',
+    hoursAgo: '{n} 小时前',
+    daysAgo: '{n} 天前',
+    /** 标签筛选 */
+    filterAll: '全部',
+    filterAria: '按标签筛选说说',
+    /** 表情反应 */
+    reactionToggleAria: '添加表情回应',
+    reactionAria: '{emoji} {n} 次，点击回应',
+    reactionAriaPlain: '{emoji} {n} 次',
+    reactionsTitle: '表情',
+    /** 评论区 */
+    commentsToggle: '评论',
+    commentsAria: '展开 {n} 条评论',
+    commentsTitle: '评论 · {n}',
+    commentsEmpty: '还没有评论，来说一句吧',
+    commentsOff: '评论区已关闭',
+    formTitle: '发表评论',
+    replyTo: '回复 {name}',
+    cancelReply: '取消回复',
+    replyAria: '回复{name}的评论',
+    nicknameLabel: '昵称',
+    emailLabel: '邮箱',
+    websiteLabel: '网站（选填）',
+    contentLabel: '说点什么…',
+    contentCount: '{n}/200',
+    contentTooLong: '评论最长 200 字',
+    submit: '发送',
+    submitting: '发送中…',
+    commentApproved: '评论已发布',
+    commentPending: '评论已提交，等待审核',
+    commentFailed: '评论发送失败，请重试',
+    captchaLoading: '正在准备人机验证…',
+    captchaSolving: '验证中…',
+    captchaFailed: '人机验证未通过，请重试',
+    guestNotice: '评论以访客身份提交，昵称必填',
+    /** 扩展卡片 */
+    extGithub: 'GitHub 项目',
+    extGithubCta: '查看仓库',
+    extWebsite: '网站',
+    extLocation: '位置',
+    extLocationAria: '在地图中查看位置',
+    extVideo: '视频',
+    extVideoCta: '前往观看',
+    extAudio: '音乐',
+    extAudioAria: '音频播放器',
+    extTweet: '推文',
+    extTweetCta: '查看原推',
+    /** 分页 */
+    paginationAria: '说说分页导航',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    pageLabel: '第 {n} 页',
+    pageStatus: '第 {n} / {total} 页 · 共 {count} 条',
   },
 } as const

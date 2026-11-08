@@ -110,15 +110,12 @@ export interface LinksPageConfig {
   disclaimerOpen: boolean
   /** 本站「网站截图」字段指向的图片路径 */
   screenshot: string
+  /** 友链申请议题表单的直达链接 */
+  applyIssueUrl: string
   /** 信息卡默认展开的字段数，其余折进「更多本站字段」 */
   expandedFields: number
   showLegend: boolean
   randomVisit: boolean
-}
-
-export interface AboutPageConfig {
-  blocks: readonly string[]
-  timeline: Array<{ year: number; title: string; detail?: string }>
 }
 
 export interface PostPageConfig {
@@ -130,14 +127,27 @@ export interface PostPageConfig {
   showImageViewer: boolean
 }
 
+export interface ShuoshuoPageConfig {
+  /** Ech0 实例地址（不带尾斜杠） */
+  apiBase: string
+  pageSize: number
+  /** 卡片显示名称，空串回落到 site.author.name */
+  displayName: string
+  /** 卡片头像路径，空串回落到 site.author.avatar */
+  avatar: string
+  desktopColumns: number
+  reactionsEnabled: boolean
+  commentsEnabled: boolean
+}
+
 export interface PagesConfig {
   home: HomePageConfig
   archive: ArchivePageConfig
   categories: CategoriesPageConfig
   tags: TagsPageConfig
   links: LinksPageConfig
-  about: AboutPageConfig
   post: PostPageConfig
+  shuoshuo: ShuoshuoPageConfig
 }
 
 export function usePageConfig<K extends keyof PagesConfig>(key: K): PagesConfig[K] {
