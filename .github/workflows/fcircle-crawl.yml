@@ -30,9 +30,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '12.8.1'
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      # font-subset.py 要从 node_modules/lxgw-wenkai-lite-webfont 读 97 个分片，
+      # 不装依赖会报「没有任何分片命中目标字符」
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
 
       - name: 爬取并生成数据
         run: node scripts/crawl-fcircle.mjs
