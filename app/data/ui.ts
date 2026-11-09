@@ -82,7 +82,6 @@ export const ui = {
         stats: '站点统计',
         categories: '分类',
         tags: '标签云',
-        recent: '最新文章',
         profileAlt: '{name} 的头像',
         runDays: '运行天数',
         runDaysUnit: '天',
@@ -91,6 +90,29 @@ export const ui = {
         tagCount: '标签',
         viewAll: '查看全部',
         socialNav: '社交链接',
+      },
+      /** 侧栏日历卡（Dusklight 式日历 + 当日文章） */
+      calendar: {
+        months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+        weekdays: ['一', '二', '三', '四', '五', '六', '日'],
+        weekRanges: ['1–7日', '8–14日', '15–21日', '22–28日', '29日至月底'],
+        gridLabel: '月历',
+        heatLabel: '{year}年文章活跃度',
+        backToToday: '回到今天',
+        prevMonth: '上一个月',
+        nextMonth: '下一个月',
+        titlePlaceholder: '—',
+        dayTitle: '{year}年 {month}',
+        monthTitle: '{year}年',
+        yearTitle: '选择年份',
+        selectMonth: '选择月份',
+        selectYear: '选择年份',
+        backToDay: '返回日视图',
+        pickMonthAria: '选择{year}年{month}',
+        pickYearAria: '选择{year}年',
+        dayAria: '{year}年{month}月{day}日{posts}',
+        withPosts: '，{count}篇文章',
+        heatAria: '{year}年{month}月{range}，{count}篇文章',
       },
       /** 资料卡问候语（按访问时间插值 {word}） */
       greeting: '{word}，来逛逛',
@@ -134,7 +156,10 @@ export const ui = {
     navAria: '文章导航',
     prev: '上一篇',
     next: '下一篇',
+    navEmptyPrev: '已是最早一篇',
+    navEmptyNext: '已是最新一篇',
     related: '相关',
+    commentsJumpAria: '跳转到评论',
     toc: '目录',
     tocAria: '目录',
     tocOpen: '打开目录',
@@ -165,6 +190,12 @@ export const ui = {
   comment: {
     aria: '评论',
     closed: '评论暂未开放',
+  },
+
+  /** 浮动操作按钮 */
+  fab: {
+    backTopAria: '回到顶部',
+    backTopTitle: '回到顶部',
   },
 
   /** 搜索 */

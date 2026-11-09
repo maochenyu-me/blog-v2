@@ -68,11 +68,11 @@ export default {
         enabled: true,
         /**
          * 侧栏组件排列顺序，从上到下。
-         * 可选项：profile / announcement / motto / stats / categories / tags / recent
+         * 可选项：profile / announcement / motto / stats / categories / tags / calendar
          * 想隐藏某个组件：把它的 enabled 设为 false，或从数组中移除。
          * 注意：分类已默认由顶部 categoryBar 承担，此处默认不再重复展示。
          */
-        order: ['profile', 'announcement', 'motto', 'stats', 'tags', 'recent'],
+        order: ['profile', 'announcement', 'motto', 'stats', 'tags', 'calendar'],
 
         profile: {
           /** 是否显示资料卡 */
@@ -141,13 +141,9 @@ export default {
           maxCount: 16,
         },
 
-        recent: {
-          /** 是否显示最新文章 */
+        calendar: {
+          /** 是否显示侧栏日历（含当月文章列表） */
           enabled: true,
-          /** 最新文章数量 */
-          count: 5,
-          /** 是否显示小缩略图（无封面文章用占位图） */
-          showThumb: true,
         },
       },
     },

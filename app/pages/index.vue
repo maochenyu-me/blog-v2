@@ -163,11 +163,9 @@ useHead({
               :cfg="pageCfg.sidebar.tags"
               :tags="data?.tags ?? []"
             />
-            <RecentPosts
-              v-else-if="key === 'recent' && pageCfg.sidebar.recent.enabled"
+            <CalendarCard
+              v-else-if="key === 'calendar' && pageCfg.sidebar.calendar.enabled"
               :posts="data?.all ?? []"
-              :cfg="pageCfg.sidebar.recent"
-              :fallback-cover="pageCfg.cards.fallbackCover"
             />
           </template>
         </aside>

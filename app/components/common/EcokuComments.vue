@@ -68,6 +68,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     v-if="pageCfg.comments?.enabled"
+    id="comments"
     class="post-comments"
     :aria-label="ui.comment.aria"
   >
@@ -82,6 +83,8 @@ onBeforeUnmount(() => {
   padding-inline: var(--space-gutter);
   padding-top: var(--space-item);
   border-top: 1px solid var(--border);
+  /* 目录头部「跳转到评论」锚点的落点：与标题锚点同样避让吸顶导航 */
+  scroll-margin-top: calc(var(--header-height) + var(--toc-sticky-offset));
 }
 
 .comments-mount:not(:empty) {

@@ -11,9 +11,10 @@
  * a11y 与锁滚动照抄 MobileDrawer.vue：v-if 挂载/卸载（不给隐藏的链接留 Tab 入口）、
  * Escape 关闭、Tab 焦点循环、关闭后焦点还给触发按钮、路由变化自动关闭。
  */
-const { ui } = useUi()
 const route = useRoute()
+const { ui } = useUi()
 const { flat, activeId, isOpen, available } = usePostToc()
+const pageCfg = usePageConfig('post')
 
 const triggerEl = ref<HTMLButtonElement | null>(null)
 const panelEl = ref<HTMLElement | null>(null)
@@ -26,7 +27,7 @@ const mounted = ref(false)
  * 用 available（已含 showToc + enabled + 有标题）而不是只看路由 ——
  * 一篇文章如果只用了 H1，按钮点了会是空的。
  */
-const isPost = computed(() => /^\/posts\/[^/]+$/.test(route.path))
+const isPost = computed(() => /^\/posts\/[^/]+\/?$/.test(route.path))
 const show = computed(() => mounted.value && isPost.value && available.value)
 
 function openDrawer() {
@@ -49,6 +50,21 @@ function go(event: MouseEvent, id: string) {
     const el = document.getElementById(id)
     if (!el) return
     history.pushState(null, '', `#${id}`)
+    el.scrollIntoView({ block: 'start' })
+  })
+}
+
+/**
+ * 抽屉头部的直达评论按钮：与 go() 同款「先关再跳」——
+ * 抽屉开着时页面被 overflow:hidden 锁住，scrollIntoView 不生效。
+ */
+function jumpComments(event: MouseEvent) {
+  event.preventDefault()
+  close()
+  nextTick(() => {
+    const el = document.querySelector('.post-comments')
+    if (!el) return
+    history.pushState(null, '', '#comments')
     el.scrollIntoView({ block: 'start' })
   })
 }
@@ -162,9 +178,21 @@ onBeforeUnmount(() => {
       >
         <div class="toc-drawer-head">
           <p class="toc-drawer-title">{{ ui.post.toc }}</p>
-          <button type="button" class="toc-drawer-close" :aria-label="ui.post.tocClose" @click="close">
-            <Icon name="tabler:x" aria-hidden="true" />
-          </button>
+          <div class="toc-drawer-actions">
+            <a
+              v-if="pageCfg.comments?.enabled"
+              href="#comments"
+              class="toc-drawer-action"
+              :aria-label="ui.post.commentsJumpAria"
+              :title="ui.post.commentsJumpAria"
+              @click="jumpComments"
+            >
+              <Icon name="tabler:message-dots" aria-hidden="true" />
+            </a>
+            <button type="button" class="toc-drawer-action toc-drawer-close" :aria-label="ui.post.tocClose" @click="close">
+              <Icon name="tabler:x" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <nav ref="bodyEl" class="toc-drawer-body" :aria-label="ui.post.tocAria">
@@ -252,7 +280,13 @@ onBeforeUnmount(() => {
   color: var(--muted-foreground);
 }
 
-.toc-drawer-close {
+.toc-drawer-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toc-drawer-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -264,7 +298,7 @@ onBeforeUnmount(() => {
   transition: color var(--duration-base) var(--easing-base);
 }
 
-.toc-drawer-close:hover {
+.toc-drawer-action:hover {
   color: var(--foreground);
 }
 

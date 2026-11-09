@@ -49,6 +49,7 @@ useHead({ link: feedLinks })
 
     <SiteFooter />
     <SearchDialog />
+    <FloatingActions />
   </div>
 </template>
 

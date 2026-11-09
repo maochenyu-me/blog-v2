@@ -12,3 +12,17 @@ minimumReleaseAgeExclude:
 allowBuilds:
   better-sqlite3: true
   esbuild: true
+
+# @nuxt/content 内部加载 @nuxtjs/mdc 子模块，其 vite.optimizeDeps.include
+# （remark-gfm / remark-emoji / remark-mdc / remark-rehype / rehype-raw /
+#   parse5 / unist-util-visit / unified / debug / extend）
+# 需要从项目根可解析，pnpm 严格隔离下会触发 NUXT_B7002 警告。
+# 按包名精确提升这条 markdown 工具链。
+publicHoistPattern:
+  - '*remark*'
+  - '*rehype*'
+  - '*unist*'
+  - unified
+  - parse5
+  - debug
+  - extend

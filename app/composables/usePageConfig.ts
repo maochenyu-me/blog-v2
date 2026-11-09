@@ -77,10 +77,8 @@ export interface HomePageConfig {
       enabled: boolean
       maxCount: number
     }
-    recent: {
+    calendar: {
       enabled: boolean
-      count: number
-      showThumb: boolean
     }
   }
 }
@@ -93,7 +91,7 @@ export type SidebarWidgetKey =
   | 'stats'
   | 'categories'
   | 'tags'
-  | 'recent'
+  | 'calendar'
 
 export interface ArchivePageConfig {
   groupBy: 'year' | 'month'

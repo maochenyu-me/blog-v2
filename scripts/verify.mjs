@@ -27,6 +27,16 @@ const isLocalEcokuCors = (text) =>
   IS_LOCAL && text.includes('ecoku.518339.xyz') && text.includes('CORS')
 /** 同一批被拒 fetch 的伴生消息（不带域名）；本地预览下资源全在本地，ERR_FAILED 只可能来自外部请求 */
 const isLocalResourceFail = (text) => IS_LOCAL && text.includes('net::ERR_FAILED')
+/**
+ * Cap 人机验证的 instrumentation（运行时反自动化检测）会拦截自动化浏览器：
+ * console 出现 "Instrumentation blocked (automated_browser)"，redeem 请求 403。
+ * verify/探针本身就是自动化环境，被拦是 Cap 的设计行为；真实访客浏览器不受影响。
+ * 仅本地 origin 豁免，线上仍真实暴露。
+ */
+const isLocalCapBlocked = (text) =>
+  IS_LOCAL &&
+  (text.includes('Instrumentation blocked') ||
+    (text.includes('cap.518339.xyz') && text.includes('403')))
 
 const ROUTES = [
   ['home', '/'],
@@ -66,7 +76,12 @@ for (const [vpName, width, height] of VIEWPORTS) {
 
     const consoleErrors = []
     page.on('console', (m) => {
-      if (m.type() === 'error' && !isLocalEcokuCors(m.text()) && !isLocalResourceFail(m.text()))
+      if (
+        m.type() === 'error' &&
+        !isLocalEcokuCors(m.text()) &&
+        !isLocalResourceFail(m.text()) &&
+        !isLocalCapBlocked(m.text())
+      )
         consoleErrors.push(m.text())
     })
     page.on('pageerror', (e) => consoleErrors.push('pageerror: ' + e.message))

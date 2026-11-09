@@ -10,6 +10,7 @@
  */
 const { ui } = useUi()
 const { flat, activeId, available } = usePostToc()
+const pageCfg = usePageConfig('post')
 
 /**
  * 高亮当前章节。
@@ -134,7 +135,18 @@ onBeforeUnmount(() => {
 
 <template>
   <nav v-if="available" ref="navRef" class="toc toc-desktop" :aria-label="ui.post.tocAria">
-    <p class="toc-label">{{ ui.post.toc }}</p>
+    <div class="toc-head">
+      <p class="toc-label">{{ ui.post.toc }}</p>
+      <a
+        v-if="pageCfg.comments?.enabled"
+        href="#comments"
+        class="toc-jump-comments"
+        :aria-label="ui.post.commentsJumpAria"
+        :title="ui.post.commentsJumpAria"
+      >
+        <Icon name="tabler:message-dots" aria-hidden="true" />
+      </a>
+    </div>
     <ul class="toc-list">
       <li
         v-for="item in flat"
@@ -154,11 +166,34 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+.toc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .toc-label {
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
-  margin-bottom: 0.75rem;
+}
+
+/* 头部右上角直达评论（参考 blog-v3 Toc 的 action 插槽位） */
+.toc-jump-comments {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+  transition: color var(--duration-base) var(--easing-base);
+}
+
+.toc-jump-comments:hover {
+  color: var(--foreground);
 }
 
 .toc-list {

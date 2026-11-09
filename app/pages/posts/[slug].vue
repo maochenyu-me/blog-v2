@@ -135,24 +135,44 @@ useHead({
       </aside>
     </div>
 
-    <!-- 上一篇 / 下一篇 -->
+    <!-- 上一篇 / 下一篇：一体式双格面板，缺侧格弱化占位保持结构对称 -->
     <nav v-if="pageCfg.showPrevNext && (nav?.prev || nav?.next)" class="post-nav" :aria-label="ui.post.navAria">
       <NuxtLink v-if="nav?.prev" :to="nav.prev.path" class="nav-item nav-prev">
         <span class="nav-dir">{{ ui.post.prev }}</span>
         <span class="nav-title">{{ nav.prev.title }}</span>
       </NuxtLink>
-      <span v-else class="nav-item nav-empty" />
+      <span v-else class="nav-item nav-empty">
+        <span class="nav-empty-text">{{ ui.post.navEmptyPrev }}</span>
+      </span>
 
       <NuxtLink v-if="nav?.next" :to="nav.next.path" class="nav-item nav-next">
         <span class="nav-dir">{{ ui.post.next }}</span>
         <span class="nav-title">{{ nav.next.title }}</span>
       </NuxtLink>
+      <span v-else class="nav-item nav-empty">
+        <span class="nav-empty-text">{{ ui.post.navEmptyNext }}</span>
+      </span>
     </nav>
 
-    <!-- 相关文章 -->
+    <!-- 相关文章：三列小卡（与导航面板、评论区共享 1px 语言） -->
     <section v-if="pageCfg.showRelated && related?.length" class="post-related">
       <h2 class="related-label">{{ ui.post.related }}</h2>
-      <PostList :posts="related" :show-date="false" :show-tags="true" />
+      <div class="related-grid">
+        <NuxtLink
+          v-for="rel in related"
+          :key="rel.path"
+          :to="rel.path"
+          class="related-card"
+        >
+          <span class="card-kicker">
+            {{ rel.tags?.length ? rel.tags.slice(0, 2).map((tag) => `#${tag}`).join(' · ') : rel.category }}
+          </span>
+          <span class="card-title">{{ rel.title }}</span>
+          <span v-if="(rel.tags?.length ?? 0) > 2" class="card-extra">
+            {{ rel.tags.slice(2).map((tag) => `#${tag}`).join(' ') }}
+          </span>
+        </NuxtLink>
+      </div>
     </section>
 
     <!-- Ecoku 评论区（仅文章页，相关文章下方） -->
@@ -244,22 +264,30 @@ useHead({
   display: none;
 }
 
-/* ---------- 上/下一篇 ---------- */
+/* ---------- 上/下一篇：一体式双格面板 ---------- */
+/*
+ * 外框 1px + 格间 1px 间隙，页面底色从缝隙透出形成中缝分隔线；
+ * 暗色下同一机制自然呈现深灰线，与全站 1px 线语言一致。
+ */
 .post-nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  max-width: var(--content-max-width);
+  width: calc(var(--content-max-width) - var(--space-gutter) * 2);
+  /* 窄视口下随视口收缩，防止固定宽撑出横向滚动 */
+  max-width: calc(100% - var(--space-gutter) * 2);
   margin: var(--space-section) auto 0;
-  padding-inline: var(--space-gutter);
+  border: 1px solid var(--border);
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  padding: 1rem;
-  border: 1px solid var(--border);
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 6.5rem;
+  padding: 1.25rem;
+  background-color: var(--background);
   transition: background-color var(--duration-base) var(--easing-base);
 }
 
@@ -267,26 +295,38 @@ useHead({
   background-color: var(--muted);
 }
 
+.nav-item:not(.nav-empty):hover .nav-title {
+  color: var(--accent);
+}
+
 .nav-next {
   text-align: end;
 }
 
 .nav-empty {
-  border-color: transparent;
+  justify-content: center;
+  align-items: center;
 }
 
-.nav-dir {
+.nav-empty-text {
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
 }
 
+.nav-dir {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--accent);
+}
+
 .nav-title {
   font-size: var(--fs-meta);
   line-height: 1.5;
+  transition: color var(--duration-base) var(--easing-base);
 }
 
-/* ---------- 相关 ---------- */
+/* ---------- 相关：三列小卡 ---------- */
 .post-related {
   max-width: var(--content-max-width);
   margin: var(--space-section) auto 0;
@@ -299,6 +339,51 @@ useHead({
   font-weight: 400;
   color: var(--muted-foreground);
   margin-bottom: 0.75rem;
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  transition: border-color var(--duration-base) var(--easing-base);
+}
+
+.related-card:hover {
+  border-color: var(--muted-foreground);
+}
+
+.related-card:hover .card-title {
+  color: var(--accent);
+}
+
+.card-kicker,
+.card-extra {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-title {
+  font-size: var(--fs-list-title);
+  line-height: var(--lh-list-title);
+  color: var(--foreground);
+  transition: color var(--duration-base) var(--easing-base);
+}
+
+.card-extra {
+  margin-top: auto;
 }
 
 /* ---------- 桌面：目录旁栏 ---------- */
@@ -329,6 +414,13 @@ useHead({
   }
 }
 
+/* 平板：相关卡收成两列 */
+@media (max-width: 1024px) {
+  .related-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 600px) {
   .post-nav {
     grid-template-columns: 1fr;
@@ -336,6 +428,10 @@ useHead({
 
   .nav-empty {
     display: none;
+  }
+
+  .related-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
