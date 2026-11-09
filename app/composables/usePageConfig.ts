@@ -134,6 +134,23 @@ export interface FcirclePageConfig {
   debounceMs: number
 }
 
+export interface ChangelogPageConfig {
+  /** 参与展示的提交数量上限 */
+  limit: number
+  /** 是否过滤合并提交 */
+  filterMerge: boolean
+  /** 每页提交条数 */
+  pageSize: number
+  /** 是否显示类型筛选 */
+  showTypeFilter: boolean
+  /** 类型 chips 的展示顺序 */
+  typeOrder: string[]
+  /** 是否显示 commit hash */
+  showHash: boolean
+  /** 是否在页头显示提交总数 */
+  showCount: boolean
+}
+
 export interface PostPageConfig {
   showToc: boolean
   showPrevNext: boolean
@@ -166,6 +183,13 @@ export interface ShuoshuoPageConfig {
   commentsEnabled: boolean
 }
 
+export interface GalleryPageConfig {
+  /** 桌面端（≥1280px）瀑布流列数；640~1279 固定 2 列，<640 单列 */
+  desktopColumns: number
+  /** 是否在分类封面右上角显示照片数量徽标 */
+  showCoverBadge: boolean
+}
+
 export interface PagesConfig {
   home: HomePageConfig
   archive: ArchivePageConfig
@@ -173,8 +197,10 @@ export interface PagesConfig {
   tags: TagsPageConfig
   links: LinksPageConfig
   fcircle: FcirclePageConfig
+  changelog: ChangelogPageConfig
   post: PostPageConfig
   shuoshuo: ShuoshuoPageConfig
+  gallery: GalleryPageConfig
 }
 
 export function usePageConfig<K extends keyof PagesConfig>(key: K): PagesConfig[K] {

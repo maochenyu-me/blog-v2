@@ -206,6 +206,23 @@ export default {
       debounceMs: 200,
     },
 
+    changelog: {
+      /** 参与展示的提交数量上限（构建期 git log -n 取；0 或负数回落到 300） */
+      limit: 300,
+      /** 是否过滤 Merge branch / Merge pull request 这类合并提交 */
+      filterMerge: true,
+      /** 每页提交条数 */
+      pageSize: 20,
+      /** 是否显示类型筛选 chips（feat / fix / docs …） */
+      showTypeFilter: true,
+      /** 类型 chips 的展示顺序；不在列表里的类型统一归到「其他」 */
+      typeOrder: ['feat', 'fix', 'refactor', 'perf', 'style', 'docs', 'test', 'chore', 'ci'],
+      /** 是否在条目右侧显示 7 位短 hash 并链到远端 commit 页 */
+      showHash: true,
+      /** 是否在页头显示提交总数 */
+      showCount: true,
+    },
+
     post: {
       showToc: true,
       showPrevNext: true,
@@ -240,6 +257,13 @@ export default {
       reactionsEnabled: true,
       /** 评论区是否启用 */
       commentsEnabled: true,
+    },
+
+    gallery: {
+      /** 桌面端（≥1280px）瀑布流列数；640~1279 固定 2 列，<640 单列 */
+      desktopColumns: 3,
+      /** 是否在分类封面右上角显示照片数量徽标 */
+      showCoverBadge: true,
     },
   },
 }

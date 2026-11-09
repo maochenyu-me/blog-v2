@@ -50,6 +50,7 @@ useHead({ link: feedLinks })
     <SiteFooter />
     <SearchDialog />
     <FloatingActions />
+    <MusicPlayer />
   </div>
 </template>
 
@@ -58,6 +59,12 @@ useHead({ link: feedLinks })
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  /*
+   * 给贴底常驻的界面留出呼吸位：左下角音乐折叠按钮（2.25rem）+ 间距。
+   * 不加的话页脚最后几行永远压在按钮下面滚不上来。
+   * 用 padding 而不是 margin-bottom，配合 box-sizing: border-box（main.css 已全局设置）。
+   */
+  padding-bottom: 3rem;
 }
 
 .app-main {

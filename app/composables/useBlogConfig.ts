@@ -41,6 +41,8 @@ export interface SiteConfig {
   }
   /** 建站起始日（ISO 日期字符串，如 '2024-11-01'），页脚存活计时起点 */
   siteStartDate: string
+  /** 源码仓库地址（不带结尾斜杠），更新日志的 commit 链接前缀 */
+  repoUrl: string
   keywords: string[]
   analytics: {
     provider: 'umami' | 'plausible' | 'cloudflare' | 'none'
@@ -65,6 +67,15 @@ export interface FeedConfig {
   atom: { enabled: boolean; path: string }
 }
 
+export interface MusicConfig {
+  enabled: boolean
+  api: string
+  playlist: string
+  warmup: string
+  level: 'standard' | 'exhigh' | 'lossless'
+  volume: number
+}
+
 export interface SearchConfig {
   enabled: boolean
   shortcut: string
@@ -83,5 +94,6 @@ export function useBlogConfig() {
     site: appConfig.site as SiteConfig,
     feed: appConfig.feed as FeedConfig,
     search: appConfig.search as SearchConfig,
+    music: appConfig.music as MusicConfig,
   }
 }

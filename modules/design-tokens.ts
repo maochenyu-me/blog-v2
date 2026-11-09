@@ -46,6 +46,7 @@ export default defineNuxtModule({
   --font-mono: ${theme.fontFamily.mono};
 
   --radius-base: ${theme.radius};
+  --radius-card: ${theme.radiusCard};
   --radius-full: ${theme.radiusFull};
 
   --header-pill-height: ${theme.headerPillHeight};
@@ -92,6 +93,9 @@ export default defineNuxtModule({
   --glass-border: ${glass.light.border};
   --glass-highlight: ${glass.light.highlight};
   --glass-scrolled-shadow: ${glass.light.scrolledShadow};
+
+  --surface-float: ${theme.surface.light.bg};
+  --surface-float-border: ${theme.surface.light.border};
 
   --radius: ${theme.radius};
   --content-max-width: ${theme.contentMaxWidth};
@@ -152,6 +156,9 @@ export default defineNuxtModule({
   --glass-border: ${glass.dark.border};
   --glass-highlight: ${glass.dark.highlight};
   --glass-scrolled-shadow: ${glass.dark.scrolledShadow};
+
+  --surface-float: ${theme.surface.dark.bg};
+  --surface-float-border: ${theme.surface.dark.border};
 
   color-scheme: dark;
 }

@@ -47,6 +47,20 @@ export const ui = {
     fcircle: '朋友圈',
     shuoshuo: '说说',
     about: '关于',
+    changelog: '更新日志',
+    /** 相册页 */
+    gallery: {
+      title: '相册',
+      description: '用镜头记录生活，随手拍下的那些瞬间。',
+      pageMeta: '{folders} 个分类 · 共 {photos} 张照片',
+      photosCount: '{n} 张',
+      coverAlt: '{name} 分类封面',
+      backToFolders: '返回相册',
+      empty: '这个分类还没有照片。',
+      notFound: '相册分类不存在',
+      viewPhotoAria: '查看第 {index} 张照片',
+      lightboxAria: '照片查看器',
+    },
     home: {
       pinned: '置顶',
       latest: '最新',
@@ -184,6 +198,9 @@ export const ui = {
   /** 图片灯箱 */
   lightbox: {
     close: '关闭',
+    loading: '正在加载图片…',
+    prev: '上一张',
+    next: '下一张',
   },
 
   /** 评论占位 */
@@ -196,6 +213,33 @@ export const ui = {
   fab: {
     backTopAria: '回到顶部',
     backTopTitle: '回到顶部',
+  },
+
+  /** 左下角音乐播放器 */
+  music: {
+    regionLabel: '音乐播放器',
+    openAria: '展开音乐播放器',
+    closeAria: '收起音乐播放器',
+    playAria: '播放',
+    pauseAria: '暂停',
+    prevAria: '上一首',
+    nextAria: '下一首',
+    progressAria: '播放进度',
+    volumeAria: '音量',
+    modeAria: '播放模式：{label}，点击切换',
+    modes: {
+      list: '列表循环',
+      one: '单曲循环',
+      shuffle: '随机播放',
+    },
+    loading: '正在取歌单…',
+    loadFailed: '歌单没取回来',
+    retry: '重试',
+    unavailable: '这首暂时听不了，已跳过',
+    empty: '歌单里没有歌',
+    coverAlt: '《{name}》封面',
+    unknownTrack: '未选择曲目',
+    unknownArtist: '网易云音乐',
   },
 
   /** 搜索 */
@@ -365,5 +409,45 @@ export const ui = {
     nextPage: '下一页',
     pageLabel: '第 {n} 页',
     pageStatus: '第 {n} / {total} 页 · 共 {count} 条',
+  },
+
+  /** 更新日志（数据源：构建期 git log） */
+  changelog: {    /** 页头副题 */
+    subtitle: '博客开发日志 · 共 {n} 次提交',
+    /** 类型筛选 */
+    filterLabel: '按提交类型筛选',
+    filterAll: '全部',
+    /** 月份标题：年份单独成元素，这里只拼「年 + 月」 */
+    monthUnit: '年',
+    monthLabel: '{n} 月',
+    monthCount: '{n} 条',
+    /** 月份被分页切开时的续页标记 */
+    continued: '续',
+    /** 条目 */
+    commitLinkAria: '在 GitHub 查看提交 {hash}',
+    /** 类型标签文案（与 conventional commits 前缀一一对应） */
+    types: {
+      feat: '新功能',
+      fix: '修复',
+      refactor: '重构',
+      perf: '性能',
+      style: '样式',
+      docs: '文档',
+      test: '测试',
+      chore: '杂务',
+      ci: '构建',
+      build: '构建',
+      revert: '回滚',
+      other: '其他',
+    },
+    /** 空态 */
+    empty: '还没有提交记录',
+    emptyFiltered: '该类型下没有提交',
+    /** 分页 */
+    pagerAria: '更新日志分页',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    pageAria: '第 {n} 页',
+    pageStatus: '第 {n} / {pages} 页 · 共 {total} 条',
   },
 } as const

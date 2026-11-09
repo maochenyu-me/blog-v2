@@ -9,6 +9,7 @@
   --font-mono: 'JetBrains Mono', 'LXGW WenKai Lite', ui-monospace, monospace;
 
   --radius-base: 0.5rem;
+  --radius-card: 0.875rem;
   --radius-full: 9999px;
 
   --header-pill-height: 2.75rem;
@@ -55,6 +56,9 @@
   --glass-border: rgba(228, 228, 231, 0.7);
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --glass-scrolled-shadow: 0 8px 24px rgba(24, 24, 27, 0.08);
+
+  --surface-float: rgba(255, 255, 255, 0.92);
+  --surface-float-border: rgba(228, 228, 231, 0.95);
 
   --radius: 0.5rem;
   --content-max-width: 764px;
@@ -115,6 +119,9 @@
   --glass-border: rgba(39, 39, 42, 0.9);
   --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.06);
   --glass-scrolled-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --surface-float: rgba(20, 20, 23, 0.92);
+  --surface-float-border: rgba(63, 63, 70, 0.9);
 
   color-scheme: dark;
 }

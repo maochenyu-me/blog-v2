@@ -38,6 +38,27 @@ const isLocalCapBlocked = (text) =>
   (text.includes('Instrumentation blocked') ||
     (text.includes('cap.518339.xyz') && text.includes('403')))
 
+/**
+ * 音乐解析服务的偶发 500。
+ *
+ * Netease_url 实例在并发抢上游、或 cookie 上游抖动时会直接返回 500
+ * （其文档自己写了「直链请求失败会直接 500，不会降级」），实测单请求
+ * 也会间歇性出现。播放器已做退避重试与失败跳过，功能不受影响，
+ * 但浏览器仍会为每次 5xx 自动打一条 "Failed to load resource" 到 console，
+ * 这不是站点自身的错误。
+ *
+ * 豁免只针对该服务域名的 5xx，不豁免网络失败（ERR_*）——
+ * 那是真的连不上，应该暴露出来。
+ */
+const MUSIC_API_HOSTS = ['netease.518339.xyz']
+
+const isMusicApi5xx = (text) =>
+  text.includes('Failed to load resource') &&
+  text.includes('500') &&
+  MUSIC_API_HOSTS.some((h) => text.includes(h))
+
+const isKnownExternalNoise = (text) => isLocalCapBlocked(text) || isMusicApi5xx(text)
+
 const ROUTES = [
   ['home', '/'],
   ['archive', '/archive'],
@@ -46,6 +67,9 @@ const ROUTES = [
   ['links', '/links'],
   ['fcircle', '/fcircle'],
   ['shuoshuo', '/shuoshuo'],
+  ['gallery', '/gallery'],
+  ['gallery-folder', '/gallery/museum'],
+  ['changelog', '/changelog'],
   ['about', '/about'],
   ['post', '/posts/typography-over-color'],
   ['post-stress', '/posts/xml-escaping-stress-test'],
@@ -80,7 +104,7 @@ for (const [vpName, width, height] of VIEWPORTS) {
         m.type() === 'error' &&
         !isLocalEcokuCors(m.text()) &&
         !isLocalResourceFail(m.text()) &&
-        !isLocalCapBlocked(m.text())
+        !isKnownExternalNoise(m.text())
       )
         consoleErrors.push(m.text())
     })
@@ -233,9 +257,10 @@ for (const r of report.routes) {
 
   // 内容宽度与居中（只在有 probe 的页面检查）
   // 上限按路由区分：正文类页面受 --wide-max-width（1000px）约束；
-  // 首页是 Dusklight 式宽版式（主内容 + 侧栏），受 --home-max-width（1400px）约束。
+  // 首页与相册是 Dusklight 式宽版式（主内容 + 侧栏 / 图片墙），受 --home-max-width（1400px）约束。
   if (m.contentWidth !== null && r.viewport === 'desktop') {
-    const limit = r.route === 'home' ? 1420 : 1010
+    const wide = r.route === 'home' || r.route.startsWith('gallery')
+    const limit = wide ? 1420 : 1010
     if (m.contentWidth > limit) fails.push(`${tag}: 内容宽度 ${m.contentWidth} 超上限 ${limit}`)
   }
 

@@ -41,6 +41,7 @@ export default defineNuxtConfig({
     { path: '~/components/ui', pathPrefix: false, ignore: ['**/.keep/**'] },
     { path: '~/components/home', pathPrefix: false },
     { path: '~/components/about', pathPrefix: false },
+    { path: '~/components/gallery', pathPrefix: false },
   ],
 
   // ---------- 渲染模式：纯 SSG ----------
@@ -176,7 +177,7 @@ export default defineNuxtConfig({
     class: 'icon',
     size: '1em',
     serverBundle: {
-      collections: ['tabler'],
+      collections: ['tabler', 'ph'],
     },
     /**
      * scan —— 构建期扫描源码里出现过的 tabler 图标名，打包进客户端 bundle。
