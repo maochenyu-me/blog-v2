@@ -217,6 +217,16 @@ export default {
       relatedCount: 3,
       showCopyButton: true,
       showImageViewer: true,
+      comments: {
+        /** 是否启用文章评论区（Ecoku，仅文章页渲染） */
+        enabled: true,
+        /** 自部署的 Ecoku 实例地址（不带尾斜杠） */
+        serverUrl: 'https://ecoku.518339.xyz',
+        /** Ecoku 后台注册的站点 ID */
+        siteId: 'blog-v2',
+        /** 每页根评论数（1～100） */
+        pageSize: 10,
+      },
     },
 
     shuoshuo: {

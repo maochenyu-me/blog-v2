@@ -143,6 +143,16 @@ export interface PostPageConfig {
   relatedCount: number
   showCopyButton: boolean
   showImageViewer: boolean
+  /** Ecoku 评论配置 */
+  comments: {
+    enabled: boolean
+    /** Ecoku 实例地址（不带尾斜杠） */
+    serverUrl: string
+    /** 后台注册的站点 ID */
+    siteId: string
+    /** 每页根评论数 */
+    pageSize: number
+  }
 }
 
 export interface ShuoshuoPageConfig {

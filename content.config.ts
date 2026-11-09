@@ -24,5 +24,14 @@ export default defineContentConfig({
       type: 'page',
       source: 'about.md',
     }),
+
+    /** 法务页：隐私政策 / Cookie / 版权协议，页脚 legalLinks 指向 /legal/<slug> */
+    legal: defineCollection({
+      type: 'page',
+      source: 'legal/*.md',
+      schema: z.object({
+        title: z.string(),
+      }),
+    }),
   },
 })

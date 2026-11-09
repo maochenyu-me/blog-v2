@@ -33,7 +33,7 @@ export default defineNuxtModule({
       const themeMod = await jiti.import<any>(themePath)
       const theme = themeMod.default.theme
 
-      const { accent, neutral, fontSize } = theme
+      const { accent, neutral, fontSize, glass } = theme
 
       const css = `/* ---------------------------------------------------------------
  * 自动生成，请勿手动编辑。
@@ -46,6 +46,14 @@ export default defineNuxtModule({
   --font-mono: ${theme.fontFamily.mono};
 
   --radius-base: ${theme.radius};
+  --radius-full: ${theme.radiusFull};
+
+  --header-pill-height: ${theme.headerPillHeight};
+  --header-pad-y: ${theme.headerPadY};
+  --header-pad-x: ${theme.headerPadX};
+
+  --glass-blur: ${glass.blur};
+  --glass-saturation: ${glass.saturation};
 
   --text-h1: ${fontSize.h1.size};
   --text-h1--line-height: ${fontSize.h1.lineHeight};
@@ -79,6 +87,11 @@ export default defineNuxtModule({
   --muted-foreground: ${neutral.light.mutedForeground};
   --border: ${neutral.light.border};
   --accent: ${accent.light};
+
+  --glass-bg: ${glass.light.bg};
+  --glass-border: ${glass.light.border};
+  --glass-highlight: ${glass.light.highlight};
+  --glass-scrolled-shadow: ${glass.light.scrolledShadow};
 
   --radius: ${theme.radius};
   --content-max-width: ${theme.contentMaxWidth};
@@ -135,6 +148,11 @@ export default defineNuxtModule({
   --border: ${neutral.dark.border};
   --accent: ${accent.dark};
 
+  --glass-bg: ${glass.dark.bg};
+  --glass-border: ${glass.dark.border};
+  --glass-highlight: ${glass.dark.highlight};
+  --glass-scrolled-shadow: ${glass.dark.scrolledShadow};
+
   color-scheme: dark;
 }
 
@@ -143,6 +161,15 @@ export default defineNuxtModule({
 .dark *::before,
 .dark *::after {
   box-shadow: none !important;
+}
+
+/*
+ * 例外：头部胶囊滚动点亮态的阴影（权重 0,3,0 > 上方 .dark * 的 0,1,1，且声明在后）。
+ * 仅头部胶囊开例外；页脚玻璃主体在暗色下维持禁阴影（靠 border + 半透底表达层次）。
+ */
+.dark .header-scrolled .header-pill,
+.dark .header-scrolled .header-pill::before {
+  box-shadow: var(--glass-scrolled-shadow), var(--glass-highlight) !important;
 }
 `
 

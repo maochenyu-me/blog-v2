@@ -181,6 +181,9 @@ importers:
       '@nuxtjs/seo':
         specifier: ^6.0.1
         version: 6.0.1(ce066816f27e3fa4c007d8fbfa49dc45)
+      ecoku:
+        specifier: 0.5.4
+        version: 0.5.4
       marked:
         specifier: ^18.1.3
         version: 18.1.3
@@ -2699,6 +2702,10 @@ packages:
 
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
+
+  ecoku@0.5.4:
+    resolution: {integrity: sha512-Be4FAB0D+CGjdPxv0Av84Of0Xm/uNUO5SiJe+MAXNY90EO8ifDhulbLX0Tcte/zyrcOqfTKtxWx/LeNhOXb8Qg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -7776,6 +7783,8 @@ snapshots:
       gopd: 1.2.0
 
   duplexer@0.1.2: {}
+
+  ecoku@0.5.4: {}
 
   ee-first@1.1.1: {}
 

@@ -25,6 +25,19 @@ export const ui = {
     themeTitle: '主题：{label}',
   },
 
+  /** 页脚 */
+  footer: {
+    uptimeLabel: '小站已存活：',
+    uptimeValue: '{d} 天 {h} 时 {m} 分 {s} 秒',
+    legalNavAria: '站点法务页面',
+  },
+
+  /** 法务页（隐私政策 / Cookie / 版权协议） */
+  legal: {
+    navAria: '其他法务页面',
+    notFound: '页面不存在',
+  },
+
   /** 页面标题与区块标签 */
   pages: {
     archive: '归档',

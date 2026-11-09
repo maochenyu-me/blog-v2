@@ -9,6 +9,14 @@
   --font-mono: 'JetBrains Mono', 'LXGW WenKai Lite', ui-monospace, monospace;
 
   --radius-base: 0.5rem;
+  --radius-full: 9999px;
+
+  --header-pill-height: 2.75rem;
+  --header-pad-y: 0.75rem;
+  --header-pad-x: 1rem;
+
+  --glass-blur: 24px;
+  --glass-saturation: 140%;
 
   --text-h1: 1.75rem;
   --text-h1--line-height: 1.25;
@@ -42,6 +50,11 @@
   --muted-foreground: #71717a;
   --border: #e4e4e7;
   --accent: #a94f33;
+
+  --glass-bg: rgba(255, 255, 255, 0.66);
+  --glass-border: rgba(228, 228, 231, 0.7);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --glass-scrolled-shadow: 0 8px 24px rgba(24, 24, 27, 0.08);
 
   --radius: 0.5rem;
   --content-max-width: 764px;
@@ -98,6 +111,11 @@
   --border: #27272a;
   --accent: #cc785c;
 
+  --glass-bg: rgba(9, 9, 11, 0.55);
+  --glass-border: rgba(39, 39, 42, 0.9);
+  --glass-highlight: inset 0 1px 0 rgba(250, 250, 250, 0.06);
+  --glass-scrolled-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
   color-scheme: dark;
 }
 
@@ -106,4 +124,13 @@
 .dark *::before,
 .dark *::after {
   box-shadow: none !important;
+}
+
+/*
+ * 例外：头部胶囊滚动点亮态的阴影（权重 0,3,0 > 上方 .dark * 的 0,1,1，且声明在后）。
+ * 仅头部胶囊开例外；页脚玻璃主体在暗色下维持禁阴影（靠 border + 半透底表达层次）。
+ */
+.dark .header-scrolled .header-pill,
+.dark .header-scrolled .header-pill::before {
+  box-shadow: var(--glass-scrolled-shadow), var(--glass-highlight) !important;
 }

@@ -51,6 +51,38 @@ export default {
      * 所以 SiteHeader / MobileDrawer 也必须消费这个 token，禁止各处再写 3.5rem。
      */
     headerHeight: '3.5rem',
+    /**
+     * 胶囊导航（Dusklight 式双胶囊）尺寸。
+     * header 实际占位 = pill 高度 + headerPadY × 2 = 2.75 + 0.75×2 = 4.25rem，
+     * 仍低于锚点避让线（3.5 + 1.5 = 5rem）。
+     */
+    headerPillHeight: '2.75rem',
+    headerPadY: '0.75rem',
+    headerPadX: '1rem',
+
+    /**
+     * 玻璃拟态 —— 顶部胶囊与页脚主体共用。
+     * 与 zinc 中性色板对齐的 rgba 值；scrolledShadow 仅在滚动点亮态出现。
+     */
+    glass: {
+      light: {
+        bg: 'rgba(255, 255, 255, 0.66)',
+        border: 'rgba(228, 228, 231, 0.7)',
+        highlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+        scrolledShadow: '0 8px 24px rgba(24, 24, 27, 0.08)',
+      },
+      dark: {
+        bg: 'rgba(9, 9, 11, 0.55)',
+        border: 'rgba(39, 39, 42, 0.9)',
+        highlight: 'inset 0 1px 0 rgba(250, 250, 250, 0.06)',
+        scrolledShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      },
+      blur: '24px',
+      saturation: '140%',
+    },
+
+    /** 胶囊 / 头像等药丸形圆角 */
+    radiusFull: '9999px',
     /** 文章页目录旁栏宽度，≥1280px 时挂在正文右侧沟槽外 */
     tocWidth: '200px',
     tocGap: '3rem',

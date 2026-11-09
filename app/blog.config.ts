@@ -21,6 +21,9 @@ export default {
       email: 'hi@kemiaosw.top',
     },
 
+    /** 建站起始日（ISO 日期）—— 页脚「小站已存活」计时的起点 */
+    siteStartDate: '2024-11-01',
+
     keywords: ['前端', '设计', '博客', '克喵', '喵洛阁'],
 
     analytics: {
@@ -74,6 +77,11 @@ export default {
     footer: {
       copyright: '克喵:)',
       startYear: 2024,
+      legalLinks: [
+        { label: '隐私政策', to: '/legal/privacy' },
+        { label: 'Cookie', to: '/legal/cookie' },
+        { label: '版权协议', to: '/legal/copyright-agreement' },
+      ],
       extraLinks: [
         { label: 'RSS', to: '/rss.xml' },
         { label: 'Atom', to: '/atom.xml' },

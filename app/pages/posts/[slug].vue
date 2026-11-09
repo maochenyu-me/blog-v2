@@ -127,8 +127,6 @@ useHead({
 
         <CodeCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
         <MathCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
-
-        <CommentSlot />
       </article>
 
       <!-- 桌面端目录旁栏，挂在正文右侧沟槽外（<1280px 时目录在顶栏按钮里） -->
@@ -156,6 +154,9 @@ useHead({
       <h2 class="related-label">{{ ui.post.related }}</h2>
       <PostList :posts="related" :show-date="false" :show-tags="true" />
     </section>
+
+    <!-- Ecoku 评论区（仅文章页，相关文章下方） -->
+    <EcokuComments :page-title="title" />
   </div>
 </template>
 

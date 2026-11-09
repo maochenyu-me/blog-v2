@@ -39,6 +39,8 @@ export interface SiteConfig {
     bio: string
     email: string
   }
+  /** 建站起始日（ISO 日期字符串，如 '2024-11-01'），页脚存活计时起点 */
+  siteStartDate: string
   keywords: string[]
   analytics: {
     provider: 'umami' | 'plausible' | 'cloudflare' | 'none'
@@ -51,6 +53,7 @@ export interface SiteConfig {
   footer: {
     copyright: string
     startYear: number
+    legalLinks: Array<{ label: string; to: string }>
     extraLinks: Array<{ label: string; to: string }>
   }
 }
