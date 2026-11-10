@@ -115,6 +115,7 @@ const gridVars = computed(() => ({
 <template>
   <div class="page-links">
     <div class="container">
+      <SiteBreadcrumb />
       <!-- ── 页头：标题 + 计数副题 + 随机拜访 ── -->
       <header class="page-head">
         <div class="page-head-text">

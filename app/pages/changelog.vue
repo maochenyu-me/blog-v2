@@ -175,6 +175,7 @@ watch(totalPages, (n) => {
 <template>
   <div class="page-changelog">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.changelog }}</h1>
         <p v-if="pageCfg.showCount" class="page-sub">

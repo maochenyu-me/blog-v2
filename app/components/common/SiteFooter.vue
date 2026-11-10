@@ -162,16 +162,21 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .site-footer {
-  margin-top: var(--space-section);
+  /* 外边距归零：页脚玻璃面板紧贴内容区（各页面自带 padding-bottom 兜底间距），
+   * 分隔感由 border-top + 主体内 padding 承担 */
+  margin-top: 0;
 }
 
-/* 玻璃主体：半透底 + 磨砂 + 顶部 1px 线（无阴影，暗色禁阴影规则下自洽） */
+/* 玻璃主体：半透底 + 磨砂 + 顶部 1px 线（无阴影，暗色禁阴影规则下自洽）
+ * 上下 padding 对称用 item 档，面板收口贴住内容，不留「下半段空面板」；
+ * 固定按钮（音乐播放器左下、回顶键右下）的容身位在外层 .app-shell 的
+ * padding-bottom 里，不靠这里撑 */
 .footer-body {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   border-top: 1px solid var(--border);
-  padding: var(--space-block) var(--space-gutter);
+  padding: var(--space-item) var(--space-gutter);
 }
 
 .footer-bottom {

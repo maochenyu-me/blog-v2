@@ -51,8 +51,15 @@ export function usePostToc() {
     return out
   })
 
+  /**
+   * 配置层面「要不要目录」：开关打开即 true，与是否真有标题无关。
+   * 与 available 的区别是这一层不看 flat —— 无标题的文章 tocEnabled 仍为 true，
+   * 于是旁栏/顶栏可以拿它判断「本该有目录但没有」，把直达评论补到目录的位置上。
+   */
+  const tocEnabled = computed(() => pageCfg.showToc && tocCfg.enabled)
+
   /** 是否该出现目录（开关 + 配置 + 真的有标题） */
-  const available = computed(() => pageCfg.showToc && tocCfg.enabled && flat.value.length > 0)
+  const available = computed(() => tocEnabled.value && flat.value.length > 0)
 
   function setLinks(list: TocLink[]) {
     links.value = list
@@ -65,5 +72,5 @@ export function usePostToc() {
     isOpen.value = false
   }
 
-  return { links, flat, activeId, isOpen, available, setLinks, clear }
+  return { links, flat, activeId, isOpen, available, tocEnabled, setLinks, clear }
 }

@@ -10,6 +10,7 @@ useHead({ title: ui.pages.categories })
 <template>
   <div class="page-categories">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.categories }}</h1>
       </header>

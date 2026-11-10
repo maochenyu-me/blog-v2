@@ -9,8 +9,15 @@
  * 三处（本组件 / MobileToc / 文章页）共享同一份状态，见 app/composables/usePostToc.ts。
  */
 const { ui } = useUi()
-const { flat, activeId, available } = usePostToc()
+const { flat, activeId, available, tocEnabled } = usePostToc()
 const pageCfg = usePageConfig('post')
+
+/**
+ * 无标题文章（只有 H1）时目录为空，但旁栏槽位还在 ——
+ * 此时把「直达评论」独立成一个按钮占住原目录位置，
+ * 避免整块消失、右侧沟槽留白。
+ */
+const jumpOnly = computed(() => !available.value && tocEnabled.value && !!pageCfg.comments?.enabled)
 
 /**
  * 高亮当前章节。
@@ -158,6 +165,18 @@ onBeforeUnmount(() => {
       </li>
     </ul>
   </nav>
+
+  <!-- 无目录：直达评论按钮占住原目录槽位，右侧沟槽不留白 -->
+  <div v-else-if="jumpOnly" class="toc toc-desktop toc-jump-only">
+    <a
+      href="#comments"
+      class="toc-jump-standalone"
+      :aria-label="ui.post.commentsJumpAria"
+    >
+      <Icon name="tabler:message-dots" aria-hidden="true" />
+      <span>{{ ui.post.jumpComments }}</span>
+    </a>
+  </div>
 </template>
 
 <style scoped>
@@ -194,6 +213,26 @@ onBeforeUnmount(() => {
 
 .toc-jump-comments:hover {
   color: var(--foreground);
+}
+
+/* ── 无目录时的独立直达评论（占原目录槽位） ── */
+.toc-jump-standalone {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.5);
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+  transition:
+    color var(--duration-base) var(--easing-base),
+    border-color var(--duration-base) var(--easing-base);
+}
+
+.toc-jump-standalone:hover {
+  color: var(--foreground);
+  border-color: var(--accent);
 }
 
 .toc-list {

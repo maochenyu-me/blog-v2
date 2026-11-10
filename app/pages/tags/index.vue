@@ -39,6 +39,7 @@ useHead({ title: ui.pages.tags })
 <template>
   <div class="page-tags">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.tags }}</h1>
       </header>

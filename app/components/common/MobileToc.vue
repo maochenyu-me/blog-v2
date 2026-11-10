@@ -13,7 +13,7 @@
  */
 const route = useRoute()
 const { ui } = useUi()
-const { flat, activeId, isOpen, available } = usePostToc()
+const { flat, activeId, isOpen, available, tocEnabled } = usePostToc()
 const pageCfg = usePageConfig('post')
 
 const triggerEl = ref<HTMLButtonElement | null>(null)
@@ -22,13 +22,38 @@ const bodyEl = ref<HTMLElement | null>(null)
 /** 首屏不显示，避免 SSR 无数据时与服务端渲染结果打架 */
 const mounted = ref(false)
 
-/**
- * 只在文章页出现：/posts/<slug>，且真的解析出了目录。
- * 用 available（已含 showToc + enabled + 有标题）而不是只看路由 ——
- * 一篇文章如果只用了 H1，按钮点了会是空的。
- */
 const isPost = computed(() => /^\/posts\/[^/]+\/?$/.test(route.path))
-const show = computed(() => mounted.value && isPost.value && available.value)
+
+/**
+ * 无标题文章（只有 H1）时目录为空，但仍保留一个直达评论的按钮 ——
+ * 此时按钮不再是「开抽屉」，而是直接滚到评论区（见 onTrigger）。
+ */
+const jumpOnly = computed(() => !available.value && tocEnabled.value && !!pageCfg.comments?.enabled)
+
+/**
+ * 只在文章页出现，且「有目录」或「无目录但有评论可跳」。
+ * 用 available（已含 showToc + enabled + 有标题）而不是只看路由 ——
+ * 一篇文章如果只用了 H1，开抽屉会是空的。
+ */
+const show = computed(() => mounted.value && isPost.value && (available.value || jumpOnly.value))
+
+/** 按钮行为：有目录开抽屉；无目录直接滚到评论区 */
+function onTrigger() {
+  if (available.value) {
+    if (isOpen.value) close()
+    else openDrawer()
+    return
+  }
+  scrollToComments()
+}
+
+/** 无抽屉时直接滚到评论区（无需先关抽屉，页面未被锁） */
+function scrollToComments() {
+  const el = document.querySelector('#comments')
+  if (!el) return
+  history.pushState(null, '', '#comments')
+  el.scrollIntoView({ block: 'start' })
+}
 
 function openDrawer() {
   isOpen.value = true
@@ -62,7 +87,7 @@ function jumpComments(event: MouseEvent) {
   event.preventDefault()
   close()
   nextTick(() => {
-    const el = document.querySelector('.post-comments')
+    const el = document.querySelector('#comments')
     if (!el) return
     history.pushState(null, '', '#comments')
     el.scrollIntoView({ block: 'start' })
@@ -153,12 +178,17 @@ onBeforeUnmount(() => {
     ref="triggerEl"
     type="button"
     class="toc-trigger"
-    :aria-label="isOpen ? ui.post.tocClose : ui.post.tocOpen"
-    :aria-expanded="isOpen"
-    aria-controls="post-toc-drawer"
-    @click="isOpen ? close() : openDrawer()"
+    :aria-label="jumpOnly ? ui.post.commentsJumpAria : isOpen ? ui.post.tocClose : ui.post.tocOpen"
+    :title="jumpOnly ? ui.post.commentsJumpAria : undefined"
+    :aria-expanded="jumpOnly ? undefined : isOpen"
+    :aria-controls="jumpOnly ? undefined : 'post-toc-drawer'"
+    @click="onTrigger"
   >
-    <Icon name="tabler:list" class="toc-trigger__icon" aria-hidden="true" />
+    <Icon
+      :name="jumpOnly ? 'tabler:message-dots' : 'tabler:list'"
+      class="toc-trigger__icon"
+      aria-hidden="true"
+    />
   </button>
 
   <Teleport to="body">

@@ -24,6 +24,7 @@ const stats = computed(() => t(ui.pages.gallery.pageMeta, {
 <template>
   <div class="page-gallery">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.gallery.title }}</h1>
         <p class="page-desc">{{ ui.pages.gallery.description }}</p>

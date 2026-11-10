@@ -33,6 +33,7 @@ useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tagName.value 
 <template>
   <div class="page-tag">
     <div class="container">
+      <SiteBreadcrumb :current="tagName" />
       <header class="page-head">
         <NuxtLink to="/tags" class="back-link">{{ ui.collection.backToTags }}</NuxtLink>
         <h1 class="page-title">{{ tagName }}</h1>

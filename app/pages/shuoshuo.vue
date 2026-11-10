@@ -104,6 +104,7 @@ const listEl = ref<HTMLElement | null>(null)
 <template>
   <div class="page-shuoshuo">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <div class="page-head-text">
           <h1 class="page-title">{{ ui.pages.shuoshuo }}</h1>

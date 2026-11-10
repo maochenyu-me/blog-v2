@@ -74,6 +74,7 @@ export default {
         children: [
           { label: '友链', to: '/links', icon: 'tabler:link' },
           { label: '朋友圈', to: '/fcircle', icon: 'tabler:rss' },
+          { label: '留言板', to: '/message', icon: 'tabler:message-2' },
         ],
       },
       {

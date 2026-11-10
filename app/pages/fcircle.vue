@@ -134,6 +134,7 @@ const gridVars = computed(() => ({
 <template>
   <div class="page-fcircle">
     <div class="container">
+      <SiteBreadcrumb />
       <!-- ── 页头 ── -->
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.fcircle }}</h1>

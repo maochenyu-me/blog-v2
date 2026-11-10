@@ -65,6 +65,7 @@ const ROUTES = [
   ['categories', '/categories'],
   ['tags', '/tags'],
   ['links', '/links'],
+  ['message', '/message'],
   ['fcircle', '/fcircle'],
   ['shuoshuo', '/shuoshuo'],
   ['gallery', '/gallery'],

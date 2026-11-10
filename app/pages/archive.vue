@@ -11,6 +11,7 @@ useHead({ title: ui.pages.archive })
 <template>
   <div class="page-archive">
     <div class="container">
+      <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.archive }}</h1>
       </header>

@@ -31,6 +31,7 @@ const { data: siblings } = await useAsyncData('legal-siblings', () =>
 <template>
   <div v-if="page" class="page-legal">
     <div class="legal-shell">
+      <SiteBreadcrumb :current="page.title" />
       <h1 class="legal-title">{{ page.title }}</h1>
 
       <ProseBody>

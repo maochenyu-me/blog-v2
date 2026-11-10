@@ -45,6 +45,7 @@ export const ui = {
     tags: '标签',
     links: '友链',
     fcircle: '朋友圈',
+    message: '留言板',
     shuoshuo: '说说',
     about: '关于',
     changelog: '更新日志',
@@ -152,6 +153,50 @@ export const ui = {
     },
   },
 
+  /** 留言板（/message） */
+  message: {
+    /** 页头副题与 chips（h1 复用 ui.pages.message） */
+    heroSubtitle: '一张贴在门口的便签纸，写给喵洛阁，也写给路过的你。留一句问候、一条建议、一个报错，或者只是告诉我你来过。',
+    heroChip: { start: '来都来了', talk: '有话直说', apply: '申请友链' },
+    heroChipApplyAria: '前往友链页申请友链',
+    /** 引言区 */
+    kicker: 'GUESTBOOK',
+    introTitle: '慢一点，这里不赶时间',
+    introLead: '这里不是工单系统，没有必须回复的时限。你可以聊文章里没写全的细节，聊聊前端和设计，也可以只是留下一句无关紧要的闲话。',
+    introFollow: '每一条我都会看。善意的文字会留在这个小站里，和页面上的其他字一起，等下一位访客翻到这里。',
+    introQuote: '山河湖海，素未谋面，也可以在一行字里相逢。',
+    /** 规范折叠块 */
+    rulesSummary: '留言板规范 — 文明留言，共建一个干净的角落',
+    rulesWarn: '违反规范可能导致警告、禁言或永久封禁。站长保留对本站规范的解释权与调整权，有异议请私下邮件联系。',
+  },
+
+  /** 面包屑导航 */
+  breadcrumb: {
+    aria: '面包屑导航',
+    /** 根节点显示为 ~（Unix 家目录双关），读屏读「首页」 */
+    home: '首页',
+    homeGlyph: '~',
+    /** 文章页的返回上一页：Unix 式 cd .. */
+    back: 'cd ..',
+    backLabel: '返回上一页',
+    backAria: '返回上一页。当前位置：{where}',
+    /** 路由段到中文名的映射（不含详情页的动态段） */
+    routes: {
+      archive: '归档',
+      categories: '分类',
+      tags: '标签',
+      links: '友链',
+      fcircle: '朋友圈',
+      message: '留言板',
+      shuoshuo: '说说',
+      gallery: '相册',
+      about: '关于',
+      changelog: '更新日志',
+      legal: '法务',
+      posts: '文章',
+    },
+  },
+
   /** 归档 / 分类 / 标签详情页 */
   collection: {
     notFoundCategory: '分类不存在',
@@ -174,6 +219,8 @@ export const ui = {
     navEmptyNext: '已是最新一篇',
     related: '相关',
     commentsJumpAria: '跳转到评论',
+    /** 无目录时旁栏/顶栏的直达评论入口文案 */
+    jumpComments: '直达评论',
     toc: '目录',
     tocAria: '目录',
     tocOpen: '打开目录',

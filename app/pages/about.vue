@@ -52,6 +52,7 @@ const rowReward = aboutRows[6]
 <template>
   <div class="page-about">
     <div class="container">
+      <SiteBreadcrumb />
       <h1 class="visually-hidden">{{ ui.pages.about }} {{ cfg.hero.name }}</h1>
 
       <AboutHero

@@ -40,6 +40,7 @@ function closeLightbox() {
 <template>
   <div class="page-gallery-folder">
     <div class="container">
+      <SiteBreadcrumb :current="folder?.name" />
       <header class="page-head">
         <NuxtLink to="/gallery" class="back-link">
           <Icon name="tabler:chevron-left" aria-hidden="true" />

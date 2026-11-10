@@ -93,6 +93,10 @@ useHead({
   <div v-if="post" class="page-post">
     <div class="post-shell">
       <article class="post-article">
+        <!-- 面包屑放在 article 内：≥1280px 时 post-shell 是「正文 + 目录」两列 grid，
+             作为独立 grid item 会抢占列位、打乱 article/aside 的自动放置 -->
+        <SiteBreadcrumb :current="title" back />
+
         <header class="post-head">
           <h1 class="post-title">{{ post.title }}</h1>
 

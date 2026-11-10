@@ -253,3 +253,68 @@ post: {
 1. **`document.hidden = true` 的测试干扰**：Agent Window 在后台时不产生渲染帧 —— `window.scrollTo()` 不派发 `scroll` 事件、`scrollIntoView({behavior:'smooth'})` 永不推进。绕法：验证高亮时用 `dispatchEvent(new Event('scroll'))` 手动触发，或用真实 click/wheel 输入；验证跳转时把 `scroll-behavior` 置为 `auto`。
 2. **同一帧读不到渲染结果**：在 `scrollTo` 之后立刻读 `.is-active` 会读到旧值，需要放到 `setTimeout(…, 120~150)` 里再读，且必须串行链（并行 `Promise.all` 会让所有采样都读到最后一个位置）。
 3. **`bsk_*` 的 observationId 一次性**：每次动作前都要重新 `bsk_session sync`，并把新的 `observationId` 与旧 `contextId` 一起传；报 "requires an unused strict observation" 是常态而非错误。
+
+---
+
+## 8. 无目录文章的直达评论兜底（2026-11-10）
+
+### 问题
+
+只有 H1、没有 H2/H3 的文章会解析不出目录，`usePostToc().available` 为 false，
+于是**桌面旁栏与顶栏按钮一起消失** —— 这两处的「直达评论」入口随之不见，
+读者无法从文章顶部跳到评论区。
+
+### 根因
+
+`available = showToc && enabled && flat.length > 0` 把「该不该有目录」和
+「实际有没有标题」揉成了一个开关。取值 false 时两个组件都整体不渲染。
+但「无标题」只该决定**目录列表**要不要画，不该决定**评论区入口**要不要给。
+
+### 解法
+
+在 `usePostToc` 里把两种语义拆开：
+
+```ts
+tocEnabled  = showToc && enabled              // 配置层：该不该有目录
+available   = tocEnabled && flat.length > 0   // 实际：真的有标题可列
+```
+
+两个所在位置的组件各自做兜底（断点互补，同一时刻只有一个生效，不会重复出现）：
+
+| 位置 | 归属 | 有目录 | 无标题文章 |
+| --- | --- | --- | --- |
+| 桌面 ≥1280 右侧沟槽 | `ProseToc` | 目录列表 | **「直达评论」药丸按钮**占原槽位 |
+| 移动/平板 <1280 顶栏 | `MobileToc` | list 图标 → 开抽屉 | 图标换成 **message-dots**，点击直接滚到评论区 |
+
+顶栏是「原位替换」而非新增按钮 —— 不占额外横向空间，也不会出现「目录+评论」两个图标并存。
+
+### 关键实现点
+
+- `jumpOnly = !available && tocEnabled && comments.enabled`，两个组件用同一个判据。
+- **SSR 无水合失配**：`toc` 数据来自构建期 `post.body.toc.links`，`flat` 在 SSR 就有值，
+  所以 `jumpOnly` 在服务端即可判定 —— 实测零标题文章的 `dist/posts/*/index.html`
+  里 `aside` 直接输出 `<div class="toc toc-desktop toc-jump-only">`（另需注意：顶栏
+  `MobileToc` 因 `mounted=false` 不参与 SSR，其按钮始终是客户端挂载）。
+- 文案集中在 `ui.post.jumpComments`（正文页新增一处），合规过 `audit-hardcode`。
+
+### 验收记录（2026-11-10 实测）
+
+用一篇临时零标题文章（`content/posts/zz-tmp-noheading.md`，验证后已删除）实测：
+
+| # | 项 | 实测数据 | 结果 |
+| --- | --- | --- | --- |
+| 1 | 桌面兜底 | 1440×900：`.post-aside` display=block、left=1002 w=200 h=45，内含 `.toc-jump-standalone`（文案「直达评论」）；`.toc-list` 数量 0；`.toc-trigger` display=none | 通过 |
+| 2 | 移动兜底 | 390×844：`.post-aside` display=none；`.toc-trigger` display=flex、32×32、位于顶栏 `.header-actions` 中（left=247）；图标为 `tabler:message-dots` | 通过 |
+| 3 | SSR 直出 | 零标题文章 HTML 的 `<aside>` 内直接是 `toc-jump-only`（服务端判定，无闪烁） | 通过 |
+| 4 | 有目录文章回归 | `no-loading-feel`（8 个 h2）`<aside>` 内仍是完整 `.toc-list`，`.toc-jump-standalone` 在真实 DOM 中 0 处 | 通过 |
+| 5 | 全站验收 | `pnpm verify` @4173：90 个页面状态（15 路由 × 3 视口 × 明暗）、**0 错误 0 溢出**；`audit-hardcode` PASS 0 处 | 通过 |
+| 6 | 构建 | `pnpm build` exit 0、165 个 HTML、83 页路由 | 通过 |
+
+### 变更文件
+
+| 文件 | 改动 |
+| --- | --- |
+| `app/composables/usePostToc.ts` | 拆出 `tocEnabled`，`available` 基于它 + `flat.length` |
+| `app/components/server/ProseToc.vue` | 无目录时渲染 `toc-jump-standalone` 药丸按钮 |
+| `app/components/common/MobileToc.vue` | 无目录时按钮换图标 + 点击直达评论（`onTrigger` 分流） |
+| `app/data/ui.ts` | `post.jumpComments` |

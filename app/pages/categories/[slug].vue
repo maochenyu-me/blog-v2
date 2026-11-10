@@ -29,6 +29,7 @@ useHead({ title: computed(() => t(ui.collection.categoryTitle, { name: categoryN
 <template>
   <div class="page-category">
     <div class="container">
+      <SiteBreadcrumb :current="categoryName" />
       <header class="page-head">
         <NuxtLink to="/categories" class="back-link">{{ ui.collection.backToCategories }}</NuxtLink>
         <h1 class="page-title">{{ categoryName }}</h1>

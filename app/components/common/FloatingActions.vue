@@ -48,8 +48,10 @@ function backToTop() {
 
 <style scoped>
 .fabs {
-  /* 按钮堆叠的基准：底部留白与按钮尺寸，移动端媒体查询统一改 */
-  --fab-bottom: 1.5rem;
+  /* 按钮堆叠的基准：底部留白与按钮尺寸，移动端媒体查询统一改。
+   * 1rem 而非 1.5rem：页脚面板收口后，回顶键随之下沉，
+   * 与页脚最后一行文字仍保持 ~12px 间隙 */
+  --fab-bottom: 1rem;
   --fab-size: 44px;
 }
 
@@ -99,7 +101,6 @@ function backToTop() {
 
 @media (max-width: 768px) {
   .fabs {
-    --fab-bottom: 1rem;
     --fab-size: 40px;
   }
 

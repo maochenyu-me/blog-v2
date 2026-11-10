@@ -190,6 +190,23 @@ export interface GalleryPageConfig {
   showCoverBadge: boolean
 }
 
+export interface MessagePageConfig {
+  /** 留言板规范条目（name 加粗 + desc 说明） */
+  rules: Array<{ name: string; desc: string }>
+  /** 规范折叠块是否默认展开 */
+  rulesOpen: boolean
+  /** Ecoku 留言区配置 */
+  comments: {
+    enabled: boolean
+    serverUrl: string
+    siteId: string
+    /** 固定作用域键，不随路由变化 */
+    pageKey: string
+    /** 每页根评论数 */
+    pageSize: number
+  }
+}
+
 export interface PagesConfig {
   home: HomePageConfig
   archive: ArchivePageConfig
@@ -201,6 +218,7 @@ export interface PagesConfig {
   post: PostPageConfig
   shuoshuo: ShuoshuoPageConfig
   gallery: GalleryPageConfig
+  message: MessagePageConfig
 }
 
 export function usePageConfig<K extends keyof PagesConfig>(key: K): PagesConfig[K] {
