@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { buildHeatmapDays } from '~/utils/heatmap'
+
 const { site } = useBlogConfig()
 const { ui, t } = useUi()
 const pageCfg = usePageConfig('home')
@@ -22,12 +24,17 @@ const { data } = await useAsyncData('home-posts', async () => {
   const categories = await posts.categories()
   const tags = await posts.tags()
 
+  // 发文热力图在构建期定稿：窗口以构建日为锚点，随 payload 序列化到客户端，
+  // 客户端不重算，避免「今天」两端不一致造成的水合错位
+  const heat = buildHeatmapDays(all, new Date(), pageCfg.heatmap.weeks)
+
   return {
     featured,
     pinnedPaths: new Set(pinned.map((p) => p.path)),
     all,
     categories,
     tags,
+    heat,
   }
 })
 
@@ -125,7 +132,14 @@ useHead({
             </nav>
           </section>
 
-          <div class="cta-row">
+          <PostHeatmap
+            v-if="pageCfg.heatmap.enabled && data?.heat"
+            :heat="data.heat"
+            :more="pageCfg.cta"
+            class="heat-row"
+          />
+
+          <div v-else class="cta-row">
             <NuxtLink :to="pageCfg.cta.to" class="cta-link">
               {{ pageCfg.cta.label }}
             </NuxtLink>
@@ -141,6 +155,10 @@ useHead({
             <AnnouncementCard
               v-else-if="key === 'announcement' && pageCfg.sidebar.announcement.enabled"
               :cfg="pageCfg.sidebar.announcement"
+            />
+            <VisitorCard
+              v-else-if="key === 'visitor' && pageCfg.sidebar.visitor.enabled"
+              :cfg="pageCfg.sidebar.visitor"
             />
             <MottoCard
               v-else-if="key === 'motto' && pageCfg.sidebar.motto.enabled"
@@ -285,9 +303,13 @@ useHead({
   border-color: var(--accent);
 }
 
-/* ---- CTA ---- */
-.cta-row {
+/* ---- CTA / 发文热力图 ---- */
+.cta-row,
+.heat-row {
   margin-top: var(--space-block);
+}
+
+.cta-row {
   text-align: center;
 }
 

@@ -2,6 +2,14 @@
 const { site, feed } = useBlogConfig()
 const theme = useTheme()
 
+/**
+ * 全站背景图（LiuShen 式 backdrop）。
+ * enabled 是构建期常量，false 时整层不渲染，SSG 产物零成本。
+ * 层级用 z-index:-1：html 无背景色，body 背景已传播到画布，
+ * 本层恰好落在「画布之上、一切内容之下」，不动任何组件的层叠关系。
+ */
+const backdropEnabled = (useAppConfig().theme as any)?.backdrop?.enabled !== false
+
 // 防 FOUC 的内联主题脚本已移到 nuxt.config.ts 的 app.head，
 // 因为 404 / error 页不渲染布局，只在布局注入会让这些页面闪白。
 onMounted(() => theme.init())
@@ -41,6 +49,8 @@ useHead({ link: feedLinks })
 
 <template>
   <div class="app-shell">
+    <div v-if="backdropEnabled" class="site-backdrop" aria-hidden="true" />
+
     <SiteHeader />
 
     <main id="main-content" class="app-main">
@@ -55,6 +65,23 @@ useHead({ link: feedLinks })
 </template>
 
 <style scoped>
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: var(--backdrop-gradient), var(--backdrop-image);
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: var(--backdrop-filter);
+  opacity: var(--backdrop-opacity);
+  /* 放大盖住模糊边缘，防止四周露出模糊发虚的接缝 */
+  transform: scale(1.035);
+  transform-origin: top;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;

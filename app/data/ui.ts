@@ -93,6 +93,30 @@ export const ui = {
       sidebar: {
         asideLabel: '站点信息',
         announcement: '公告',
+        /** 访客信息卡（客户端拉取 IP 地理信息） */
+        visitor: {
+          title: '访客信息',
+          ip: 'IP 地址',
+          location: '地理位置',
+          distance: '与博主距离',
+          isp: '运营商',
+          os: '操作系统',
+          browser: '浏览器',
+          cdn: 'CDN 节点',
+          loading: '正在加载…',
+          calculating: '正在计算…',
+          failed: '获取失败',
+          na: 'N/A',
+          distanceValue: '约 {n} 公里',
+          distanceFailed: '无法计算',
+          localDev: '本地开发',
+          cardBtn: '查看 IP 信息卡',
+          cardBtnCollapse: '收起 IP 信息卡',
+          cardQuerying: '查询中…',
+          cardFailed: '加载失败，点击重试',
+          cardAlt: 'IP 信息卡片',
+          cdnAlt: '{name} CDN',
+        },
         motto: '一言',
         stats: '站点统计',
         categories: '分类',
@@ -144,6 +168,14 @@ export const ui = {
         navLabel: '分类筛选',
         all: '全部',
         more: '更多',
+      },
+      /** 发文热力图（文章列表底部） */
+      heatmap: {
+        regionLabel: '发文热力图',
+        summary: '过去一年共 {n} 篇文章',
+        dayTooltip: '{date}：{n} 篇',
+        dayEmpty: '{date}：暂无发文',
+        weekdays: ['', '一', '', '三', '', '五', ''],
       },
       /** 首页区块无障碍标签 */
       sections: {

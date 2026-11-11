@@ -10,6 +10,14 @@ export default {
       showExcerpt: false,
       cta: { label: '查看全部', to: '/archive' },
 
+      // ---- 发文热力图 ----
+      heatmap: {
+        /** 是否显示发文热力图（true 时替代列表底部原 CTA 行，「查看全部」移入卡片右上角） */
+        enabled: true,
+        /** 统计窗口周数（53 ≈ 过去一年） */
+        weeks: 53,
+      },
+
       // ---- 文章卡片流 ----
       cards: {
         /** 每页卡片数量（沿用原 latestCount 的分页口径） */
@@ -68,11 +76,11 @@ export default {
         enabled: true,
         /**
          * 侧栏组件排列顺序，从上到下。
-         * 可选项：profile / announcement / motto / stats / categories / tags / calendar
+         * 可选项：profile / announcement / visitor / motto / stats / categories / tags / calendar
          * 想隐藏某个组件：把它的 enabled 设为 false，或从数组中移除。
          * 注意：分类已默认由顶部 categoryBar 承担，此处默认不再重复展示。
          */
-        order: ['profile', 'announcement', 'motto', 'stats', 'tags', 'calendar'],
+        order: ['profile', 'announcement', 'visitor', 'motto', 'stats', 'tags', 'calendar'],
 
         profile: {
           /** 是否显示资料卡 */
@@ -92,11 +100,26 @@ export default {
         announcement: {
           /** 是否显示公告栏 */
           enabled: true,
-          /** 公告正文（纯文本，支持 \n 换行） */
+          /** 公告正文（Markdown，GFM 语法，单换行即换行） */
           text: '博客正在持续改版中，首页焕然一新。遇到问题欢迎通过社交链接反馈！',
           /** 「了解更多」链接（空字符串则不显示链接） */
           moreLabel: '了解更多',
           moreTo: '/about',
+        },
+
+        visitor: {
+          /** 是否显示访客信息卡 */
+          enabled: true,
+          /** 欢迎语（Markdown，支持 emoji 与链接） */
+          text: '欢迎来到喵洛阁！这里记录技术与生活，欢迎与我交流 💡，一起进步 🚀',
+          /** 博主所在纬度（与访客 IP 定位算直线距离）：南京仙林 · 栖霞区 */
+          bloggerLat: 32.1116,
+          /** 博主所在经度 */
+          bloggerLon: 118.9147,
+          /** 是否显示「查看 IP 信息卡」入口 */
+          showIpCard: true,
+          /** IP 信息卡图源（ippure 生成，失效时可换其他服务或留空隐藏入口） */
+          ipCardUrl: 'https://my.ippure.com/v1/card',
         },
 
         motto: {

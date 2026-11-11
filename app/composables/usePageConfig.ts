@@ -7,6 +7,11 @@ export interface HomePageConfig {
   latestCount: number
   showExcerpt: boolean
   cta: { label: string; to: string }
+  /** 发文热力图（文章列表底部，启用时替代 CTA 行） */
+  heatmap: {
+    enabled: boolean
+    weeks: number
+  }
   /** 文章卡片流配置 */
   cards: {
     pageSize: number
@@ -57,6 +62,14 @@ export interface HomePageConfig {
       moreLabel: string
       moreTo: string
     }
+    visitor: {
+      enabled: boolean
+      text: string
+      bloggerLat: number
+      bloggerLon: number
+      showIpCard: boolean
+      ipCardUrl: string
+    }
     motto: {
       enabled: boolean
       mottos: Array<{ text: string; from: string }>
@@ -87,6 +100,7 @@ export interface HomePageConfig {
 export type SidebarWidgetKey =
   | 'profile'
   | 'announcement'
+  | 'visitor'
   | 'motto'
   | 'stats'
   | 'categories'

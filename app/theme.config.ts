@@ -6,7 +6,7 @@
 export default {
   theme: {
     /**
-     * 唯一强调色。对比度实测：light #a94f33 on #fff = 5.45，dark #cc785c on #09090b = 6.07（均过 WCAG AA）。
+     * 唯一强调色。对比度实测：light #a94f33 on #fff = 5.45，dark #cc785c on #10131a = 5.67（均过 WCAG AA）。
      * 换色只改这两行，全站同步。
      */
     accent: {
@@ -14,7 +14,12 @@ export default {
       dark: '#cc785c',
     },
 
-    /** 中性色阶 —— 纯 zinc，零色相偏移（提示词 §5.2） */
+    /**
+     * 中性色阶 —— 深色侧为带蓝调的「蓝夜色板」（参考 blog.liushen.fun，
+     * 与全站背景图的夜空云海同调）。原纯 zinc（#09090b 系）在背景图模式下
+     * 显得死黑：卡片、面包屑、评论等组件压在夜空图上像黑色补丁。
+     * 明色侧维持纯 zinc 不变。
+     */
     neutral: {
       light: {
         background: '#ffffff',
@@ -24,11 +29,11 @@ export default {
         border: '#e4e4e7',
       },
       dark: {
-        background: '#09090b',
-        foreground: '#fafafa',
-        muted: '#18181b',
-        mutedForeground: '#a1a1aa',
-        border: '#27272a',
+        background: '#10131a',
+        foreground: '#f6f7f8',
+        muted: '#212f3f',
+        mutedForeground: '#9aa3b1',
+        border: '#2b3648',
       },
     },
 
@@ -74,8 +79,8 @@ export default {
         scrolledShadow: '0 8px 24px rgba(24, 24, 27, 0.08)',
       },
       dark: {
-        bg: 'rgba(9, 9, 11, 0.55)',
-        border: 'rgba(39, 39, 42, 0.9)',
+        bg: 'rgba(16, 19, 26, 0.55)',
+        border: 'rgba(43, 54, 72, 0.9)',
         highlight: 'inset 0 1px 0 rgba(250, 250, 250, 0.06)',
         scrolledShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
       },
@@ -95,13 +100,46 @@ export default {
         border: 'rgba(228, 228, 231, 0.95)',
       },
       dark: {
-        bg: 'rgba(20, 20, 23, 0.92)',
-        border: 'rgba(63, 63, 70, 0.9)',
+        bg: 'rgba(26, 32, 43, 0.92)',
+        border: 'rgba(58, 68, 88, 0.9)',
       },
     },
 
     /** 胶囊 / 头像等药丸形圆角 */
     radiusFull: '9999px',
+
+    /**
+     * 全站背景图（LiuShen 式 backdrop）。
+     * 渲染在 layouts/default.vue 的 .site-backdrop：fixed 全屏、z-index:-1，
+     * 落在「画布之上、一切内容之下」，不侵入任何组件的层叠关系。
+     * 纵向渐变遮罩让图片只在视口顶部露脸、向下淡出到纯背景色，保证正文可读。
+     * 各参数编译为 CSS 变量（:root 与 .dark 各一份），暗色覆盖自动完成。
+     */
+    backdrop: {
+      /** 构建期常量：false 时整层不渲染 */
+      enabled: true,
+      light: '/images/backdrop-light.webp',
+      dark: '/images/backdrop-dark.webp',
+      /** 模糊半径（px）—— 图片放大 1.035 倍盖住模糊边缘 */
+      blur: 6,
+      /** 饱和增益与整层不透明度，暗色下都略高（参考站实测值） */
+      saturate: { light: 1.16, dark: 1.18 },
+      opacity: { light: 0.34, dark: 0.38 },
+      /**
+       * 渐变遮罩的中间停靠点：mix 是背景色占比（0 = 全透露出图片，1 = 纯背景色），
+       * at 是纵向位置（%）。生成器会在末尾自动补 { mix: 1, at: 100 } 收底。
+       */
+      fade: {
+        light: [
+          { mix: 0.2, at: 0 },
+          { mix: 0.6, at: 40 },
+        ],
+        dark: [
+          { mix: 0, at: 0 },
+          { mix: 0.8, at: 60 },
+        ],
+      },
+    },
     /** 文章页目录旁栏宽度，≥1280px 时挂在正文右侧沟槽外 */
     tocWidth: '200px',
     tocGap: '3rem',

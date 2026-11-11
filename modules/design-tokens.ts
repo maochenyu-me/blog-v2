@@ -34,6 +34,28 @@ export default defineNuxtModule({
       const theme = themeMod.default.theme
 
       const { accent, neutral, fontSize, glass } = theme
+      const backdrop = theme.backdrop as {
+        light: string
+        dark: string
+        blur: number
+        saturate: { light: number; dark: number }
+        opacity: { light: number; dark: number }
+        fade: { light: Array<{ mix: number; at: number }>; dark: Array<{ mix: number; at: number }> }
+      }
+
+      /** backdrop 配置 → 一组 CSS 变量（渐变末尾自动补纯背景色收底停靠点） */
+      function backdropVars(mode: 'light' | 'dark'): string {
+        const stops = [...backdrop.fade[mode], { mix: 1, at: 100 }]
+          .map(
+            (s) =>
+              `color-mix(in srgb, var(--background) ${Math.round(s.mix * 100)}%, transparent) ${s.at}%`,
+          )
+          .join(', ')
+        return `  --backdrop-image: url("${backdrop[mode]}");
+  --backdrop-opacity: ${backdrop.opacity[mode]};
+  --backdrop-filter: blur(${backdrop.blur}px) saturate(${backdrop.saturate[mode]});
+  --backdrop-gradient: linear-gradient(to bottom, ${stops});`
+      }
 
       const css = `/* ---------------------------------------------------------------
  * 自动生成，请勿手动编辑。
@@ -97,6 +119,8 @@ export default defineNuxtModule({
   --surface-float: ${theme.surface.light.bg};
   --surface-float-border: ${theme.surface.light.border};
 
+${backdropVars('light')}
+
   --radius: ${theme.radius};
   --content-max-width: ${theme.contentMaxWidth};
   --wide-max-width: ${theme.wideMaxWidth};
@@ -159,6 +183,8 @@ export default defineNuxtModule({
 
   --surface-float: ${theme.surface.dark.bg};
   --surface-float-border: ${theme.surface.dark.border};
+
+${backdropVars('dark')}
 
   color-scheme: dark;
 }
