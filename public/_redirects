@@ -1,0 +1,49 @@
+# Cloudflare Pages redirects
+
+# abbrlink:start
+# 由 scripts/abbrlink.mjs 自动生成 —— 旧文件名 slug → /posts/<abbrlink>，勿手改
+/posts/cjk-tokenizer /posts/26fa10db 301
+/posts/cjk-tokenizer/ /posts/26fa10db 301
+/posts/css-variables-as-api /posts/7d72abe8 301
+/posts/css-variables-as-api/ /posts/7d72abe8 301
+/posts/dark-mode-design /posts/cac47918 301
+/posts/dark-mode-design/ /posts/cac47918 301
+/posts/deleted-90-percent /posts/63afeff4 301
+/posts/deleted-90-percent/ /posts/63afeff4 301
+/posts/draft-not-ready /posts/f44f42ce 301
+/posts/draft-not-ready/ /posts/f44f42ce 301
+/posts/math-test /posts/46a06930 301
+/posts/math-test/ /posts/46a06930 301
+/posts/mobile-first-375 /posts/1161d2f5 301
+/posts/mobile-first-375/ /posts/1161d2f5 301
+/posts/no-loading-feel /posts/746cfa4c 301
+/posts/no-loading-feel/ /posts/746cfa4c 301
+/posts/no-toc-needed /posts/d9083504 301
+/posts/no-toc-needed/ /posts/d9083504 301
+/posts/self-hosted-fonts /posts/b240ed92 301
+/posts/self-hosted-fonts/ /posts/b240ed92 301
+/posts/slow-writing /posts/4fd42b50 301
+/posts/slow-writing/ /posts/4fd42b50 301
+/posts/static-search /posts/ff906e7f 301
+/posts/static-search/ /posts/ff906e7f 301
+/posts/stop-using-cards /posts/8628a5ad 301
+/posts/stop-using-cards/ /posts/8628a5ad 301
+/posts/test-cover-beta /posts/85fffa25 301
+/posts/test-cover-beta/ /posts/85fffa25 301
+/posts/test-external-eps /posts/97844eaa 301
+/posts/test-external-eps/ /posts/97844eaa 301
+/posts/test-featured-alpha /posts/f50285d4 301
+/posts/test-featured-alpha/ /posts/f50285d4 301
+/posts/test-nocover-delta /posts/3583b08f 301
+/posts/test-nocover-delta/ /posts/3583b08f 301
+/posts/test-nocover-gamma /posts/83a4f0ba 301
+/posts/test-nocover-gamma/ /posts/83a4f0ba 301
+/posts/typography-over-color /posts/90a855a1 301
+/posts/typography-over-color/ /posts/90a855a1 301
+/posts/view-transitions /posts/7e4167d8 301
+/posts/view-transitions/ /posts/7e4167d8 301
+/posts/xml-escaping-stress-test /posts/57060fdd 301
+/posts/xml-escaping-stress-test/ /posts/57060fdd 301
+/posts/zero-hardcode /posts/71970a13 301
+/posts/zero-hardcode/ /posts/71970a13 301
+# abbrlink:end

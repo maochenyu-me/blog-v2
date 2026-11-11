@@ -2,6 +2,7 @@
 title: 在博客里写公式
 description: 用 KaTeX 在 Markdown 里写行内与块级数学公式：语法、排版约定、以及写错时的表现。
 date: 2025-11-07
+abbrlink: 46a06930
 category: 写作
 tags: [数学, KaTeX, 排版]
 ---

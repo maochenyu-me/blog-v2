@@ -2,6 +2,7 @@
 title: 我把 CSS 变量当成了 API
 description: 设计 token 写进配置文件，构建期编译成 CSS 变量，组件只读变量。这套做法让「改一处，全站生效」从口号变成了构建期保证。
 date: 2025-04-20
+abbrlink: 7d72abe8
 category: 前端
 tags: [CSS, 设计系统, 构建]
 ---

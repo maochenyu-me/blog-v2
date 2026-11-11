@@ -2,6 +2,7 @@
 title: 中文分词为什么把搜索做坏了
 description: MiniSearch 默认按空格切词，对中文来说等于完全失效。这篇讲 CJK 该怎么切，以及 bigram 加单字兜底为什么比单纯整词匹配更靠谱。
 date: 2025-09-30
+abbrlink: 26fa10db
 category: 工程
 tags: [搜索, MiniSearch, 中文]
 ---

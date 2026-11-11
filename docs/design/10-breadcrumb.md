@@ -148,8 +148,50 @@ sessionStorage（breadcrumb-back）◄── app/plugins/breadcrumb-history.clie
 `pnpm verify` @4173：90 个页面状态（15 路由 × 3 视口 × 明暗）、**0 错误 0 溢出**；
 `audit-hardcode` PASS 0 处。
 
+## 三处视觉修正（2026-11-11，克喵实测反馈后）
+
+| 问题 | 根因 | 修正 |
+| --- | --- | --- |
+| 移动端导航 → 面包屑留白过大（约 88px） | 内容页统一 4rem 页顶呼吸位，面包屑夹中间两头空 | `.crumb-nav` 负 margin 拉近：`margin-top: calc(-1 * var(--space-section) + 1.5rem)`（吃掉页顶留白只留 1.5rem，页距调整自适应）；实测导航 → 面包屑 **88px → 24px** |
+| 胶囊内长标题被硬裁（无省略号） | `.crumb-current` 是 `inline-flex`，**flex 容器上 `text-overflow: ellipsis` 静默失效** | 拆出共享组改 `display: block`；实测 `scrollWidth > clientWidth` 时正确显示省略号 |
+| 桌面端 `cd ..` 与面包屑分居两端 | `.crumb-row` 用了 `justify-between`（照参考站），与「贴在文章标题上方」的诉求冲突 | 改 `flex-start` 并排左对齐，整组贴在标题上方、导航下方 |
+
+附带：移动端末级 `max-width` 46vw → 52vw（省略号生效后可放宽一档）。
+
+### 修正后实测
+
+| 项 | 三视角（移动说说 / 移动文章 / 桌面文章） |
+| --- | --- |
+| 导航 → 面包屑 | 均 24px |
+| 面包屑 → h1 | 均 16px |
+| 末级省略 | 长标题 `测试文章甲：带封面的推荐位…` 正确省略（非硬裁） |
+| 布局 | `cd ..` + 面包屑并排（back left=24、bar left=120，移动端）|
+| 横向溢出 | 0 |
+
+### 构建环境事故记录
+
+- **dev server 清空 dist 咬人（第二次实锤）**：验收中途 dist 突然归零 —— 3000 端口
+  的 `nuxt dev`（PID 22932）在 01:12~01:14 之间重启，启动即清空 dist，
+  导致 verify 的 desktop/dark 轮全部 404 假阳性（`HTTP 404 + 缺 h1 + 暗色未生效` 三连）。
+  **验收期间严禁重启 dev**；假阳性鉴别法：单一视口轮次全 404 = 服务/产物问题，
+  先 `curl` 探活再查 dist 文件数，不要怀疑页面代码。
+- **serve-dist 是实时读文件系统的**：dist 被清后同一进程会 404，重新 build 出新 dist
+  后无需重启进程即恢复 200 —— 「404 先查产物再重启服务」。
+
+
 ### 构建环境备注
 
 - 本机 safe-delete shim 拦截 `rm -rf dist`（580 文件 > 阈值 50）→
   用 `NODE_OPTIONS= node -e "fs.rmSync('dist',{recursive:true,force:true})"` 绕过
   （shim 经 NODE_OPTIONS 注入，清空即失效 —— 与项目记忆一致）。
+
+### 二次收紧（2026-11-11，克喵反馈手机端仍偏大）
+
+移动端（<640px）负 margin 加深：`calc(-1 * var(--space-section) + 0.25rem)`，
+margin-bottom 1rem → 0.75rem。桌面端保持原样不动。
+
+| 间距 | 收紧前 | 收紧后 |
+| --- | --- | --- |
+| 移动端 导航胶囊底 → 面包屑 | 36px | **23px** |
+| 移动端 面包屑 → 标题 | 16px | **12px** |
+| 桌面端 | 37px / 16px | 不变 |

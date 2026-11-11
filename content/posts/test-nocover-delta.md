@@ -2,6 +2,7 @@
 title: 测试文章丁：无封面但标记推荐
 description: 这是首页改版验收用的测试文章丁，featured 为 true 但没有封面，轮播应自动跳过它。
 date: 2026-09-28
+abbrlink: 3583b08f
 category: 公告
 tags: [测试]
 featured: true

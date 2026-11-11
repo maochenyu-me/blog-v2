@@ -166,14 +166,20 @@ const backAria = computed(() =>
 <style scoped>
 .crumb-nav {
   max-width: 100%;
-  margin-bottom: var(--space-item);
+  /*
+   * 贴近顶部导航：所有内容页的顶部统一有 --space-section（4rem）呼吸位，
+   * 面包屑夹在「导航 ↔ 标题」中间时两头都显空。这里吃掉大部分页顶留白，
+   * 只留 1.5rem —— 用 calc 表达「页顶留白 − 2.5rem」，页距调整时自适应。
+   */
+  margin-top: calc(-1 * var(--space-section) + 1.5rem);
+  margin-bottom: 1rem;
 }
 
-/* 返回药丸与层级条两端对齐（照参考站 justify-between） */
+/* 返回药丸与层级条并排左对齐，整体贴在文章标题上方 */
 .crumb-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.75rem;
   min-width: 0;
 }
@@ -246,10 +252,21 @@ const backAria = computed(() =>
 
 .crumb-home,
 .crumb-link,
-.crumb-text,
-.crumb-current {
+.crumb-text {
   display: inline-flex;
   align-items: center;
+  line-height: 1;
+  border-radius: 0.45rem;
+  font-size: var(--fs-meta);
+  white-space: nowrap;
+}
+
+/*
+ * 末级：必须是块级（而非 inline-flex），text-overflow: ellipsis 才会生效 ——
+ * flex 容器上的 ellipsis 是静默失效的，之前末级长标题被硬裁切就是这个原因。
+ */
+.crumb-current {
+  display: block;
   line-height: 1;
   border-radius: 0.45rem;
   font-size: var(--fs-meta);
@@ -301,14 +318,21 @@ const backAria = computed(() =>
   border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
-/* 窄屏：有返回药丸时隐藏中间层级，只留根 ~ 与当前（照参考站） */
+/* 窄屏：收紧与导航/标题的间距（视觉约 16px），并隐藏中间层级（照参考站） */
 @media (max-width: 640px) {
+  .crumb-nav {
+    /* header 元素含 0.75rem 底 padding，元素底 → 面包屑仅留 0.25rem，
+       视觉胶囊底 → 面包屑 ≈ 16px —— 手机端克喵拍板再压一档 */
+    margin-top: calc(-1 * var(--space-section) + 0.25rem);
+    margin-bottom: 0.75rem;
+  }
+
   .crumb-bar.has-back .crumb-item:not(.is-root):not(.is-current) {
     display: none;
   }
 
   .crumb-current {
-    max-width: 46vw;
+    max-width: 52vw;
   }
 }
 

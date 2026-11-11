@@ -2,6 +2,7 @@
 title: View Transitions 不是动画库
 description: 用它做页面切换、做主题扩散、做列表到详情的共享元素过渡。它真正的价值不是"让页面动起来"，而是让你不必手动管理进入和离开两套状态。
 date: 2025-09-18
+abbrlink: 7e4167d8
 category: 前端
 tags: [动画, 浏览器, CSS]
 cover: /images/covers/view-transition.png

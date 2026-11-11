@@ -2,6 +2,7 @@
 title: 特殊字符与代码块压测：& < > " ' 全都要
 description: 一篇专门用来喂 RSS/Atom 校验器的文章。正文里塞满了 & < > 引号、CDATA 边界、嵌套代码块和原始 HTML 片段。
 date: 2025-10-20
+abbrlink: 57060fdd
 category: 工程
 tags: [RSS, XML, 测试]
 pinned: true

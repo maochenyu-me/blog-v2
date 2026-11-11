@@ -2,6 +2,7 @@
 title: 排版比配色更决定气质
 description: 把同样一套颜色交给两个人排，出来的东西可以完全不同。这篇讲我怎么用字重、行距和留白，在不换颜色的前提下改变一个页面的脾气。
 date: 2025-10-28
+abbrlink: 90a855a1
 category: 设计
 tags: [排版, 设计, CSS]
 pinned: true

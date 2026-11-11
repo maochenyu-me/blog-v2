@@ -2,6 +2,7 @@
 title: 测试文章乙：有封面但非推荐
 description: 这是首页改版验收用的测试文章乙，有封面但未标记 featured，只出现在卡片流，不进轮播。
 date: 2026-10-20
+abbrlink: 85fffa25
 category: 设计
 tags: [测试, 首页改版]
 cover: /images/covers/charset.png

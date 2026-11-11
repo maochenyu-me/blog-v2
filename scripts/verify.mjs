@@ -72,8 +72,8 @@ const ROUTES = [
   ['gallery-folder', '/gallery/museum'],
   ['changelog', '/changelog'],
   ['about', '/about'],
-  ['post', '/posts/typography-over-color'],
-  ['post-stress', '/posts/xml-escaping-stress-test'],
+  ['post', '/posts/90a855a1'],
+  ['post-stress', '/posts/57060fdd'],
   ['404', '/definitely-not-a-real-page'],
 ]
 

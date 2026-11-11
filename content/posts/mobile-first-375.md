@@ -2,6 +2,7 @@
 title: 写给 375px 的界面
 description: 移动端不是缩小版桌面。底部 Tab 栏、可达的拇指区、iOS 安全区——这些细节决定了移动端体验的下限。
 date: 2025-06-02
+abbrlink: 1161d2f5
 category: 设计
 tags: [响应式, 移动端, 交互]
 ---

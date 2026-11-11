@@ -10,6 +10,12 @@ export default defineContentConfig({
         description: z.string(),
         date: z.date(),
         updated: z.date().optional(),
+        /**
+         * 永久短链接 id（crc32-hex 8 位），由 scripts/abbrlink.mjs 写回并固化。
+         * modules/abbrlink.ts 据此把文章 path 覆盖为 /posts/<abbrlink>；
+         * 已赋号的文章改标题/正文/文件名都不会再变。
+         */
+        abbrlink: z.string().optional(),
         tags: z.array(z.string()).default([]),
         category: z.string(),
         cover: z.string().optional(),

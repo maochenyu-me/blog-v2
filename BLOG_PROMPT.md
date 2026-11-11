@@ -228,6 +228,12 @@ export default defineAppConfig({
 
 ### 7.2 文章详情 `/posts/[slug]`
 
+> **slug 是 abbrlink 短 id**（crc32-hex 8 位，如 `/posts/90a855a1`）：由
+> `scripts/abbrlink.mjs` 构建前写回 frontmatter 固化，`modules/abbrlink.ts`
+> 在 content:file:afterParse 覆盖文章 path。旧文件名 slug 由
+> `app/middleware/post-legacy-redirect.global.ts`（站内 302）与
+> `public/_redirects`（CF Pages 301）双重兜底。md 文件名保持可读命名。
+
 - 头部：标题 / 日期 / updated / 标签 / 阅读时长
 - 正文右侧 sticky 目录（h2/h3），移动端折叠到顶部
 - 上一篇 / 下一篇（同分类优先，否则按时间相邻）
@@ -371,7 +377,7 @@ type SearchDoc = {
   tags: string[]
   category: string
   text: string          // 渲染后正文剥离 HTML 标签后的纯文本
-  path: string          // /posts/xxx
+  path: string          // /posts/<abbrlink>（crc32-hex 短 id）
   date: string          // ISO，用于结果排序
 }
 ```

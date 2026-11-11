@@ -2,6 +2,7 @@
 title: 测试文章丙：无封面的普通文章
 description: 这是首页改版验收用的测试文章丙，没有封面字段，卡片应回退到默认占位图，不报错。
 date: 2026-10-10
+abbrlink: 83a4f0ba
 category: 随笔
 tags: [测试]
 ---

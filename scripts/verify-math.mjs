@@ -21,7 +21,7 @@ import puppeteer from 'puppeteer-core'
 
 const BASE = process.argv[2] || 'http://127.0.0.1:4173'
 const CHROME = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe'
-const POST = '/posts/math-test'
+const POST = '/posts/46a06930'
 
 /** 行内公式字号与正文的允许偏差（px） */
 const FONT_TOLERANCE = 0.5
@@ -230,7 +230,7 @@ try {
   // aria-hidden 这几个字（有一篇就在讲这个属性），按全文搜会误判。
   const entry = feed
     .split('<entry>')
-    .find((chunk) => chunk.includes('/posts/math-test'))
+    .find((chunk) => chunk.includes('/posts/46a06930'))
   if (!entry) {
     fail('feed 里找不到 math-test 的条目')
   } else if (entry.includes('aria-hidden')) {

@@ -2,6 +2,7 @@
 title: 静态博客的搜索为什么不用后端
 description: 300KB 的索引、一次懒加载、纯前端查询。对一个几百篇文章的博客来说，这个方案比任何搜索引擎都合适。
 date: 2025-09-05
+abbrlink: ff906e7f
 category: 工程
 tags: [搜索, 架构, SSG]
 ---

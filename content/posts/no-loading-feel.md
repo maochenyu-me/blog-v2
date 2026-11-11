@@ -2,6 +2,7 @@
 title: 无加载不是速度，是连续感
 description: 一个 300ms 的白屏比一个 800ms 的骨架屏更让人焦虑。这篇讲怎么用 SSG、预取和 view transition 把页面跳转做成「一瞬间的事」。
 date: 2025-05-15
+abbrlink: 746cfa4c
 category: 前端
 tags: [性能, 体验, Nuxt]
 ---

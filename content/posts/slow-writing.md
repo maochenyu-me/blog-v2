@@ -2,6 +2,7 @@
 title: 慢下来之后我才开始写得下去
 description: 追求"高效写作"的那几年，我一篇文章都没写完。放弃效率之后，反而写了几十篇。
 date: 2025-06-18
+abbrlink: 4fd42b50
 category: 随笔
 tags: [写作, 反思]
 ---

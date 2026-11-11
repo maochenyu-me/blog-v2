@@ -2,6 +2,7 @@
 title: 自托管字体的一年
 description: 从 Google Fonts 换成自托管，从自托管换成子集化分片。聊聊为什么一个中文字体能从 25MB 变成实际加载 180KB。
 date: 2025-08-08
+abbrlink: b240ed92
 category: 前端
 tags: [字体, 性能, 中文]
 ---

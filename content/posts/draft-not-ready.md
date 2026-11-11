@@ -2,6 +2,7 @@
 title: 草稿：还没想好标题的一篇
 description: 这是一篇 draft，不应该出现在生产构建里，也不该进 RSS、不该进搜索索引、不该出现在任何列表。
 date: 2025-11-01
+abbrlink: f44f42ce
 category: 随笔
 tags: [草稿]
 draft: true

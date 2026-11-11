@@ -24,7 +24,7 @@ const CHROME = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Applic
 /** 帧差阈值：噪声 ≤0.11，真实闪烁 ≥2.2 */
 const THRESHOLD = 0.3
 
-const ROUTES = ['/', '/posts/dark-mode-design', '/archive', '/about', '/links', '/categories', '/tags']
+const ROUTES = ['/', '/posts/cac47918', '/archive', '/about', '/links', '/categories', '/tags']
 const THEMES = ['light', 'dark']
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
