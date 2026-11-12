@@ -393,7 +393,7 @@ const gridVars = computed(() => ({
   color: var(--muted-foreground);
   background-color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   cursor: pointer;
   transition:
     color var(--duration-base) var(--easing-base),

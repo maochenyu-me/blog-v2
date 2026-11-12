@@ -50,6 +50,7 @@ useHead({ link: feedLinks })
 <template>
   <div class="app-shell">
     <div v-if="backdropEnabled" class="site-backdrop" aria-hidden="true" />
+    <div v-if="backdropEnabled" class="paper-grain" aria-hidden="true" />
 
     <SiteHeader />
 
@@ -80,6 +81,21 @@ useHead({ link: feedLinks })
   /* 放大盖住模糊边缘，防止四周露出模糊发虚的接缝 */
   transform: scale(1.035);
   transform-origin: top;
+}
+
+/*
+ * 纸纹层 —— 「宣纸墨书」浅色风格的纸面质感。
+ * 独立于 .site-backdrop 的兄弟层（backdrop 有 blur 滤镜，噪点放里面会被糊掉），
+ * 同为 z-index:-1，DOM 在后故叠在背景图之上、仍在一切内容之下。
+ * SVG feTurbulence 生成暖棕纤维噪点，0.05 透明度隐约可见，零网络请求。
+ */
+.paper-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.19 0 0 0 0 0.12 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
 }
 
 .app-shell {

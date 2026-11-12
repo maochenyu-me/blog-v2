@@ -73,6 +73,10 @@ export interface HomePageConfig {
     motto: {
       enabled: boolean
       mottos: Array<{ text: string; from: string }>
+      /** 远程一言源：挂载后异步拉取，成功则覆盖本地随机结果，失败回退本地 */
+      remote?: {
+        url: string
+      }
     }
     stats: {
       enabled: boolean

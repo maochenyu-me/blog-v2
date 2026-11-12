@@ -49,9 +49,9 @@ export interface ThemePreset {
 export default {
   /** 夜空云海 —— 现行配色原样迁移，未启用其他预设前的默认观感 */
   midnight: {
-    name: '夜空云海（默认）',
+    name: '宣纸墨书 × 夜空云海（默认）',
     accent: {
-      light: '#a94f33',
+      light: '#a54b30',
       dark: '#cc785c',
     },
     dark: {

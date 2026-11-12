@@ -133,7 +133,7 @@ function fmt(amount: string): string {
   align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 1.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   background: var(--accent);
   color: #fff;
   font-size: var(--fs-meta);

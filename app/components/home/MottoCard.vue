@@ -5,6 +5,7 @@
  */
 interface MottoConfig {
   mottos: Array<{ text: string; from: string }>
+  remote?: { url: string }
 }
 
 const props = defineProps<{
@@ -18,12 +19,27 @@ const { ui } = useUi()
  * 客户端挂载完成后再随机取一条。直接在 setup 期 Math.random() 会让
  * 构建期与访问期的随机结果不同，触发 Vue 水合校验错误。
  */
-const pick = ref(props.cfg.mottos[0] ?? null)
+const pick = ref<{ text: string; from?: string }>(props.cfg.mottos[0] ?? null)
 
 onMounted(() => {
-  if (!props.cfg.mottos.length) return
-  pick.value = props.cfg.mottos[Math.floor(Math.random() * props.cfg.mottos.length)]!
+  if (props.cfg.mottos.length) {
+    pick.value = props.cfg.mottos[Math.floor(Math.random() * props.cfg.mottos.length)]!
+  }
+  if (props.cfg.remote?.url) fetchRemote(props.cfg.remote.url)
 })
+
+/** 远程一言：60s API 返回 { code, data: { hitokoto } }，无 from；失败静默保留本地结果 */
+async function fetchRemote(url: string) {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return
+    const json = await res.json()
+    const text = json?.data?.hitokoto
+    if (typeof text === 'string' && text.trim()) pick.value = { text }
+  } catch {
+    /* 网络失败回退本地格言 */
+  }
+}
 </script>
 
 <template>

@@ -179,7 +179,7 @@ const stats = computed(() => t(ui.pages.gallery.pageMeta, {
   font-size: var(--fs-meta);
   line-height: 1;
   padding: 0.3125rem 0.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   color: #fff;
   background: color-mix(in srgb, #000 45%, transparent);
   backdrop-filter: blur(6px);

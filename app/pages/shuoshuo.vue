@@ -241,7 +241,7 @@ const listEl = ref<HTMLElement | null>(null)
   align-items: center;
   gap: 0.3125rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   background: var(--card);
   padding: 0.3125rem 0.75rem;
   font-size: var(--fs-meta);
@@ -293,7 +293,7 @@ const listEl = ref<HTMLElement | null>(null)
 .ss-retry {
   margin-left: 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   background: var(--card);
   color: var(--foreground);
   padding: 0.25rem 0.875rem;

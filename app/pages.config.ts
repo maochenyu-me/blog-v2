@@ -133,13 +133,20 @@ export default {
             { text: 'Simple is better than complex.', from: 'The Zen of Python' },
             { text: '代码是写给人看的，顺便让机器执行。', from: '佚名' },
           ],
+          /**
+           * 远程一言源（每次访问实时拉取，成功则覆盖本地随机结果，失败静默回退本地）。
+           * 60s API 返回 { code, data: { hitokoto } }，无 from 字段，不展示出处。
+           */
+          remote: {
+            url: 'https://60s-api.518339.xyz/v2/hitokoto',
+          },
         },
 
         stats: {
           /** 是否显示站点统计 */
           enabled: true,
           /** 建站日期（ISO 格式），运行天数以此为起点计算 */
-          siteStartDate: '2024-01-01',
+          siteStartDate: '2024-11-01',
           /** 是否显示运行天数（ClientOnly 渲染，避免 SSG 水合不一致） */
           showRunDays: true,
           /** 是否显示文章数 */

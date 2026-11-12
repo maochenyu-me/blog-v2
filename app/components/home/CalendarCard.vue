@@ -432,7 +432,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 4px;
   height: 1rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   background: var(--accent);
   content: '';
 }

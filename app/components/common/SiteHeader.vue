@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
   align-items: center;
   min-height: var(--header-pill-height);
   padding: 0.375rem 0.625rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   border: 1px solid transparent;
   transition:
     transform var(--duration-slow) var(--easing-base),

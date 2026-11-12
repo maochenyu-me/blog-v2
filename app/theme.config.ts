@@ -14,12 +14,13 @@ export default {
     preset: 'midnight',
 
     /**
-     * 唯一强调色。对比度实测：light #a94f33 on #fff = 5.45，dark #cc785c on #10131a = 5.67（均过 WCAG AA）。
+     * 唯一强调色。对比度实测（纸底）：light #a54b30 on #f6f1e7 = 5.11，
+     * dark #cc785c on #10131a = 5.67（均过 WCAG AA，含代码块底/反白场景）。
      * 换色只改这两行，全站同步。
      * ⚠ 激活预设的 accent 会覆盖这里的值，本值仅作预设未指定时的兜底。
      */
     accent: {
-      light: '#a94f33',
+      light: '#a54b30',
       dark: '#cc785c',
     },
 
@@ -32,14 +33,19 @@ export default {
      *   调深色配色请去 theme-presets.ts 的对应预设。
      */
     neutral: {
+      /**
+       * 浅色侧 = 「宣纸墨书」纸感色板：暖米白纸底、墨色文字、褪色墨灰辅助、
+       * 纸纹边框、衬页白卡片。对比度实测：墨字 13.3 / 辅助灰 4.6 / 强调色 5.1。
+       * 深色侧为蓝夜色板（与背景图夜空云海同调），会先被激活预设覆盖。
+       */
       light: {
-        background: '#ffffff',
-        foreground: '#18181b',
-        muted: '#fafafa',
-        mutedForeground: '#71717a',
-        border: '#e4e4e7',
-        /** 卡片底色：明色与 background 同值（本来的白卡设计不变） */
-        card: '#ffffff',
+        background: '#f6f1e7',
+        foreground: '#2c2620',
+        muted: '#eee7d9',
+        mutedForeground: '#756c5c',
+        border: '#d9cfbc',
+        /** 卡片底色：衬页白，比纸底亮一档（与深色侧 card 逻辑对称） */
+        card: '#fbf8f1',
       },
       dark: {
         background: '#10131a',
@@ -93,10 +99,10 @@ export default {
      */
     glass: {
       light: {
-        bg: 'rgba(255, 255, 255, 0.66)',
-        border: 'rgba(228, 228, 231, 0.7)',
+        bg: 'rgba(252, 249, 243, 0.72)',
+        border: 'rgba(217, 207, 188, 0.75)',
         highlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
-        scrolledShadow: '0 8px 24px rgba(24, 24, 27, 0.08)',
+        scrolledShadow: '0 8px 24px rgba(44, 38, 32, 0.08)',
       },
       dark: {
         bg: 'rgba(16, 19, 26, 0.55)',
@@ -116,8 +122,8 @@ export default {
      */
     surface: {
       light: {
-        bg: 'rgba(255, 255, 255, 0.92)',
-        border: 'rgba(228, 228, 231, 0.95)',
+        bg: 'rgba(252, 249, 243, 0.94)',
+        border: 'rgba(217, 207, 188, 0.95)',
       },
       dark: {
         bg: 'rgba(26, 32, 43, 0.92)',

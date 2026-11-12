@@ -283,7 +283,7 @@ onBeforeUnmount(stopTimer)
   font-size: var(--fs-meta);
   line-height: var(--lh-meta);
   padding: 0.25rem 0.625rem;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   background: rgb(255 255 255 / 0.16);
   border: 1px solid rgb(255 255 255 / 0.25);
   backdrop-filter: blur(8px);

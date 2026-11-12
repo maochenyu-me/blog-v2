@@ -349,7 +349,7 @@ watch(totalPages, (n) => {
   min-height: 1.75rem;
   padding: 0.25rem 0.6875rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   background: var(--card);
   font-size: var(--fs-meta);
   line-height: var(--lh-meta);

@@ -161,7 +161,7 @@ const commentTitle = computed(() => `${ui.pages.message} · ${site.name}`)
   gap: 0.25rem;
   padding: 0.3rem 0.85rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
   background-color: var(--card);

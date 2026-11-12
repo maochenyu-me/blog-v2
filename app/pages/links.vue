@@ -417,7 +417,7 @@ const gridVars = computed(() => ({
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   padding: 0.5rem 1rem;
   cursor: pointer;
   transition:

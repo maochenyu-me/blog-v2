@@ -138,7 +138,7 @@ const readingMinutes = computed(() => estimate(props.post.description))
   font-size: var(--fs-meta);
   line-height: 1;
   padding: 0.3125rem 0.5625rem;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   color: #fff;
   background: color-mix(in srgb, var(--accent) 88%, transparent);
   backdrop-filter: blur(6px);

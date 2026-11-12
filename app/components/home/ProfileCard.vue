@@ -77,7 +77,7 @@ onMounted(() => {
   font-size: var(--fs-meta);
   line-height: var(--lh-meta);
   padding: 0.25rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);

@@ -192,7 +192,7 @@ const backAria = computed(() =>
   gap: 0.375rem;
   padding: 0.4rem 0.75rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
@@ -224,7 +224,7 @@ const backAria = computed(() =>
   min-width: 0;
   padding: 0.4rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-base);
   background-color: var(--muted);
   /* 层级过多时横向滚动，滚动条隐藏（照参考站） */
   overflow-x: auto;

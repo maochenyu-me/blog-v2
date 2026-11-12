@@ -434,7 +434,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--accent);
   background: var(--accent);
   color: #fff;
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   padding: 0.375rem 1.25rem;
   font-size: var(--fs-meta);
   cursor: pointer;

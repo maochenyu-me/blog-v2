@@ -59,7 +59,7 @@ defineProps<{
   font-weight: 700;
   color: var(--muted-foreground);
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-base);
   background: color-mix(in srgb, var(--muted) 55%, transparent);
   animation: hero-float 6s ease-in-out infinite;
 }

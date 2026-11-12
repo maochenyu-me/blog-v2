@@ -45,23 +45,23 @@
 
 /* --- 明色 --- */
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
-  --muted: #fafafa;
-  --muted-foreground: #71717a;
-  --border: #e4e4e7;
-  --accent: #a94f33;
+  --background: #f6f1e7;
+  --foreground: #2c2620;
+  --muted: #eee7d9;
+  --muted-foreground: #756c5c;
+  --border: #d9cfbc;
+  --accent: #a54b30;
 
   /* 卡片底色：暗色比 background 亮一档，卡片压在背景图上不再发黑 */
-  --card: #ffffff;
+  --card: #fbf8f1;
 
-  --glass-bg: rgba(255, 255, 255, 0.66);
-  --glass-border: rgba(228, 228, 231, 0.7);
+  --glass-bg: rgba(252, 249, 243, 0.72);
+  --glass-border: rgba(217, 207, 188, 0.75);
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --glass-scrolled-shadow: 0 8px 24px rgba(24, 24, 27, 0.08);
+  --glass-scrolled-shadow: 0 8px 24px rgba(44, 38, 32, 0.08);
 
-  --surface-float: rgba(255, 255, 255, 0.92);
-  --surface-float-border: rgba(228, 228, 231, 0.95);
+  --surface-float: rgba(252, 249, 243, 0.94);
+  --surface-float-border: rgba(217, 207, 188, 0.95);
 
   --backdrop-image: url("/images/backdrop-light.webp");
   --backdrop-opacity: 0.34;
