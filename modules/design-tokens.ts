@@ -1,6 +1,20 @@
 import { createResolver, defineNuxtModule } from '@nuxt/kit'
-import { writeFile, readFile } from 'node:fs/promises'
+import { writeFile, readFile, access } from 'node:fs/promises'
 import { createJiti } from 'jiti'
+
+/**
+ * 浅合并：对象字段递归覆盖，其余直接替换。
+ * 预设 → 基线的合并语义：预设写了的叶子键生效，没写的回退基线。
+ */
+function mergeOver<T>(base: T, over: any): T {
+  if (!over || typeof over !== 'object' || Array.isArray(over)) return over ?? base
+  if (!base || typeof base !== 'object' || Array.isArray(base)) return over
+  const out: any = { ...base }
+  for (const key of Object.keys(over)) {
+    out[key] = mergeOver(out[key], over[key])
+  }
+  return out
+}
 
 /**
  * design-tokens —— 构建期把 app/theme.config.ts 编译为 CSS。
@@ -33,8 +47,48 @@ export default defineNuxtModule({
       const themeMod = await jiti.import<any>(themePath)
       const theme = themeMod.default.theme
 
-      const { accent, neutral, fontSize, glass } = theme
-      const backdrop = theme.backdrop as {
+      /* --- 主题预设：加载 → 校验 → 深合并到基线 --- */
+      const presetId = theme.preset as string | undefined
+      let preset: any
+      if (presetId) {
+        const presetsMod = await jiti.import<any>(resolve('../app/theme-presets.ts'))
+        const presets = presetsMod.default ?? presetsMod
+        preset = presets[presetId]
+        if (!preset) {
+          throw new Error(
+            `[design-tokens] theme.config.ts 的 preset "${presetId}" 不存在。可用预设：${Object.keys(presets).join('、')}`,
+          )
+        }
+      }
+
+      // 背景图文件必须真实存在，防止带着坏路径构建成功
+      if (preset?.backdrop) {
+        for (const key of ['light', 'dark'] as const) {
+          const img = preset.backdrop[key]
+          if (!img) continue
+          const file = resolve('..', 'public', img.replace(/^\//, ''))
+          await access(file).catch(() => {
+            throw new Error(`[design-tokens] 预设 "${presetId}" 的背景图不存在：${img}（应为 public${img}）`)
+          })
+        }
+      }
+
+      const effective = {
+        ...theme,
+        accent: mergeOver(theme.accent, preset?.accent),
+        glass: {
+          ...theme.glass,
+          dark: mergeOver(theme.glass?.dark, preset?.glass?.dark),
+        },
+        neutral: {
+          ...theme.neutral,
+          dark: mergeOver(theme.neutral?.dark, preset?.dark),
+        },
+        backdrop: mergeOver(theme.backdrop, preset?.backdrop),
+      }
+
+      const { accent, neutral, fontSize, glass } = effective
+      const backdrop = effective.backdrop as {
         light: string
         dark: string
         blur: number
@@ -217,9 +271,11 @@ ${backdropVars('dark')}
 
     await generate()
 
-    // 改 theme.config.ts 时自动重新生成（dev 下 HMR 生效）
+    // 改 theme.config.ts / theme-presets.ts 时自动重新生成（dev 下 HMR 生效）
     nuxt.hook('builder:watch', async (event, path) => {
-      if (path.includes('theme.config.ts') && (event === 'change' || event === 'add')) {
+      const relevant =
+        path.includes('theme.config.ts') || path.includes('theme-presets.ts')
+      if (relevant && (event === 'change' || event === 'add')) {
         await generate()
       }
     })

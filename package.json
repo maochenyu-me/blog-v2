@@ -12,6 +12,7 @@
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "verify": "node scripts/audit-hardcode.mjs && node scripts/verify.mjs",
+    "theme": "node scripts/theme.mjs",
     "fix:post": "node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
     "verify:font": "node scripts/verify-font-flash.mjs",
     "verify:math": "node scripts/verify-math.mjs",
