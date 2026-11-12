@@ -48,40 +48,45 @@ export interface ThemePreset {
 
 export default {
   /** 夜空云海 —— 现行配色原样迁移，未启用其他预设前的默认观感 */
+  /** 夜读暖炭 × 夜空云海（默认）——浅色宣纸墨书的暗面：灯下夜读的同一本书 */
   midnight: {
-    name: '宣纸墨书 × 夜空云海（默认）',
+    name: '宣纸墨书 × 夜读暖炭（默认）',
     accent: {
       light: '#a54b30',
-      dark: '#cc785c',
+      dark: '#d4825f',
     },
     dark: {
-      background: '#10131a',
-      foreground: '#f6f7f8',
-      muted: '#212f3f',
-      mutedForeground: '#9aa3b1',
-      border: '#2b3648',
-      card: '#1b2434',
+      background: '#1c1712',
+      foreground: '#ece5d8',
+      muted: '#2a241c',
+      mutedForeground: '#a89c8c',
+      border: '#3a3328',
+      card: '#241f18',
     },
     glass: {
       dark: {
-        bg: 'rgba(16, 19, 26, 0.55)',
-        border: 'rgba(43, 54, 72, 0.9)',
+        bg: 'rgba(28, 23, 18, 0.55)',
+        border: 'rgba(58, 51, 40, 0.9)',
       },
     },
     backdrop: {
       light: '/images/backdrop-light.webp',
       dark: '/images/backdrop-dark.webp',
       blur: 6,
-      saturate: { light: 1.16, dark: 1.18 },
-      opacity: { light: 0.34, dark: 0.38 },
+      saturate: { light: 1.16, dark: 1.05 },
+      opacity: { light: 0.34, dark: 0.32 },
       fade: {
         light: [
           { mix: 0.2, at: 0 },
           { mix: 0.6, at: 40 },
         ],
+        /**
+         * 暗色遮罩加重（0.35→0.85 渐进）：夜空图带蓝调，压在暖炭底上
+         * 色温冲突，加大背景色混合让图只在页头露一点、蓝味快速退场。
+         */
         dark: [
-          { mix: 0, at: 0 },
-          { mix: 0.8, at: 60 },
+          { mix: 0.35, at: 0 },
+          { mix: 0.85, at: 50 },
         ],
       },
     },
