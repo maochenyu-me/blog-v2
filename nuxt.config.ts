@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import { buildThemeInitScript } from './app/utils/theme-storage'
+import { umamiConfig } from './app/utils/umami-config'
 
 const THEME_INIT_SCRIPT = buildThemeInitScript()
 
@@ -41,7 +42,9 @@ export default defineNuxtConfig({
     { path: '~/components/ui', pathPrefix: false, ignore: ['**/.keep/**'] },
     { path: '~/components/home', pathPrefix: false },
     { path: '~/components/about', pathPrefix: false },
+    { path: '~/components/post', pathPrefix: false },
     { path: '~/components/gallery', pathPrefix: false },
+    { path: '~/components/hot', pathPrefix: false },
   ],
 
   // ---------- 渲染模式：纯 SSG ----------
@@ -114,6 +117,20 @@ export default defineNuxtConfig({
     output: {
       publicDir: 'dist',
     },
+
+    /**
+     * 本地 dev 代理 /api/umami/* → 自建 Umami 的 /api/*。
+     *
+     * 线上由 functions/api/umami/[[path]].js（Cloudflare Pages Function）承担；
+     * 但 dev server 没有 Functions 运行时，该路径会落进 Vue Router，
+     * 每次访问关于页都刷一对 "No match found for location with path" 警告。
+     * routeRules.proxy 只在服务端运行时生效，纯 SSG 产物（静态托管）
+     * 不含服务端，线上依旧走 Functions；映射与 Functions 保持一致。
+     */
+    routeRules: {
+      '/api/umami/share/**': { proxy: 'https://um.081531.xyz/api/share/**' },
+      '/api/umami/websites/**': { proxy: 'https://um.081531.xyz/api/websites/**' },
+    },
   },
 
   // ---------- 无加载体验 ----------
@@ -167,7 +184,15 @@ export default defineNuxtConfig({
       // 防 FOUC：首帧前同步读取主题偏好。
       // 放在 app.head 而不是布局里，因为 404 / error 页不渲染布局，
       // 若只在布局注入，这些页面在暗色模式下会闪白。
-      script: [{ innerHTML: THEME_INIT_SCRIPT, tagPriority: 'critical' }],
+      script: [
+        { innerHTML: THEME_INIT_SCRIPT, tagPriority: 'critical' },
+        // Umami 统计埋点：defer 不阻塞渲染，上报走同源代理以外的自建域名。
+        {
+          src: `${umamiConfig.baseUrl}/script.js`,
+          defer: true,
+          'data-website-id': umamiConfig.websiteId,
+        },
+      ],
     },
   },
 

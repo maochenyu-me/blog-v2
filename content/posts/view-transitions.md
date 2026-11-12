@@ -7,6 +7,7 @@ category: 前端
 tags: [动画, 浏览器, CSS]
 cover: /images/covers/view-transition.png
 featured: true
+aisummary: "View Transitions 是一个用于页面状态切换的 API，而非动画库。它通过浏览器自动处理旧状态和新状态的截图与过渡，简化了传统页面转场中需手动管理的六个步骤。支持页面切换、主题切换和共享元素动画，但需注意同一时间只能有一个过渡名称、动画期间页面不可交互以及需尊重用户减少运动的偏好。适合用于页面级状态变化，而非复杂动画或微交互。"
 ---
 
 第一次看到 `document.startViewTransition` 的时候，我以为它就是个更简单的 GSAP。

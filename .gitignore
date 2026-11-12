@@ -13,3 +13,4 @@ dist/
 
 # 构建期由 modules/changelog.ts 从 git log 生成，不进版本库
 app/data/changelog.json
+.wrangler/

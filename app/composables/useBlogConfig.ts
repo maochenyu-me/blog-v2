@@ -88,6 +88,27 @@ export interface SearchConfig {
   index: { path: string; stripCodeBlocks: boolean }
 }
 
+/** 文章底部版权信息卡（PostFooterCard） */
+export interface CopyrightConfig {
+  license: string
+  licenseUrl: string
+}
+
+/** 打赏弹窗（PostRewardModal） */
+export interface RewardConfig {
+  enabled: boolean
+  wechatQr: string
+  alipayQr: string
+  sponsorsUrl: string
+}
+
+/** AI 智能摘要卡片（PostAiSummary） */
+export interface AiConfig {
+  label: string
+  badge: string
+  animation: boolean
+}
+
 export function useBlogConfig() {
   const appConfig = useAppConfig()
   return {
@@ -95,5 +116,8 @@ export function useBlogConfig() {
     feed: appConfig.feed as FeedConfig,
     search: appConfig.search as SearchConfig,
     music: appConfig.music as MusicConfig,
+    copyright: appConfig.copyright as CopyrightConfig,
+    reward: appConfig.reward as RewardConfig,
+    ai: appConfig.ai as AiConfig,
   }
 }

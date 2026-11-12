@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import { toSlug } from '~/utils/taxonomy'
-
 const route = useRoute()
-const { site } = useBlogConfig()
-const { ui, t } = useUi()
+const { site, reward, copyright } = useBlogConfig()
+const { ui } = useUi()
 const pageCfg = usePageConfig('post')
 const posts = usePosts()
-const { estimate, enabled: showReadingTime } = useReadingTime()
-const { iso } = useDateFormat()
+const { countWords } = useReadingTime()
+const { pagePv, pageUv, track: trackBsz } = useBusuanzi()
+
+/** 分享 / 打赏弹窗开关 */
+const shareOpen = ref(false)
+const rewardOpen = ref(false)
 
 const path = computed(() => `/posts/${route.params.slug as string}`)
+
+/** 文章页计数：进入时上报一次；SPA 站内切换文章时组件复用，重新上报 */
+onMounted(trackBsz)
+watch(path, () => trackBsz())
 
 const { data: post } = await useAsyncData(
   () => `post-${path.value}`,
@@ -38,14 +44,15 @@ const { data: related } = await useAsyncData(
   { watch: [path] },
 )
 
-/** 阅读时长：优先用 body 文本估算，无 body 时退回 description */
-const readingMinutes = computed(() => {
+/** 正文纯文本（minimark AST 摊平），阅读时长与字数共用同一份估算 */
+const bodyText = computed(() => {
   const body = post.value?.body
-  if (!body) return estimate(post.value?.description ?? '')
+  if (!body) return post.value?.description ?? ''
   // minimark AST 转成纯文本再估算
-  const text = JSON.stringify(body).replace(/"[^"]*":/g, '')
-  return estimate(text)
+  return JSON.stringify(body).replace(/"[^"]*":/g, '')
 })
+
+const wordCount = computed(() => countWords(bodyText.value))
 
 const title = computed(() => post.value?.title ?? '')
 const description = computed(() => post.value?.description ?? '')
@@ -97,31 +104,19 @@ useHead({
              作为独立 grid item 会抢占列位、打乱 article/aside 的自动放置 -->
         <SiteBreadcrumb :current="title" back />
 
-        <header class="post-head">
-          <h1 class="post-title">{{ post.title }}</h1>
+        <PostHeaderCard
+          :title="post.title"
+          :date="post.date"
+          :updated="post.updated"
+          :category="post.category"
+          :words="wordCount"
+          :pv="pageCfg.showBusuanzi ? pagePv : null"
+          :uv="pageCfg.showBusuanzi ? pageUv : null"
+          :show-share="pageCfg.showShare"
+          @share="shareOpen = true"
+        />
 
-          <div class="post-meta">
-            <time class="meta-date" :datetime="iso(post.date)">{{ iso(post.date) }}</time>
-
-            <span v-if="post.updated" class="meta-updated">
-              {{ t(ui.post.updatedAt, { date: iso(post.updated) }) }}
-            </span>
-
-            <span v-if="showReadingTime" class="meta-reading">
-              {{ t(ui.post.readingTime, { n: readingMinutes }) }}
-            </span>
-
-            <NuxtLink :to="`/categories/${toSlug(post.category)}`" class="meta-category">
-              {{ post.category }}
-            </NuxtLink>
-          </div>
-
-          <ul v-if="post.tags?.length" class="post-tags">
-            <li v-for="tag in post.tags" :key="tag">
-              <NuxtLink :to="`/tags/${toSlug(tag)}`" class="post-tag">{{ tag }}</NuxtLink>
-            </li>
-          </ul>
-        </header>
+        <PostAiSummary v-if="post.aisummary" :summary="post.aisummary" />
 
         <ImageLightbox :enabled="pageCfg.showImageViewer">
           <ProseBody>
@@ -131,56 +126,66 @@ useHead({
 
         <CodeCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
         <MathCopyButton v-if="pageCfg.showCopyButton" :enabled="pageCfg.showCopyButton" />
+
+        <PostFooterCard
+          v-if="pageCfg.showCopyright"
+          :title="post.title"
+          :url="canonical"
+          :author="site.author.name"
+          :date="post.date"
+          :updated="post.updated"
+          :tags="post.tags"
+          :license="copyright.license"
+          :license-url="copyright.licenseUrl"
+          :show-reward="pageCfg.showReward && reward.enabled"
+          @reward="rewardOpen = true"
+        />
+
+        <!-- 上一篇/下一篇：与版权卡同列（不居中），一体式双格面板，缺侧格弱化占位保持结构对称 -->
+        <nav v-if="pageCfg.showPrevNext && (nav?.prev || nav?.next)" class="post-nav" :aria-label="ui.post.navAria">
+          <NuxtLink v-if="nav?.prev" :to="nav.prev.path" class="nav-item nav-prev">
+            <span class="nav-dir">{{ ui.post.prev }}</span>
+            <span class="nav-title">{{ nav.prev.title }}</span>
+          </NuxtLink>
+          <span v-else class="nav-item nav-empty">
+            <span class="nav-empty-text">{{ ui.post.navEmptyPrev }}</span>
+          </span>
+
+          <NuxtLink v-if="nav?.next" :to="nav.next.path" class="nav-item nav-next">
+            <span class="nav-dir">{{ ui.post.next }}</span>
+            <span class="nav-title">{{ nav.next.title }}</span>
+          </NuxtLink>
+          <span v-else class="nav-item nav-empty">
+            <span class="nav-empty-text">{{ ui.post.navEmptyNext }}</span>
+          </span>
+        </nav>
+
+        <!-- 相关文章（移动端实例）：挂在上下篇下方；≥1280px 由旁栏实例接管 -->
+        <PostRelated :items="related ?? []" class="related-inline" />
       </article>
 
-      <!-- 桌面端目录旁栏，挂在正文右侧沟槽外（<1280px 时目录在顶栏按钮里） -->
+      <!-- 桌面端目录旁栏，挂在正文右侧沟槽外（<1280px 时目录在顶栏按钮里）；
+           相关文章挂在目录下方，与目录同组吸顶常驻 -->
       <aside class="post-aside">
-        <ProseToc />
+        <div class="aside-toc">
+          <ProseToc />
+          <PostRelated :items="related ?? []" stacked />
+        </div>
       </aside>
     </div>
 
-    <!-- 上一篇 / 下一篇：一体式双格面板，缺侧格弱化占位保持结构对称 -->
-    <nav v-if="pageCfg.showPrevNext && (nav?.prev || nav?.next)" class="post-nav" :aria-label="ui.post.navAria">
-      <NuxtLink v-if="nav?.prev" :to="nav.prev.path" class="nav-item nav-prev">
-        <span class="nav-dir">{{ ui.post.prev }}</span>
-        <span class="nav-title">{{ nav.prev.title }}</span>
-      </NuxtLink>
-      <span v-else class="nav-item nav-empty">
-        <span class="nav-empty-text">{{ ui.post.navEmptyPrev }}</span>
-      </span>
-
-      <NuxtLink v-if="nav?.next" :to="nav.next.path" class="nav-item nav-next">
-        <span class="nav-dir">{{ ui.post.next }}</span>
-        <span class="nav-title">{{ nav.next.title }}</span>
-      </NuxtLink>
-      <span v-else class="nav-item nav-empty">
-        <span class="nav-empty-text">{{ ui.post.navEmptyNext }}</span>
-      </span>
-    </nav>
-
-    <!-- 相关文章：三列小卡（与导航面板、评论区共享 1px 语言） -->
-    <section v-if="pageCfg.showRelated && related?.length" class="post-related">
-      <h2 class="related-label">{{ ui.post.related }}</h2>
-      <div class="related-grid">
-        <NuxtLink
-          v-for="rel in related"
-          :key="rel.path"
-          :to="rel.path"
-          class="related-card"
-        >
-          <span class="card-kicker">
-            {{ rel.tags?.length ? rel.tags.slice(0, 2).map((tag) => `#${tag}`).join(' · ') : rel.category }}
-          </span>
-          <span class="card-title">{{ rel.title }}</span>
-          <span v-if="(rel.tags?.length ?? 0) > 2" class="card-extra">
-            {{ rel.tags.slice(2).map((tag) => `#${tag}`).join(' ') }}
-          </span>
-        </NuxtLink>
-      </div>
-    </section>
-
-    <!-- Ecoku 评论区（仅文章页，相关文章下方） -->
+    <!-- Ecoku 评论区（仅文章页） -->
     <EcokuComments :page-title="title" />
+
+    <!-- 分享 / 打赏弹窗（Teleport 到 body） -->
+    <PostShareModal
+      :open="shareOpen"
+      :url="canonical"
+      :title="post.title"
+      :description="description"
+      @close="shareOpen = false"
+    />
+    <PostRewardModal :open="rewardOpen" @close="rewardOpen = false" />
   </div>
 </template>
 
@@ -196,91 +201,21 @@ useHead({
   padding-inline: var(--space-gutter);
 }
 
-.post-head {
-  margin-bottom: var(--space-block);
-}
-
-.post-title {
-  font-size: var(--fs-h1);
-  line-height: var(--lh-h1);
-  font-weight: var(--fw-h1);
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-.post-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 0.75rem;
-  margin-top: 1rem;
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
-
-/* 元信息之间用 1px 竖线分隔，不用中点 */
-.post-meta > * + *::before {
-  content: '';
-  display: inline-block;
-  width: 1px;
-  height: 0.75em;
-  background-color: var(--border);
-  margin-inline-end: 0.75rem;
-  vertical-align: middle;
-}
-
-.meta-date {
-  font-variant-numeric: tabular-nums;
-}
-
-.meta-category {
-  transition: color var(--duration-base) var(--easing-base);
-}
-
-.meta-category:hover {
-  color: var(--foreground);
-}
-
-.post-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.post-tag {
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-  transition: color var(--duration-base) var(--easing-base);
-}
-
-.post-tag::before {
-  content: '#';
-  opacity: 0.5;
-}
-
-.post-tag:hover {
-  color: var(--foreground);
-}
-
+/* 目录旁栏默认隐藏，≥1280px 才挂到右侧沟槽（见文件末尾） */
 .post-aside {
   display: none;
 }
 
-/* ---------- 上/下一篇：一体式双格面板 ---------- */
 /*
  * 外框 1px + 格间 1px 间隙，页面底色从缝隙透出形成中缝分隔线；
  * 暗色下同一机制自然呈现深灰线，与全站 1px 线语言一致。
+ * 位于 article 内：与版权卡同列对齐，不再页面居中。
  */
 .post-nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  width: calc(var(--content-max-width) - var(--space-gutter) * 2);
-  /* 窄视口下随视口收缩，防止固定宽撑出横向滚动 */
-  max-width: calc(100% - var(--space-gutter) * 2);
-  margin: var(--space-section) auto 0;
+  margin-top: var(--space-section);
   border: 1px solid var(--border);
 }
 
@@ -330,67 +265,7 @@ useHead({
   transition: color var(--duration-base) var(--easing-base);
 }
 
-/* ---------- 相关：三列小卡 ---------- */
-.post-related {
-  max-width: var(--content-max-width);
-  margin: var(--space-section) auto 0;
-  padding-inline: var(--space-gutter);
-}
-
-.related-label {
-  font-family: var(--font-mono);
-  font-size: var(--fs-meta);
-  font-weight: 400;
-  color: var(--muted-foreground);
-  margin-bottom: 0.75rem;
-}
-
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.related-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  padding: 1rem;
-  border: 1px solid var(--border);
-  transition: border-color var(--duration-base) var(--easing-base);
-}
-
-.related-card:hover {
-  border-color: var(--muted-foreground);
-}
-
-.related-card:hover .card-title {
-  color: var(--accent);
-}
-
-.card-kicker,
-.card-extra {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  line-height: 1.5;
-  color: var(--muted-foreground);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.card-title {
-  font-size: var(--fs-list-title);
-  line-height: var(--lh-list-title);
-  color: var(--foreground);
-  transition: color var(--duration-base) var(--easing-base);
-}
-
-.card-extra {
-  margin-top: auto;
-}
-
-/* ---------- 桌面：目录旁栏 ---------- */
+/* ---------- 桌面：目录旁栏 + 相关文章窄栏 ---------- */
 @media (min-width: 1280px) {
   .post-shell {
     display: grid;
@@ -399,29 +274,38 @@ useHead({
     max-width: calc(var(--content-max-width) + var(--toc-width) + var(--toc-gap));
     /* 正文仍在原位置，目录挂在右侧沟槽外 */
     justify-content: start;
-    align-items: start;
+    /* aside 拉伸到与正文列等高：给内部 sticky toc 留出滑动区间 */
+    align-items: stretch;
   }
 
   /*
-   * 目录吸顶必须挂在 grid item（aside）上，不能挂在它内部的 <nav> 上：
-   * grid item 的包含块是整个 grid area（由正文列撑开的整行高度），才有滑动区间。
+   * sticky 挂在 aside 内部的 toc wrapper 上：aside 被 stretch 成正文列等高
+   * （grid area 高度），wrapper 才有完整滑动区间；相关文章在 wrapper 下方
+   * 随页面正常流动，不参与吸顶。
    */
   .post-aside {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-item);
+    min-width: 0;
+  }
+
+  .aside-toc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-item);
     position: sticky;
     top: calc(var(--header-height) + var(--toc-sticky-offset));
     align-self: start;
-    /* 目录比视口高时内部滚动，上下各留一个 stickyOffset */
+    /* 目录 + 相关高于视口时内部滚动，上下各留一个 stickyOffset */
     max-height: calc(100dvh - var(--header-height) - var(--toc-sticky-offset) * 2);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-}
 
-/* 平板：相关卡收成两列 */
-@media (max-width: 1024px) {
-  .related-grid {
-    grid-template-columns: repeat(2, 1fr);
+  /* 桌面端相关文章由旁栏实例接管，正文列里的移动端实例隐藏 */
+  .related-inline {
+    display: none;
   }
 }
 
@@ -432,10 +316,6 @@ useHead({
 
   .nav-empty {
     display: none;
-  }
-
-  .related-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

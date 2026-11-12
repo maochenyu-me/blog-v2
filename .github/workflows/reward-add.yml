@@ -1,0 +1,81 @@
+name: 打赏收录
+# 管理员（仓库所有者）以 completed 状态关闭「打赏」议题 = 核验通过：
+# 解析表单 → 校验金额/日期 → 按日期倒序插入 app/data/sponsors.json →
+# 直接 commit 到默认分支 → 回帖告知。
+# 校验失败关闭（not planned）或他人关闭的议题不会触发写入。
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: reward-add-${{ github.event.issue.number }}
+
+jobs:
+  add:
+    # why sender 而非 closed_by：issues.closed 的 webhook payload 不含 closed_by
+    # （只有 REST 单条 GET 才有），用它判定恒为 null 会导致 job 永远跳过
+    if: >-
+      contains(github.event.issue.labels.*.name, '打赏') &&
+      github.event.issue.state_reason == 'completed' &&
+      github.event.sender.login == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 导出议题正文
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/issue-body.md
+
+      - name: 解析并写入 sponsors.json
+        id: add
+        run: |
+          node scripts/reward-issue.mjs \
+            --body-file /tmp/issue-body.md \
+            > /tmp/result.json || true
+          cat /tmp/result.json
+          echo "ok=$(jq -r '.ok // false' /tmp/result.json)" >> "$GITHUB_OUTPUT"
+
+      - name: 解析失败则回帖说明（不写入）
+        if: steps.add.outputs.ok == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          jq -r .comment /tmp/result.json > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md
+
+      - name: 提交并推送
+        id: commit
+        if: steps.add.outputs.ok == 'true'
+        env:
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/data/sponsors.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore(reward): 收录打赏（issue #$ISSUE）"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 回帖告知
+        if: steps.add.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          jq -r .comment /tmp/result.json > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md

@@ -292,6 +292,14 @@ export default {
       relatedCount: 3,
       showCopyButton: true,
       showImageViewer: true,
+      /** 元数据行展示 busuanzi 本页计数（数值由 bsz 脚本填充） */
+      showBusuanzi: true,
+      /** 文章头卡右侧「分享文章」按钮（PostShareModal） */
+      showShare: true,
+      /** 文章底部版权信息卡（PostFooterCard） */
+      showCopyright: true,
+      /** 版权卡右下角「打赏」按钮（PostRewardModal） */
+      showReward: true,
       comments: {
         /** 是否启用文章评论区（Ecoku，仅文章页渲染） */
         enabled: true,
@@ -326,6 +334,27 @@ export default {
       desktopColumns: 3,
       /** 是否在分类封面右上角显示照片数量徽标 */
       showCoverBadge: true,
+    },
+
+    hot: {
+      /** 热榜聚合 API（不带尾斜杠），见 docs/design/12-hot.md */
+      apiBase: 'https://hot-api.liiiu.cn',
+      /** 平台 tab：key 对应 API 路径段，icon 为 tabler 图标 */
+      platforms: [
+        { key: 'bilibili', label: '哔哩哔哩', icon: 'tabler:brand-bilibili' },
+        { key: 'weibo', label: '微博', icon: 'tabler:brand-weibo' },
+        { key: 'douyin', label: '抖音', icon: 'tabler:brand-tiktok' },
+        { key: 'zhihu', label: '知乎', icon: 'tabler:brand-zhihu' },
+        { key: 'toutiao', label: '今日头条', icon: 'tabler:news' },
+        { key: 'baidu', label: '百度', icon: 'tabler:brand-baidu' },
+        { key: '36kr', label: '36氪', icon: 'tabler:trending-up' },
+      ] as ReadonlyArray<{ key: string; label: string; icon: string }>,
+      /** 卡片布局：featured 首条大卡+两栏 / grid 两栏竖卡 / row 单列横卡 */
+      layout: 'featured' as 'featured' | 'grid' | 'row',
+      /** 每页条数 */
+      pageSize: 20,
+      /** 是否带 API 缓存参数（cache=true） */
+      cache: true,
     },
   },
 }

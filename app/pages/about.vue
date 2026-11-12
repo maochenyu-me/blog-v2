@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { aboutConfig as cfg, aboutRows, isBlockEnabled, type AboutBlockKey } from '~/data/about'
+import { aboutConfig as cfg, aboutRows, isBlockEnabled, type AboutBlockKey, type VisitStatsData } from '~/data/about'
+import sponsorsData from '~/data/sponsors.json'
 
 const { ui } = useUi()
 
@@ -7,23 +8,16 @@ const { data: about } = await useAsyncData('about', () =>
   queryCollection('about').first(),
 )
 
-/** 打赏名单：构建时从 CDN 拉取（SSG 内联），失败回退空态 */
-interface SponsorsPayload {
-  sponsors?: Array<{ name?: string; amount?: string; date?: string }>
-}
+/** 实时访问统计：客户端经 /api/umami 代理拉取，失败继续展示 placeholder */
+const liveStats = ref<VisitStatsData | null>(null)
 
-const { data: rewardItems } = await useAsyncData('about-reward', async () => {
-  if (!cfg.reward.enabled || !cfg.reward.dataUrl) return []
-  try {
-    const res = await $fetch<SponsorsPayload>(cfg.reward.dataUrl, { timeout: 8000 })
-    return (res.sponsors ?? [])
-      .filter((s): s is { name: string; amount: string; date: string } =>
-        Boolean(s.name && s.amount && s.date))
-      .map((s) => ({ name: s.name, amount: s.amount, date: s.date }))
-  } catch {
-    return []
-  }
+onMounted(async () => {
+  if (!cfg.visitStats.apiUrl) return
+  liveStats.value = await fetchVisitStats()
 })
+
+/** 打赏名单：本地数据（打赏 issue 工作流自动维护），构建时内联 */
+const rewardItems = sponsorsData
 
 useHead({ title: ui.pages.about })
 
@@ -137,7 +131,7 @@ const rowReward = aboutRows[6]
             :style="cell(rowData, 'visitStats')"
             :tips="cfg.visitStats.tips"
             :title="cfg.visitStats.title"
-            :data="cfg.visitStats.placeholder"
+            :data="liveStats ?? cfg.visitStats.placeholder"
             :labels="cfg.visitStats.labels"
           />
           <AboutSelfInfo
@@ -155,16 +149,17 @@ const rowReward = aboutRows[6]
           </AboutCard>
         </div>
 
-        <!-- 打赏名单 -->
-        <div v-if="vis('reward')" class="about-row">
+        <!-- 打赏名单（id 供打赏弹窗「赞赏者名单」锚点跳转） -->
+        <div v-if="vis('reward')" id="reward" class="about-row">
           <AboutReward
             :style="cell(rowReward, 'reward')"
             :tips="cfg.reward.tips"
             :title="cfg.reward.title"
             :desc="cfg.reward.desc"
+            :stats="cfg.reward.stats"
+            :charge-label="cfg.reward.chargeLabel"
+            :count-text="cfg.reward.countText"
             :items="rewardItems ?? []"
-            :donate-label="cfg.reward.donateLabel"
-            :donate-to="cfg.reward.donateTo || undefined"
             :empty-text="cfg.reward.emptyText"
           />
         </div>

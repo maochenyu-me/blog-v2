@@ -6,6 +6,7 @@ abbrlink: 85fffa25
 category: 设计
 tags: [测试, 首页改版]
 cover: /images/covers/charset.png
+aisummary: "测试文章乙用于首页改版验收，主要验证封面存在但未标记为 featured 的情况。文章显示封面，但不会出现在轮播中，卡片流正常展示。正文内容仅为占位符，供验收使用，验收完成后可删除。"
 ---
 
 这是首页改版验收用的测试文章乙。

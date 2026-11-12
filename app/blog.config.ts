@@ -84,6 +84,7 @@ export default {
         children: [
           { label: '说说', to: '/shuoshuo', icon: 'tabler:messages' },
           { label: '相册', to: '/gallery', icon: 'tabler:photo' },
+          { label: '热搜', to: '/hot', icon: 'tabler:flame' },
         ],
       },
       {
@@ -110,6 +111,39 @@ export default {
         { label: 'Atom', to: '/atom.xml' },
       ],
     },
+  },
+
+  /**
+   * 文章底部版权信息卡（PostFooterCard）。
+   * 协议名与链接全站唯一来源，改这里即可。
+   */
+  copyright: {
+    license: '署名-非商业性使用-相同方式共享 4.0 国际',
+    licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans',
+  },
+
+  /**
+   * 打赏弹窗（PostRewardModal）。
+   * 收款码图片放 public/images/reward/ 下，文件缺失时组件显示占位框。
+   * 赞赏者名单锚点跳转关于页底部名单（app/data/sponsors.json，issue 工作流维护）。
+   */
+  reward: {
+    enabled: true,
+    wechatQr: '/images/reward/wechat.png',
+    alipayQr: '/images/reward/alipay.png',
+    sponsorsUrl: '/about#reward',
+  },
+
+  /**
+   * AI 智能摘要卡片（PostAiSummary，文章头卡下方）。
+   * 摘要文本由 scripts/ai-summary.mjs 生成后写入文章 frontmatter 的 aisummary 字段；
+   * badge 需与脚本里的 MODEL 保持一致，换模型两处一起改。
+   */
+  ai: {
+    label: '智能摘要',
+    badge: 'Qwen·3-8B',
+    /** 打字机动画开关（组件内还有 prefers-reduced-motion 降级） */
+    animation: true,
   },
 
   feed: {

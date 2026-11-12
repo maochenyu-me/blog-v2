@@ -19,7 +19,14 @@ export function useReadingTime() {
     return Math.max(1, Math.round(total / wpm))
   }
 
-  return { estimate, enabled, wpm }
+  /** 正文字数（汉字 + 英文数字词），文章头卡「N 字」用 */
+  function countWords(text: string): number {
+    const cjk = (text.match(/[\u4e00-\u9fa5]/g) ?? []).length
+    const words = (text.match(/[a-zA-Z0-9]+/g) ?? []).length
+    return cjk + words
+  }
+
+  return { estimate, countWords, enabled, wpm }
 }
 
 /** 统一的日期格式化，避免各处 format 不一致 */

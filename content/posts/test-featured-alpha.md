@@ -7,6 +7,7 @@ category: 工程
 tags: [测试, 首页改版]
 cover: /images/covers/view-transition.png
 featured: true
+aisummary: "测试文章甲用于首页改版验收，主要验证顶部推荐轮播位置是否正常显示封面，以及卡片流中封面的展示效果。点击文章可进入详情页，路由保持不变。正文内容仅为占位符，供验收使用，完成后可删除。"
 ---
 
 这是首页改版验收用的测试文章甲。

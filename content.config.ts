@@ -19,6 +19,8 @@ export default defineContentConfig({
         tags: z.array(z.string()).default([]),
         category: z.string(),
         cover: z.string().optional(),
+        /** AI 生成的文章摘要（scripts/ai-summary.mjs 写回），文章头卡下方的「智能摘要」卡片数据源 */
+        aisummary: z.string().optional(),
         draft: z.boolean().default(false),
         pinned: z.boolean().default(false),
         /** 推荐文章：首页轮播只展示 featured 且带 cover 的文章 */

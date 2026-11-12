@@ -45,6 +45,7 @@ export const ui = {
     tags: '标签',
     links: '友链',
     fcircle: '朋友圈',
+    hot: '热搜',
     message: '留言板',
     shuoshuo: '说说',
     about: '关于',
@@ -219,6 +220,7 @@ export const ui = {
       tags: '标签',
       links: '友链',
       fcircle: '朋友圈',
+      hot: '热搜',
       message: '留言板',
       shuoshuo: '说说',
       gallery: '相册',
@@ -244,6 +246,9 @@ export const ui = {
     notFound: '文章不存在',
     updatedAt: '更新于 {date}',
     readingTime: '{n} 分钟',
+    /** busuanzi 计数后缀（数值由 bsz 脚本填充到前置 span，容器默认隐藏） */
+    pageViews: '次浏览',
+    pageVisitors: '位访客',
     navAria: '文章导航',
     prev: '上一篇',
     next: '下一篇',
@@ -258,6 +263,45 @@ export const ui = {
     tocOpen: '打开目录',
     tocClose: '关闭目录',
     tocDialog: '文章目录',
+    /** 头卡字数 */
+    wordCount: '{n} 字',
+    /** 头卡创建日期 tooltip */
+    createdAt: '创建于 {date}',
+    /** 头卡分享按钮 + 分享弹窗 */
+    shareArticle: '分享文章',
+    shareDialogAria: '文章分享',
+    shareMethod: '分享方式',
+    shareWeibo: '微博',
+    shareQq: 'QQ',
+    shareMail: '邮件',
+    shareCopy: '复制链接',
+    shareCopied: '已复制链接',
+    shareQrAlt: '文章二维码',
+    shareQrTip: '扫码阅读本文',
+    /** 版权信息卡 */
+    copyrightAuthor: '文章作者',
+    copyrightPublished: '发布时间',
+    copyrightUpdated: '更新时间',
+    copyrightLicense: '版权信息',
+    copyrightAria: '文章版权信息',
+    /** 打赏弹窗 */
+    rewardButton: '打赏',
+    rewardTitle: '打赏中心',
+    rewardThanks: '感谢你赐予我前进的力量',
+    rewardSponsors: '赞赏者名单',
+    rewardSponsorsDesc: '因为你们的支持让我意识到写文章的价值',
+    rewardQrAlt: '{name}收款码',
+    rewardQrMissing: '收款码待配置',
+    rewardLinkAria: '打开赞赏者名单',
+    rewardWechat: '微信',
+    rewardAlipay: '支付宝',
+    /** 打赏弹窗「加入名单」按钮（跳 GitHub 议题模板） */
+    rewardJoin: '加入名单',
+    rewardJoinAria: '前往 GitHub 提交打赏收录申请',
+    /** AI 智能摘要卡片 */
+    aiSummaryRegionAria: 'AI 智能摘要',
+    aiSummaryExpand: '展开全部',
+    aiSummaryCollapse: '收起',
   },
 
   /** 代码块 */
@@ -421,6 +465,34 @@ export const ui = {
     emptyFiltered: '没有匹配的文章，换个关键词或作者试试',
     /** 数据说明 */
     dataSourceNote: '数据每天自动聚合自朋友们的 RSS 订阅源',
+  },
+
+  /** 热搜（数据源：hot-api.liiiu.cn，客户端拉取） */
+  hot: {
+    /** 页头副题：{platform} 平台名，{time} 更新时间 */
+    subtitle: '{platform} · 更新于 {time}',
+    tabsAria: '选择热榜平台',
+    platformIconAlt: '{name} 图标',
+    status: '共 {total} 条 · 第 {page} / {pages} 页',
+    /** 热度展示 */
+    hotValue: '热度 {value}',
+    hotUnitWan: '万',
+    hotUnitM: 'M',
+    /** 状态 */
+    loading: '正在加载热搜…',
+    loadError: '热搜数据获取失败，请稍后再试',
+    retry: '重试',
+    empty: '暂无热搜数据',
+    /** 分页 */
+    pagerAria: '热搜分页',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    pageAria: '第 {n} 页',
+    /** 卡片无障碍 */
+    rankAria: '第 {n} 名',
+    titleLinkAria: '查看「{title}」',
+    noDesc: '暂无描述',
+    dataSourceNote: '数据聚合自各平台公开热榜，每 5 分钟更新',
   },
 
   /** 说说（数据源：Ech0） */

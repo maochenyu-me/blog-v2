@@ -6,6 +6,7 @@ abbrlink: 97844eaa
 category: 工程
 tags: [测试]
 cover: https://picsum.photos/seed/kemiao-test/800/450
+aisummary: "本文为首页改版验收测试文章，封面使用外链 URL。主要验证外链封面在卡片流中的正常加载情况，以及在离线环境下外链加载失败时，是否能正确回退至占位图。正文内容仅为占位用途，验收完成后可删除。"
 ---
 
 这是首页改版验收用的测试文章戊，cover 是外链 URL。

@@ -176,6 +176,8 @@ export interface PostPageConfig {
   relatedCount: number
   showCopyButton: boolean
   showImageViewer: boolean
+  /** 文章元数据是否展示 busuanzi 本页访问/访客计数 */
+  showBusuanzi: boolean
   /** Ecoku 评论配置 */
   comments: {
     enabled: boolean
@@ -225,6 +227,19 @@ export interface MessagePageConfig {
   }
 }
 
+export interface HotPageConfig {
+  /** 热榜聚合 API（不带尾斜杠） */
+  apiBase: string
+  /** 平台 tab 列表，key 对应 API 路径段 */
+  platforms: ReadonlyArray<{ key: string; label: string; icon: string }>
+  /** 卡片布局形态 */
+  layout: 'featured' | 'grid' | 'row'
+  /** 每页条数 */
+  pageSize: number
+  /** 是否带 API 缓存参数 */
+  cache: boolean
+}
+
 export interface PagesConfig {
   home: HomePageConfig
   archive: ArchivePageConfig
@@ -237,6 +252,7 @@ export interface PagesConfig {
   shuoshuo: ShuoshuoPageConfig
   gallery: GalleryPageConfig
   message: MessagePageConfig
+  hot: HotPageConfig
 }
 
 export function usePageConfig<K extends keyof PagesConfig>(key: K): PagesConfig[K] {

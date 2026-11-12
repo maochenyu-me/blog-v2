@@ -53,7 +53,11 @@ export interface VisitStatsData {
 
 export interface RewardItem {
   name: string
-  amount: string
+  /** 头像直链，缺省渲染名称首字占位圆 */
+  avatar?: string
+  /** 金额（元） */
+  amount: number
+  /** 打赏日期，YYYY-MM-DD */
   date: string
 }
 
@@ -187,7 +191,8 @@ export const aboutConfig = {
     enabled: true,
     tips: '数据',
     title: '访问统计',
-    apiUrl: '',
+    /** 实时统计代理前缀（Pages Function）；留空则只展示 placeholder */
+    apiUrl: '/api/umami',
     labels: {
       todayUv: '今日人数',
       todayPv: '今日访问',
@@ -212,17 +217,19 @@ export const aboutConfig = {
     title: '关于我',
   },
 
-  /** 打赏名单（构建时从 dataUrl 拉取，失败回退空态） */
+  /** 打赏名单（数据在 app/data/sponsors.json，由打赏 issue 工作流自动维护） */
   reward: {
     enabled: true,
     tips: '感谢',
     title: '打赏名单',
     desc: '感谢每一位支持者的慷慨解囊，你们的支持是我持续创作最大的动力 ❤️',
-    dataUrl: 'https://cdn.jsdmirror.com/gh/Kemeow0815/sponsors@main/data/sponsors/sponsors.json',
+    /** 统计条模板：{count} 笔数、{sum} 累计金额 */
+    stats: '共收到 {count} 笔打赏，累计 ¥{sum}',
+    /** 右上角充电按钮：label（点击弹出打赏中心弹窗） */
+    chargeLabel: '为TA充电',
+    /** 电路装饰旁的人数文案：{count} 名单人数 */
+    countText: '共 {count} 人',
     emptyText: '还没有赞助记录，第一个支持者就是你~',
-    /** 打赏入口链接，留空不渲染按钮 */
-    donateTo: '',
-    donateLabel: '打赏作者',
   },
 
   /** 评论区（当前为 CommentSlot 占位） */
