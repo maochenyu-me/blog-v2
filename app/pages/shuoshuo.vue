@@ -242,7 +242,7 @@ const listEl = ref<HTMLElement | null>(null)
   gap: 0.3125rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--background);
+  background: var(--card);
   padding: 0.3125rem 0.75rem;
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
@@ -294,7 +294,7 @@ const listEl = ref<HTMLElement | null>(null)
   margin-left: 0.5rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--background);
+  background: var(--card);
   color: var(--foreground);
   padding: 0.25rem 0.875rem;
   font-size: var(--fs-meta);
@@ -343,7 +343,7 @@ const listEl = ref<HTMLElement | null>(null)
   height: 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--card);
   color: var(--muted-foreground);
   font-size: var(--fs-meta);
   font-family: var(--font-mono);

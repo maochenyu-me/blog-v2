@@ -135,8 +135,8 @@ onBeforeUnmount(() => {
  * 全部取自本站 token，.dark 类切换时自动跟随。
  */
 .ecoku-comments-section :deep(.ecoku-comments) {
-  --ecoku-theme: var(--background);
-  --ecoku-entry: var(--background);
+  --ecoku-theme: var(--card);
+  --ecoku-entry: var(--card);
   --ecoku-primary: var(--foreground);
   --ecoku-secondary: var(--muted-foreground);
   --ecoku-content: var(--foreground);

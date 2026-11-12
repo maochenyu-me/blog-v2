@@ -132,7 +132,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   gap: 0.25rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--background);
+  background: var(--card);
   padding: 0.25rem 0.625rem;
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
@@ -177,7 +177,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   display: flex;
   gap: 0.125rem;
   padding: 0.375rem;
-  background: var(--background);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);

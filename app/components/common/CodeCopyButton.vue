@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) / 2);
-  background-color: var(--background);
+  background-color: var(--card);
   cursor: pointer;
   transition:
     color var(--duration-base) var(--easing-base),

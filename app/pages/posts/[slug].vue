@@ -291,7 +291,7 @@ useHead({
   gap: 0.5rem;
   min-height: 6.5rem;
   padding: 1.25rem;
-  background-color: var(--background);
+  background-color: var(--card);
   transition: background-color var(--duration-base) var(--easing-base);
 }
 

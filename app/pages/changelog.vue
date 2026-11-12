@@ -350,7 +350,7 @@ watch(totalPages, (n) => {
   padding: 0.25rem 0.6875rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  background: var(--background);
+  background: var(--card);
   font-size: var(--fs-meta);
   line-height: var(--lh-meta);
   color: var(--muted-foreground);
@@ -570,7 +570,7 @@ a.tl-hash:hover {
   height: 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--card);
   color: var(--muted-foreground);
   font-size: var(--fs-meta);
   font-family: var(--font-mono);

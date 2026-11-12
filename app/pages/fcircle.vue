@@ -367,7 +367,7 @@ const gridVars = computed(() => ({
 
 .search-input:focus-visible {
   border-color: var(--accent);
-  background-color: var(--background);
+  background-color: var(--card);
 }
 
 /* 作者筛选：横向滚动条，移动端滑得动 */
@@ -409,7 +409,7 @@ const gridVars = computed(() => ({
 .chip.is-active {
   color: var(--accent);
   border-color: var(--accent);
-  background-color: color-mix(in srgb, var(--accent) 8%, var(--background));
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--card));
 }
 
 .chip-avatar {

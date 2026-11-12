@@ -205,7 +205,7 @@ function labelFor(type: string): string {
   display: block;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--card);
   padding: 0.75rem;
   overflow: hidden;
 }

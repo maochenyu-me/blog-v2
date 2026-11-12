@@ -130,7 +130,7 @@ const stats = computed(() => t(ui.pages.gallery.pageMeta, {
   overflow: hidden;
   border-radius: calc(var(--radius) + 0.25rem);
   border: 1px solid var(--border);
-  background: var(--background);
+  background: var(--card);
   transition:
     border-color var(--duration-base) var(--easing-base),
     transform var(--duration-base) var(--easing-base);

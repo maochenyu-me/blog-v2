@@ -164,7 +164,7 @@ const commentTitle = computed(() => `${ui.pages.message} · ${site.name}`)
   border-radius: var(--radius-full);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
-  background-color: var(--background);
+  background-color: var(--card);
 }
 
 .chip--link {

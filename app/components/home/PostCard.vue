@@ -96,7 +96,7 @@ const readingMinutes = computed(() => estimate(props.post.description))
 .post-card {
   border-radius: calc(var(--radius) + 0.25rem);
   overflow: hidden;
-  background: var(--background);
+  background: var(--card);
   border: 1px solid var(--border);
   transition:
     border-color var(--duration-base) var(--easing-base),

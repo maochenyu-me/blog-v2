@@ -88,7 +88,7 @@ function fmt(amount: string): string {
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--background) 60%, transparent);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
 }
 
 .reward-name {

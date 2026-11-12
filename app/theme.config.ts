@@ -27,6 +27,8 @@ export default {
         muted: '#fafafa',
         mutedForeground: '#71717a',
         border: '#e4e4e7',
+        /** 卡片底色：明色与 background 同值（本来的白卡设计不变） */
+        card: '#ffffff',
       },
       dark: {
         background: '#10131a',
@@ -34,6 +36,13 @@ export default {
         muted: '#212f3f',
         mutedForeground: '#9aa3b1',
         border: '#2b3648',
+        /**
+         * 卡片底色：比 background 亮一档、比 muted(hover) 暗一档。
+         * 背景图模式下，卡片若用 var(--background) 会与页面底色同色，
+         * 压在夜空图上像黑色补丁（liushen 的 --card-bg 思路）。
+         * 实测对比度：fg 14.5 / muted-fg 6.1 / accent 4.75，均过 AA。
+         */
+        card: '#1b2434',
       },
     },
 

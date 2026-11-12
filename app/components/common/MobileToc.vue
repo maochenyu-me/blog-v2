@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
   width: min(82vw, 20rem);
   display: flex;
   flex-direction: column;
-  background-color: var(--background);
+  background-color: var(--card);
   border-inline-start: 1px solid var(--border);
   overscroll-behavior: contain;
 }

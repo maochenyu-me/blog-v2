@@ -145,7 +145,7 @@ onBeforeUnmount(stopTimer)
   height: 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--card);
   color: var(--muted-foreground);
   font-size: 1rem;
   transition:

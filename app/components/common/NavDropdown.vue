@@ -190,7 +190,7 @@ watch(() => route.fullPath, close)
   min-width: 9rem;
   padding: 0.25rem 0;
   list-style: none;
-  background-color: var(--background);
+  background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: 4px;
 }

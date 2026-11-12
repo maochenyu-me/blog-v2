@@ -195,7 +195,7 @@ onBeforeUnmount(() => {
   width: min(82vw, 20rem);
   display: flex;
   flex-direction: column;
-  background-color: var(--background);
+  background-color: var(--card);
   /* 决策 8：贴边、矩形、1px 左边框 —— 不用圆角也不用阴影做浮层感 */
   border-inline-start: 1px solid var(--border);
   /* 抽屉本身滚，页面锁住；safari 的橡皮筋不会带出背后内容 */

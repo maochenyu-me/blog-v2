@@ -340,7 +340,7 @@ function segmentsOf(hit: SearchHit): SnippetSegment[] {
 .search-panel {
   width: 100%;
   max-width: 38rem;
-  background-color: var(--background);
+  background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   /* 无阴影：暗色模式禁用阴影，亮色也不堆叠，靠 1px 边框与背景色分层 */

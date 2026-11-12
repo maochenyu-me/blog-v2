@@ -166,7 +166,7 @@ onBeforeUnmount(() => {
 .math-copy.is-visible {
   opacity: 1;
   border-color: var(--border);
-  background-color: var(--background);
+  background-color: var(--card);
 }
 
 .math-copy:hover {

@@ -59,7 +59,7 @@ defineProps<{
   height: 44px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--background) 60%, transparent);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
   color: var(--foreground);
   transition:
     transform var(--duration-base) var(--ease-base),

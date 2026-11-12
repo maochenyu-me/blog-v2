@@ -450,7 +450,7 @@ const gridVars = computed(() => ({
   /* grid item 的自动最小尺寸归零：让 1fr 轨道能被窄视口压缩，
      内部 nowrap 的 URL 字段靠 overflow + ellipsis 截断 */
   min-width: 0;
-  background-color: var(--background);
+  background-color: var(--card);
   padding: var(--space-item);
 }
 
@@ -1006,7 +1006,7 @@ details[open] .legend-summary .disclaimer-chevron {
 .dialog {
   width: 100%;
   max-width: 24rem;
-  background-color: var(--background);
+  background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-item);

@@ -69,7 +69,7 @@ const props = defineProps<{
   pointer-events: none;
   padding: 0.5rem 0.75rem;
   border-radius: calc(var(--radius) + 0.125rem);
-  background: color-mix(in srgb, var(--background) 72%, transparent);
+  background: color-mix(in srgb, var(--card) 72%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }

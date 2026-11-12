@@ -383,7 +383,7 @@ onBeforeUnmount(() => {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--background);
+  background: var(--card);
   color: var(--foreground);
   padding: 0.4375rem 0.625rem;
   font-size: 0.9375rem;

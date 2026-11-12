@@ -277,7 +277,7 @@ useHead({
   padding-inline: 0.375rem;
   border-radius: calc(var(--radius) - 0.125rem);
   border: 1px solid var(--border);
-  background: var(--background);
+  background: var(--card);
   color: var(--muted-foreground);
   font-size: var(--fs-meta);
   font-variant-numeric: tabular-nums;

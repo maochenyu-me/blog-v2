@@ -100,7 +100,7 @@ defineExpose({ close })
   color: var(--muted-foreground);
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) / 2);
-  background-color: var(--background);
+  background-color: var(--card);
   cursor: pointer;
 }
 

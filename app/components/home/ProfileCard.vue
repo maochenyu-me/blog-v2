@@ -136,7 +136,7 @@ onMounted(() => {
   height: 2rem;
   border-radius: 999px;
   color: var(--muted-foreground);
-  background: color-mix(in srgb, var(--background) 60%, transparent);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   transition:
     color var(--duration-base) var(--easing-base),

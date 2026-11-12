@@ -111,6 +111,9 @@ export default defineNuxtModule({
   --border: ${neutral.light.border};
   --accent: ${accent.light};
 
+  /* 卡片底色：暗色比 background 亮一档，卡片压在背景图上不再发黑 */
+  --card: ${neutral.light.card ?? neutral.light.background};
+
   --glass-bg: ${glass.light.bg};
   --glass-border: ${glass.light.border};
   --glass-highlight: ${glass.light.highlight};
@@ -175,6 +178,7 @@ ${backdropVars('light')}
   --muted-foreground: ${neutral.dark.mutedForeground};
   --border: ${neutral.dark.border};
   --accent: ${accent.dark};
+  --card: ${neutral.dark.card ?? neutral.dark.background};
 
   --glass-bg: ${glass.dark.bg};
   --glass-border: ${glass.dark.border};

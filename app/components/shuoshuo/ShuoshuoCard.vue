@@ -108,7 +108,7 @@ const commentsBtnText = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
-  background: var(--background);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-item);
@@ -256,7 +256,7 @@ const commentsBtnText = computed(() => {
   gap: 0.25rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--background);
+  background: var(--card);
   padding: 0.25rem 0.625rem;
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
