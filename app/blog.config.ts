@@ -88,6 +88,15 @@ export default {
         ],
       },
       {
+        label: '工具',
+        to: '/tools/cover-generator',
+        icon: 'tabler:tool',
+        children: [
+          { label: '封面生成器', to: '/tools/cover-generator', icon: 'tabler:photo-edit' },
+          { label: '从夯到拉', to: '/tools/tier-list', icon: 'tabler:chart-bar' },
+        ],
+      },
+      {
         label: '关于',
         to: '/about',
         icon: 'tabler:user',

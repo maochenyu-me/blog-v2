@@ -22,6 +22,13 @@ export const navPanel: NavPanelSection[] = [
     ],
   },
   {
+    title: '工具',
+    links: [
+      { label: '封面生成器', to: '/tools/cover-generator', icon: 'tabler:photo-edit' },
+      { label: '从夯到拉', to: '/tools/tier-list', icon: 'tabler:chart-bar' },
+    ],
+  },
+  {
     title: '互动角落',
     links: [
       { label: '友链', to: '/links', icon: 'tabler:link' },

@@ -101,6 +101,7 @@ expanded.value = new Set(
                   :target="child.external ? '_blank' : undefined"
                   :rel="child.external ? 'noopener noreferrer' : undefined"
                 >
+                  <Icon v-if="child.icon" :name="child.icon" class="nav-tree__icon" aria-hidden="true" />
                   <span class="nav-tree__label">{{ child.label }}</span>
                   <span v-if="child.external" class="nav-tree__ext">
                     <Icon name="tabler:external-link" aria-hidden="true" />
