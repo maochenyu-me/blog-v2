@@ -17,6 +17,7 @@
     "test:site-stats": "node --experimental-strip-types scripts/test-site-stats.mjs",
     "test:cover-generator": "node --experimental-strip-types scripts/test-cover-generator.mjs",
     "test:tier-list": "node --experimental-strip-types scripts/test-tier-list.mjs",
+    "test:image-converter": "node --experimental-strip-types scripts/test-image-converter.mjs",
     "theme": "node scripts/theme.mjs",
     "fix:post": "node scripts/fix-contrast.mjs && node scripts/font-preload.mjs",
     "verify:font": "node scripts/verify-font-flash.mjs",
