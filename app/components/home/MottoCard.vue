@@ -19,7 +19,7 @@ const { ui } = useUi()
  * 客户端挂载完成后再随机取一条。直接在 setup 期 Math.random() 会让
  * 构建期与访问期的随机结果不同，触发 Vue 水合校验错误。
  */
-const pick = ref<{ text: string; from?: string }>(props.cfg.mottos[0] ?? null)
+const pick = ref<{ text: string; from?: string } | null>(props.cfg.mottos[0] ?? null)
 
 onMounted(() => {
   if (props.cfg.mottos.length) {

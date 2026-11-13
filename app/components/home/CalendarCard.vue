@@ -100,7 +100,7 @@ const heatCells = computed(() => {
     if (Number(key.slice(0, 4)) !== displayYear.value) continue
     const month = Number(key.slice(5, 7)) - 1
     const week = Math.min(Math.floor((Number(key.slice(8, 10)) - 1) / 7), 4)
-    counts[month]![week] += list.length
+    counts[month]![week] = (counts[month]![week] ?? 0) + list.length
   }
   const cells: Array<{ week: number; month: number; count: number; level: number; label: string }> = []
   for (let week = 0; week < 5; week++) {
@@ -153,7 +153,7 @@ const shortDate = (d: string) => {
 
 const titleText = computed(() => {
   if (!ready.value) return cal.titlePlaceholder
-  if (view.value === 'day') return t(cal.dayTitle, { year: displayYear.value, month: cal.months[displayMonth.value] })
+  if (view.value === 'day') return t(cal.dayTitle, { year: displayYear.value, month: cal.months[displayMonth.value] ?? '' })
   if (view.value === 'month') return t(cal.monthTitle, { year: displayYear.value })
   return cal.yearTitle
 })
@@ -308,7 +308,7 @@ onBeforeUnmount(() => {
                 'cal-day--today': cell.isToday,
                 'cal-day--selected': cell.isSelected,
               }"
-              :aria-pressed="String(cell.isSelected)"
+              :aria-pressed="cell.isSelected ? 'true' : 'false'"
               :aria-label="cell.aria"
               @click="toggleDay(cell.key)"
             >

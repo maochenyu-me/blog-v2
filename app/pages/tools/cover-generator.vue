@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { COVER_ICON_PRESETS, dimensionsForRatio, drawCover, type CoverRatio, type CoverRenderOptions } from '~/utils/cover-generator'
 
-const title = '封面生成器'
+const { ui, t } = useUi()
+const text = ui.tools.cover
+const title = text.title
 useHead({ title })
 
 const ratios: Array<{ label: string; value: CoverRatio }> = [
@@ -18,8 +20,8 @@ const settings = reactive({
   ratio: '16:9' as CoverRatio,
   scale: 1,
   filename: 'cover',
-  leftText: '喵洛阁',
-  rightText: '记录灵感与生活',
+  leftText: text.defaultLeftText,
+  rightText: text.defaultRightText,
   fontFamily: 'LXGW WenKai Lite',
   fontSize: 64,
   fontWeight: 600,
@@ -150,7 +152,7 @@ async function searchIcons(query: string) {
       : []
     iconSearchError.value = ''
   } catch {
-    if (request === iconSearchRequest) iconSearchError.value = '图标库暂时无法连接，请检查网络后重试。'
+    if (request === iconSearchRequest) iconSearchError.value = text.iconSearchFailed
   } finally {
     if (request === iconSearchRequest) iconSearchLoading.value = false
   }
@@ -187,7 +189,7 @@ async function selectLibraryIcon(iconId: string) {
     URL.revokeObjectURL(objectUrl)
   } catch {
     if (objectUrl) URL.revokeObjectURL(objectUrl)
-    if (request === iconLoadRequest) message.value = '该图标载入失败，请选择其他图标。'
+    if (request === iconLoadRequest) message.value = text.iconLoadFailed
   }
 }
 
@@ -221,7 +223,7 @@ function onBackgroundDrop(event: DragEvent) {
 
 function loadImageFile(file: File, target: 'background' | 'icon') {
   if (!file.type.startsWith('image/')) {
-    message.value = '请选择有效的图片文件。'
+    message.value = text.invalidImageFile
     return
   }
   const previousUrl = target === 'background' ? backgroundUrl : iconUrl
@@ -246,7 +248,7 @@ function loadImageFile(file: File, target: 'background' | 'icon') {
   }
   image.onerror = () => {
     URL.revokeObjectURL(nextUrl)
-    message.value = '图片读取失败，请换一个文件再试。'
+    message.value = text.imageLoadFailed
   }
   image.src = nextUrl
 }
@@ -271,7 +273,7 @@ async function loadFont(event: Event) {
     render()
     message.value = ''
   } catch {
-    message.value = '字体加载失败，请使用有效的 TTF、OTF 或 WOFF 文件。'
+    message.value = text.fontLoadFailed
   }
 }
 
@@ -281,7 +283,7 @@ function downloadCover() {
   const safeName = settings.filename.trim().replace(/[\\/:*?"<>|]/g, '-').slice(0, 80) || 'cover'
   canvas.toBlob((blob) => {
     if (!blob) {
-      message.value = '导出失败，请调整画布后重试。'
+      message.value = text.exportFailed
       return
     }
     const url = URL.createObjectURL(blob)
@@ -290,7 +292,7 @@ function downloadCover() {
     link.download = `${safeName}.png`
     link.click()
     URL.revokeObjectURL(url)
-    message.value = `已导出 ${dimensions.value.width} × ${dimensions.value.height} px PNG。`
+    message.value = t(text.exported, { width: dimensions.value.width, height: dimensions.value.height })
   }, 'image/png')
 }
 
@@ -317,36 +319,36 @@ function resetImage(target: 'background' | 'icon') {
     <header class="cover-heading">
       <div>
         <p class="cover-kicker">LOCAL IMAGE STUDIO · 01</p>
-        <h1>封面生成器</h1>
-        <p class="cover-intro">把标题、图标和背景排成一张封面。所有素材只在本机浏览器处理。</p>
+        <h1>{{ text.title }}</h1>
+        <p class="cover-intro">{{ text.intro }}</p>
       </div>
-      <span class="privacy-mark"><Icon name="tabler:device-laptop" aria-hidden="true" /> 本地处理</span>
+      <span class="privacy-mark"><Icon name="tabler:device-laptop" aria-hidden="true" /> {{ text.localBadge }}</span>
     </header>
 
     <div class="studio-grid">
-      <aside class="studio-rail studio-rail--left" aria-label="内容素材设置">
+      <aside class="studio-rail studio-rail--left" :aria-label="text.materialRailAria">
         <section class="panel-block panel-block--content">
-          <div class="panel-heading"><span>01 / CONTENT</span><h2>内容</h2></div>
-          <label class="field-label" for="left-text">左侧文字</label>
-          <input id="left-text" v-model="settings.leftText" maxlength="40" placeholder="输入标题">
-          <label class="field-label" for="right-text">右侧文字</label>
-          <input id="right-text" v-model="settings.rightText" maxlength="60" placeholder="输入副标题">
-          <div class="field-row"><label class="field-label" for="cover-font">字体</label><select id="cover-font" v-model="settings.fontFamily"><option v-for="font in systemFonts" :key="font" :value="font">{{ font }}</option><option v-if="fontReady" :value="customFontFamily">{{ fontName || '已上传字体' }}</option></select></div>
-          <label class="range-control"><span>字体粗细 <output>{{ settings.fontWeight }}</output></span><input id="font-weight" v-model.number="settings.fontWeight" type="range" min="300" max="900" step="100"></label>
-          <label class="range-control"><span>字体大小 <output>{{ settings.fontSize }} px</output></span><input v-model.number="settings.fontSize" type="range" min="20" max="160"></label>
-          <label class="upload-row" for="font-upload"><span><Icon name="tabler:typography" aria-hidden="true" /> {{ fontName || '自定义字体' }}</span><span class="upload-action">上传</span><input id="font-upload" type="file" accept=".ttf,.otf,.woff,.woff2" @change="loadFont"></label>
+          <div class="panel-heading"><span>01 / CONTENT</span><h2>{{ text.contentSection }}</h2></div>
+          <label class="field-label" for="left-text">{{ text.leftTextLabel }}</label>
+          <input id="left-text" v-model="settings.leftText" maxlength="40" :placeholder="text.leftTextPlaceholder">
+          <label class="field-label" for="right-text">{{ text.rightTextLabel }}</label>
+          <input id="right-text" v-model="settings.rightText" maxlength="60" :placeholder="text.rightTextPlaceholder">
+          <div class="field-row"><label class="field-label" for="cover-font">{{ text.fontLabel }}</label><select id="cover-font" v-model="settings.fontFamily"><option v-for="font in systemFonts" :key="font" :value="font">{{ font }}</option><option v-if="fontReady" :value="customFontFamily">{{ fontName || text.uploadedFont }}</option></select></div>
+          <label class="range-control"><span>{{ text.fontWeightLabel }} <output>{{ settings.fontWeight }}</output></span><input id="font-weight" v-model.number="settings.fontWeight" type="range" min="300" max="900" step="100"></label>
+          <label class="range-control"><span>{{ text.fontSizeLabel }} <output>{{ settings.fontSize }} px</output></span><input v-model.number="settings.fontSize" type="range" min="20" max="160"></label>
+          <label class="upload-row" for="font-upload"><span><Icon name="tabler:typography" aria-hidden="true" /> {{ fontName || text.customFont }}</span><span class="upload-action">{{ text.upload }}</span><input id="font-upload" type="file" accept=".ttf,.otf,.woff,.woff2" @change="loadFont"></label>
         </section>
 
         <section class="panel-block">
-          <div class="panel-heading"><span>02 / ICON</span><h2>图标</h2></div>
-          <label class="icon-search-label" for="icon-search">搜索图标库</label>
-          <input id="icon-search" v-model="iconSearch" type="search" autocomplete="off" placeholder="搜索图标库…" aria-describedby="icon-search-help">
-          <p id="icon-search-help" class="icon-search-help">输入名称或关键词，搜索 Iconify 图标库</p>
+          <div class="panel-heading"><span>02 / ICON</span><h2>{{ text.iconSection }}</h2></div>
+          <label class="icon-search-label" for="icon-search">{{ text.searchIconLibrary }}</label>
+          <input id="icon-search" v-model="iconSearch" type="search" autocomplete="off" :placeholder="text.iconSearchPlaceholder" aria-describedby="icon-search-help">
+          <p id="icon-search-help" class="icon-search-help">{{ text.iconSearchHelp }}</p>
           <div v-if="iconSearch.trim()" class="icon-search-results" aria-live="polite">
-            <p v-if="iconSearchLoading" class="icon-search-state">正在搜索图标…</p>
+            <p v-if="iconSearchLoading" class="icon-search-state">{{ text.searchingIcons }}</p>
             <p v-else-if="iconSearchError" class="icon-search-state icon-search-state--error" role="alert">{{ iconSearchError }}</p>
-            <p v-else-if="!iconResults.length" class="icon-search-state">没有找到图标，试试更短的关键词。</p>
-            <div v-else class="icon-library-grid" role="listbox" aria-label="图标搜索结果">
+            <p v-else-if="!iconResults.length" class="icon-search-state">{{ text.noIconResults }}</p>
+            <div v-else class="icon-library-grid" role="listbox" :aria-label="text.iconResultsAria">
               <button v-for="iconId in iconResults" :key="iconId" type="button" role="option" :aria-selected="selectedLibraryIcon === iconId" :class="{ selected: selectedLibraryIcon === iconId }" :title="iconId" @click="selectLibraryIcon(iconId)">
                 <img :src="`${iconApi}/${iconId.replace(':', '/')}.svg?color=%2337332e`" :alt="''" loading="lazy">
                 <span>{{ iconId }}</span>
@@ -354,70 +356,70 @@ function resetImage(target: 'background' | 'icon') {
             </div>
           </div>
           <template v-else>
-            <p class="field-label">快速选择</p>
-            <div class="icon-presets" role="group" aria-label="预设图标">
+            <p class="field-label">{{ text.quickPick }}</p>
+            <div class="icon-presets" role="group" :aria-label="text.iconPresetsAria">
               <button v-for="icon in COVER_ICON_PRESETS" :key="icon.id" type="button" :class="{ selected: settings.iconPreset === icon.id && !iconImage && !selectedLibraryIcon }" :aria-pressed="settings.iconPreset === icon.id && !iconImage && !selectedLibraryIcon" :aria-label="icon.label" @click="settings.iconPreset = icon.id; iconImage = null; selectedLibraryIcon = ''">{{ icon.glyph }}</button>
             </div>
           </template>
-          <p class="current-icon" aria-live="polite">当前：{{ selectedLibraryIcon || (iconImage ? iconName : `本地预设：${COVER_ICON_PRESETS.find(item => item.id === settings.iconPreset)?.label}`) }}</p>
-          <label class="upload-row" for="icon-upload"><span><Icon name="tabler:photo-plus" aria-hidden="true" /> {{ iconName || '自定义图片图标' }}</span><span class="upload-action">上传</span><input id="icon-upload" type="file" accept="image/*" @change="loadImage($event, 'icon')"></label>
-          <label class="toggle-row"><span>显示图标</span><input v-model="settings.iconVisible" type="checkbox"></label>
-          <label class="toggle-row"><span>保留原色</span><input v-model="settings.originalIconColor" type="checkbox"></label>
-          <div class="color-grid color-grid--two"><label>图标颜色<input v-model="settings.iconColor" type="color" :disabled="settings.originalIconColor"></label><label>图标底色<input v-model="settings.iconBackground" type="color"></label></div>
-          <label class="toggle-row"><span>启用图标底色</span><input v-model="settings.iconBackgroundEnabled" type="checkbox"></label>
-          <button v-if="iconImage" class="text-button" type="button" @click="resetImage('icon')">恢复预设图标</button>
+          <p class="current-icon" aria-live="polite">{{ text.currentIconPrefix }}{{ selectedLibraryIcon || (iconImage ? iconName : t(text.localPresetPrefix, { label: COVER_ICON_PRESETS.find(item => item.id === settings.iconPreset)?.label ?? '' })) }}</p>
+          <label class="upload-row" for="icon-upload"><span><Icon name="tabler:photo-plus" aria-hidden="true" /> {{ iconName || text.customImageIcon }}</span><span class="upload-action">{{ text.upload }}</span><input id="icon-upload" type="file" accept="image/*" @change="loadImage($event, 'icon')"></label>
+          <label class="toggle-row"><span>{{ text.showIcon }}</span><input v-model="settings.iconVisible" type="checkbox"></label>
+          <label class="toggle-row"><span>{{ text.keepIconColor }}</span><input v-model="settings.originalIconColor" type="checkbox"></label>
+          <div class="color-grid color-grid--two"><label>{{ text.iconColorLabel }}<input v-model="settings.iconColor" type="color" :disabled="settings.originalIconColor"></label><label>{{ text.iconBackgroundLabel }}<input v-model="settings.iconBackground" type="color"></label></div>
+          <label class="toggle-row"><span>{{ text.enableIconBackground }}</span><input v-model="settings.iconBackgroundEnabled" type="checkbox"></label>
+          <button v-if="iconImage" class="text-button" type="button" @click="resetImage('icon')">{{ text.restorePresetIcon }}</button>
         </section>
 
         <section class="panel-block">
-          <div class="panel-heading"><span>03 / BACKGROUND</span><h2>背景图片</h2></div>
-          <label class="dropzone" for="background-upload" @dragover.prevent @drop.prevent="onBackgroundDrop"><Icon name="tabler:cloud-upload" aria-hidden="true" /><strong>{{ backgroundName || '点击或拖拽选择图片' }}</strong><span>图片只在浏览器本地载入</span><input id="background-upload" type="file" accept="image/*" @change="loadImage($event, 'background')"></label>
-          <button v-if="backgroundImage" class="text-button" type="button" @click="resetImage('background')">移除背景图片</button>
+          <div class="panel-heading"><span>03 / BACKGROUND</span><h2>{{ text.backgroundSection }}</h2></div>
+          <label class="dropzone" for="background-upload" @dragover.prevent @drop.prevent="onBackgroundDrop"><Icon name="tabler:cloud-upload" aria-hidden="true" /><strong>{{ backgroundName || text.dropzoneTitle }}</strong><span>{{ text.dropzoneNote }}</span><input id="background-upload" type="file" accept="image/*" @change="loadImage($event, 'background')"></label>
+          <button v-if="backgroundImage" class="text-button" type="button" @click="resetImage('background')">{{ text.removeBackground }}</button>
         </section>
       </aside>
 
-      <section class="preview-column" aria-label="实时封面画布">
+      <section class="preview-column" :aria-label="text.previewAria">
         <div class="preview-toolbar">
           <div class="preview-title"><span class="eyebrow">LIVE CANVAS</span><strong>{{ dimensions.width }} <i>×</i> {{ dimensions.height }}<small> PX</small></strong></div>
-          <span class="preview-status"><span /> 实时预览</span>
+          <span class="preview-status"><span /> {{ text.livePreview }}</span>
         </div>
         <div class="canvas-stage" :style="canvasStyle" @dragover.prevent @drop.prevent="onBackgroundDrop">
-          <canvas ref="canvasEl" aria-label="实时封面预览" />
+          <canvas ref="canvasEl" :aria-label="text.canvasAria" />
           <span class="canvas-corner canvas-corner--tl" aria-hidden="true" /><span class="canvas-corner canvas-corner--br" aria-hidden="true" />
           <span class="canvas-dimensions">{{ settings.ratio }} / {{ settings.scale }}×</span>
         </div>
         <p v-if="message" class="status-message" role="status">{{ message }}</p>
-        <section class="export-dock" aria-label="画布与导出设置">
-          <div class="panel-heading"><span>04 / EXPORT</span><h2>画布与导出</h2></div>
-          <label class="field-label">画板比例</label>
-          <div class="ratio-grid" role="group" aria-label="画板比例"><button v-for="ratio in ratios" :key="ratio.value" type="button" :class="{ selected: settings.ratio === ratio.value }" :aria-pressed="settings.ratio === ratio.value" @click="settings.ratio = ratio.value">{{ ratio.label }}</button></div>
+        <section class="export-dock" :aria-label="text.exportAria">
+          <div class="panel-heading"><span>04 / EXPORT</span><h2>{{ text.exportSection }}</h2></div>
+          <label class="field-label">{{ text.ratioLabel }}</label>
+          <div class="ratio-grid" role="group" :aria-label="text.ratioAria"><button v-for="ratio in ratios" :key="ratio.value" type="button" :class="{ selected: settings.ratio === ratio.value }" :aria-pressed="settings.ratio === ratio.value" @click="settings.ratio = ratio.value">{{ ratio.label }}</button></div>
           <div class="export-controls">
-            <label class="export-field"><span>缩放倍率</span><select id="cover-scale" v-model.number="settings.scale"><option v-for="scale in scales" :key="scale" :value="scale">{{ scale }}×</option></select></label>
-            <label class="export-field"><span>文件名</span><span class="filename-field"><input id="cover-filename" v-model="settings.filename" maxlength="80" autocomplete="off"><i>.png</i></span></label>
-            <label class="toggle-row transparent-toggle"><span>透明背景</span><input v-model="settings.backgroundTransparent" type="checkbox"></label>
+            <label class="export-field"><span>{{ text.scaleLabel }}</span><select id="cover-scale" v-model.number="settings.scale"><option v-for="scale in scales" :key="scale" :value="scale">{{ scale }}×</option></select></label>
+            <label class="export-field"><span>{{ text.filenameLabel }}</span><span class="filename-field"><input id="cover-filename" v-model="settings.filename" maxlength="80" autocomplete="off"><i>.png</i></span></label>
+            <label class="toggle-row transparent-toggle"><span>{{ text.transparentBackground }}</span><input v-model="settings.backgroundTransparent" type="checkbox"></label>
           </div>
-          <div class="export-bottom"><span class="dimensions-note">输出 {{ dimensions.width }} × {{ dimensions.height }} px</span><button class="export-button" type="button" @click="downloadCover"><Icon name="tabler:download" aria-hidden="true" /> 导出 PNG</button></div>
+          <div class="export-bottom"><span class="dimensions-note">{{ t(text.outputNote, { width: dimensions.width, height: dimensions.height }) }}</span><button class="export-button" type="button" @click="downloadCover"><Icon name="tabler:download" aria-hidden="true" /> {{ text.exportButton }}</button></div>
         </section>
       </section>
 
-      <aside class="studio-rail studio-rail--right" aria-label="外观样式设置">
+      <aside class="studio-rail studio-rail--right" :aria-label="text.appearanceAria">
         <section class="panel-block panel-block--appearance">
-          <div class="panel-heading"><span>05 / APPEARANCE</span><h2>外观样式</h2></div>
-          <label class="field-label">颜色</label>
-          <div class="color-grid"><label>文字<input v-model="settings.textColor" type="color"></label><label>图标<input v-model="settings.iconColor" type="color" :disabled="settings.originalIconColor"></label><label>底色<input v-model="settings.backgroundColor" type="color"></label></div>
-          <label class="range-control"><span>背景不透明度 <output>{{ settings.backgroundOpacity }}%</output></span><input v-model.number="settings.backgroundOpacity" type="range" min="0" max="100"></label>
+          <div class="panel-heading"><span>05 / APPEARANCE</span><h2>{{ text.appearanceSection }}</h2></div>
+          <label class="field-label">{{ text.colorLabel }}</label>
+          <div class="color-grid"><label>{{ text.textColorLabel }}<input v-model="settings.textColor" type="color"></label><label>{{ text.iconColorShort }}<input v-model="settings.iconColor" type="color" :disabled="settings.originalIconColor"></label><label>{{ text.backgroundColorShort }}<input v-model="settings.backgroundColor" type="color"></label></div>
+          <label class="range-control"><span>{{ text.backgroundOpacityLabel }} <output>{{ settings.backgroundOpacity }}%</output></span><input v-model.number="settings.backgroundOpacity" type="range" min="0" max="100"></label>
           <div class="panel-divider" />
-          <label class="range-control"><span>图标大小 <output>{{ settings.iconSize }} px</output></span><input v-model.number="settings.iconSize" type="range" min="16" max="160"></label>
-          <label class="range-control"><span>图标圆角 <output>{{ settings.iconRadius }}%</output></span><input v-model.number="settings.iconRadius" type="range" min="0" max="50"></label>
-          <label class="range-control"><span>内容间距 <output>{{ settings.gap }} px</output></span><input v-model.number="settings.gap" type="range" min="0" max="100"></label>
+          <label class="range-control"><span>{{ text.iconSizeLabel }} <output>{{ settings.iconSize }} px</output></span><input v-model.number="settings.iconSize" type="range" min="16" max="160"></label>
+          <label class="range-control"><span>{{ text.iconRadiusLabel }} <output>{{ settings.iconRadius }}%</output></span><input v-model.number="settings.iconRadius" type="range" min="0" max="50"></label>
+          <label class="range-control"><span>{{ text.gapLabel }} <output>{{ settings.gap }} px</output></span><input v-model.number="settings.gap" type="range" min="0" max="100"></label>
         </section>
 
         <details class="panel-block shadow-panel">
-          <summary><span class="section-index">06</span><span>阴影设置</span><Icon name="tabler:chevron-down" aria-hidden="true" /></summary>
-          <label class="range-control"><span>不透明度 <output>{{ settings.shadowOpacity }}%</output></span><input v-model.number="settings.shadowOpacity" type="range" min="0" max="100"></label>
-          <div class="color-grid color-grid--two"><label>阴影颜色<input v-model="settings.shadowColor" type="color"></label></div>
-          <label class="range-control"><span>模糊 <output>{{ settings.shadowBlur }} px</output></span><input v-model.number="settings.shadowBlur" type="range" min="0" max="40"></label>
-          <label class="range-control"><span>水平偏移 <output>{{ settings.shadowX }} px</output></span><input v-model.number="settings.shadowX" type="range" min="-30" max="30"></label>
-          <label class="range-control"><span>垂直偏移 <output>{{ settings.shadowY }} px</output></span><input v-model.number="settings.shadowY" type="range" min="-30" max="30"></label>
+          <summary><span class="section-index">06</span><span>{{ text.shadowSection }}</span><Icon name="tabler:chevron-down" aria-hidden="true" /></summary>
+          <label class="range-control"><span>{{ text.opacityLabel }} <output>{{ settings.shadowOpacity }}%</output></span><input v-model.number="settings.shadowOpacity" type="range" min="0" max="100"></label>
+          <div class="color-grid color-grid--two"><label>{{ text.shadowColorLabel }}<input v-model="settings.shadowColor" type="color"></label></div>
+          <label class="range-control"><span>{{ text.blurLabel }} <output>{{ settings.shadowBlur }} px</output></span><input v-model.number="settings.shadowBlur" type="range" min="0" max="40"></label>
+          <label class="range-control"><span>{{ text.shadowXLabel }} <output>{{ settings.shadowX }} px</output></span><input v-model.number="settings.shadowX" type="range" min="-30" max="30"></label>
+          <label class="range-control"><span>{{ text.shadowYLabel }} <output>{{ settings.shadowY }} px</output></span><input v-model.number="settings.shadowY" type="range" min="-30" max="30"></label>
         </details>
       </aside>
     </div>

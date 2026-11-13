@@ -35,7 +35,7 @@ const { ui } = useUi()
         </span>
         <span class="card-title">{{ rel.title }}</span>
         <span v-if="(rel.tags?.length ?? 0) > 2" class="card-extra">
-          {{ rel.tags.slice(2).map((tag) => `#${tag}`).join(' ') }}
+          {{ rel.tags?.slice(2).map((tag) => `#${tag}`).join(' ') }}
         </span>
       </NuxtLink>
     </div>

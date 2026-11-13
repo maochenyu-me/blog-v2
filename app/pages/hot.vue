@@ -76,8 +76,10 @@ const pageItems = computed<(number | 0)[]>(() => {
   const list = [...set].sort((a, b) => a - b)
   const out: (number | 0)[] = []
   for (let i = 0; i < list.length; i++) {
-    if (i > 0 && list[i] - list[i - 1] > 1) out.push(0)
-    out.push(list[i])
+    const current = list[i]!
+    const previous = i > 0 ? list[i - 1] : undefined
+    if (previous !== undefined && current - previous > 1) out.push(0)
+    out.push(current)
   }
   return out
 })

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { IMAGE_FORMATS, encodeBmp, getOutputName, type ImageFormat } from '~/utils/image-converter'
 
+const { ui, t } = useUi()
+const text = ui.tools.converter
+
 type Conversion = {
   id: string
   file: File
@@ -12,7 +15,7 @@ type Conversion = {
   outputSize: number
 }
 
-useHead({ title: '图片格式转换' })
+useHead({ title: text.title })
 
 const files = ref<Conversion[]>([])
 const format = ref<ImageFormat>('png')
@@ -57,10 +60,10 @@ function addFiles(list: FileList | File[]) {
       outputSize: 0,
     })
   }
-  if (rejected) message.value = `已忽略 ${rejected} 个非图片文件。`
-  else if (accepted.length && !unique.length) message.value = '所选图片已在列表中。'
+  if (rejected) message.value = t(text.rejectedFiles, { n: rejected })
+  else if (accepted.length && !unique.length) message.value = text.alreadyAdded
   else message.value = ''
-  if (!accepted.length && list.length) message.value = '没有找到可转换的图片文件。'
+  if (!accepted.length && list.length) message.value = text.noValidImages
 }
 
 function onInput(event: Event) {
@@ -102,12 +105,12 @@ async function convertOne(item: Conversion) {
   let bitmap: ImageBitmap | null = null
   try {
     bitmap = await createImageBitmap(item.file)
-    if (!bitmap.width || !bitmap.height) throw new Error('图片尺寸无效')
+    if (!bitmap.width || !bitmap.height) throw new Error(text.invalidSize)
     const canvas = document.createElement('canvas')
     canvas.width = bitmap.width
     canvas.height = bitmap.height
     const context = canvas.getContext('2d', { willReadFrequently: format.value === 'bmp' })
-    if (!context) throw new Error('当前浏览器无法创建画布')
+    if (!context) throw new Error(text.canvasUnavailable)
     if (format.value === 'jpeg' || format.value === 'bmp') {
       context.fillStyle = '#ffffff'
       context.fillRect(0, 0, canvas.width, canvas.height)
@@ -121,11 +124,11 @@ async function convertOne(item: Conversion) {
       const target = IMAGE_FORMATS.find(entry => entry.value === format.value)!
       blob = await canvasBlob(canvas, target.mime)
       if (!blob || blob.type !== target.mime) {
-        if (format.value === 'avif') throw new Error('当前浏览器不支持 AVIF 编码')
-        throw new Error(`当前浏览器不支持 ${target.label} 编码`)
+        if (format.value === 'avif') throw new Error(text.avifUnsupported)
+        throw new Error(t(text.formatUnsupported, { label: target.label }))
       }
     }
-    if (!blob) throw new Error('转换未生成有效文件')
+    if (!blob) throw new Error(text.noBlob)
     if (item.outputUrl) URL.revokeObjectURL(item.outputUrl)
     item.outputUrl = URL.createObjectURL(blob)
     item.outputName = getOutputName(item.file.name, format.value)
@@ -133,7 +136,7 @@ async function convertOne(item: Conversion) {
     item.status = 'done'
   } catch (error) {
     item.status = 'error'
-    item.message = error instanceof Error ? error.message : '转换失败，请尝试其他图片。'
+    item.message = error instanceof Error ? error.message : text.convertFailed
   } finally {
     bitmap?.close()
   }
@@ -146,7 +149,7 @@ async function convertAll() {
   try {
     for (const item of files.value) await convertOne(item)
     const failures = files.value.filter(item => item.status === 'error').length
-    message.value = failures ? `转换完成：${files.value.length - failures} 张成功，${failures} 张失败。` : `已完成 ${files.value.length} 张图片转换。`
+    message.value = failures ? t(text.convertSummaryFailed, { ok: files.value.length - failures, failed: failures }) : t(text.convertSummaryOk, { n: files.value.length })
   } finally {
     isConverting.value = false
   }
@@ -175,15 +178,15 @@ async function downloadAll() {
     <header class="converter-heading">
       <div>
         <p class="converter-kicker">LOCAL IMAGE CONVERTER</p>
-        <h1>图片格式转换</h1>
-        <p class="converter-intro">选择图片和目标格式，转换过程全部在当前浏览器完成，不上传原图。</p>
+        <h1>{{ text.title }}</h1>
+        <p class="converter-intro">{{ text.intro }}</p>
       </div>
-      <span class="privacy-mark"><Icon name="tabler:device-laptop" aria-hidden="true" /> 本地处理</span>
+      <span class="privacy-mark"><Icon name="tabler:device-laptop" aria-hidden="true" /> {{ text.localBadge }}</span>
     </header>
 
-    <section class="converter-workspace" aria-label="图片格式转换工具">
+    <section class="converter-workspace" :aria-label="text.workspaceAria">
       <div class="format-toolbar">
-        <label for="output-format">转换为</label>
+        <label for="output-format">{{ text.convertTo }}</label>
         <select id="output-format" v-model="format" :disabled="isConverting" @change="updateFormat">
           <option v-for="item in IMAGE_FORMATS" :key="item.value" :value="item.value">{{ item.label }}</option>
         </select>
@@ -202,18 +205,18 @@ async function downloadAll() {
         @keydown.space.prevent="files.length ? undefined : input?.click()"
         role="button"
         tabindex="0"
-        :aria-label="files.length ? '拖放图片到此处添加' : '选择或拖放图片'"
+        :aria-label="files.length ? text.dropAriaWithFiles : text.dropAriaEmpty"
       >
         <template v-if="!files.length">
           <span class="drop-mark"><Icon name="tabler:photo-plus" aria-hidden="true" /></span>
-          <strong>选择图片或拖放到此处</strong>
-          <span>支持 PNG、JPEG、WebP、BMP、AVIF、GIF 等常见格式，可多选</span>
-          <button class="browse-button" type="button" @click.stop="input?.click()">选择图片</button>
+          <strong>{{ text.dropTitle }}</strong>
+          <span>{{ text.dropFormats }}</span>
+          <button class="browse-button" type="button" @click.stop="input?.click()">{{ text.browse }}</button>
         </template>
         <template v-else>
           <div class="list-heading">
-            <div><strong>{{ files.length }} 张图片</strong><span> · {{ formatBytes(totalSize) }} · {{ completed }} 张已转换</span></div>
-            <button class="clear-button" type="button" :disabled="isConverting" @click.stop="clearItems">清空选择图片</button>
+            <div><strong>{{ t(text.filesCount, { n: files.length }) }}</strong><span> · {{ formatBytes(totalSize) }} · {{ t(text.convertedCount, { n: completed }) }}</span></div>
+            <button class="clear-button" type="button" :disabled="isConverting" @click.stop="clearItems">{{ text.clear }}</button>
           </div>
           <div class="file-list" @click.stop>
             <article v-for="item in files" :key="item.id" class="file-row">
@@ -224,25 +227,25 @@ async function downloadAll() {
                 <span v-if="item.status === 'error'" class="file-error" role="alert">{{ item.message }}</span>
               </div>
               <span class="file-status" :class="`status-${item.status}`">
-                {{ item.status === 'ready' ? '待转换' : item.status === 'converting' ? '转换中…' : item.status === 'done' ? '已完成' : '失败' }}
+                {{ item.status === 'ready' ? text.statusReady : item.status === 'converting' ? text.statusConverting : item.status === 'done' ? text.statusDone : text.statusError }}
               </span>
-              <button v-if="item.status === 'done'" class="file-download" type="button" :aria-label="`下载 ${item.outputName}`" @click="download(item)"><Icon name="tabler:download" aria-hidden="true" /></button>
-              <button class="remove-file" type="button" :disabled="isConverting" :aria-label="`移除 ${item.file.name}`" @click="removeFile(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
+              <button v-if="item.status === 'done'" class="file-download" type="button" :aria-label="t(text.downloadAria, { name: item.outputName })" @click="download(item)"><Icon name="tabler:download" aria-hidden="true" /></button>
+              <button class="remove-file" type="button" :disabled="isConverting" :aria-label="t(text.removeAria, { name: item.file.name })" @click="removeFile(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
             </article>
           </div>
-          <button class="add-more" type="button" :disabled="isConverting" @click.stop="input?.click()"><Icon name="tabler:plus" aria-hidden="true" /> 添加更多图片</button>
+          <button class="add-more" type="button" :disabled="isConverting" @click.stop="input?.click()"><Icon name="tabler:plus" aria-hidden="true" /> {{ text.addMore }}</button>
         </template>
         <input ref="input" class="file-input" type="file" accept="image/*,.bmp,.avif" multiple @change="onInput">
       </div>
 
       <div class="action-row">
         <p v-if="message" class="converter-message" role="status">{{ message }}</p>
-        <span v-else class="privacy-note">图片仅在本地浏览器处理，不会上传</span>
+        <span v-else class="privacy-note">{{ text.privacyNote }}</span>
         <div class="actions">
-          <button class="download-all" type="button" :disabled="!completed || isConverting" @click="downloadAll">下载全部{{ completed ? `（${completed}）` : '' }}</button>
+          <button class="download-all" type="button" :disabled="!completed || isConverting" @click="downloadAll">{{ text.downloadAll }}{{ completed ? `（${completed}）` : '' }}</button>
           <button class="convert-button" type="button" :disabled="!files.length || isConverting" @click="convertAll">
             <Icon :name="isConverting ? 'tabler:loader-2' : 'tabler:refresh'" aria-hidden="true" :class="{ spinning: isConverting }" />
-            {{ isConverting ? '正在转换…' : '开始转换' }}
+            {{ isConverting ? text.converting : text.convert }}
           </button>
         </div>
       </div>

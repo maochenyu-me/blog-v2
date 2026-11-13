@@ -52,6 +52,13 @@ export interface SiteConfig {
   beian?: { icp?: string; police?: string; moe?: string }
   social: SocialLink[]
   nav: NavItem[]
+  /**
+   * 左侧导航面板（SiteSidePanel）的独立数据 —— 与 nav 刻意分开：
+   * 面板定位是「站点链接总览」，分组平铺全部入口。
+   */
+  panel: {
+    groups: Array<{ label: string; items: NavItem[] }>
+  }
   footer: {
     copyright: string
     startYear: number

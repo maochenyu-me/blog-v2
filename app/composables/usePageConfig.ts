@@ -180,6 +180,9 @@ export interface PostPageConfig {
   relatedCount: number
   showCopyButton: boolean
   showImageViewer: boolean
+  showShare: boolean
+  showCopyright: boolean
+  showReward: boolean
   /** 文章元数据是否展示 busuanzi 本页访问/访客计数 */
   showBusuanzi: boolean
   /** Ecoku 评论配置 */

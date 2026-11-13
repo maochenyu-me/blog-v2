@@ -92,8 +92,10 @@ const pageItems = computed<(number | 0)[]>(() => {
   const list = [...set].sort((a, b) => a - b)
   const out: (number | 0)[] = []
   for (let i = 0; i < list.length; i++) {
-    if (i > 0 && list[i] - list[i - 1] > 1) out.push(0)
-    out.push(list[i])
+    const current = list[i]!
+    const previous = i > 0 ? list[i - 1] : undefined
+    if (previous !== undefined && current - previous > 1) out.push(0)
+    out.push(current)
   }
   return out
 })
@@ -119,7 +121,7 @@ const excerptOf = (a: FcircleArticle) => {
       无 cover 不硬拉头像，渲染装饰带（头像水印 + 图标），见 07-fcircle.md ── */
 const failedCovers = reactive(new Set<string>())
 const coverSrcOf = (a: FcircleArticle) =>
-  failedCovers.has(a.id) ? fallbackCover : a.cover
+  failedCovers.has(a.id) ? fallbackCover : (a.cover ?? undefined)
 const onCoverError = (a: FcircleArticle) => {
   failedCovers.add(a.id)
 }

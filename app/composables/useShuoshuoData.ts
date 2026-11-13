@@ -14,7 +14,7 @@ export function useShuoshuoData() {
   const pageCfg = usePageConfig('shuoshuo')
 
   function load(): Promise<void> | undefined {
-    if (state.value === 'ready' || inflight) return inflight
+    if (state.value === 'ready' || inflight) return inflight ?? undefined
     state.value = 'loading'
     inflight = (async () => {
       try {

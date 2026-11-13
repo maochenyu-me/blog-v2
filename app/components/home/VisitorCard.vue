@@ -34,13 +34,13 @@ const v = ui.pages.home.sidebar.visitor
 
 const welcomeHtml = computed(() => marked.parse(props.cfg.text, { async: false }) as string)
 
-/* ---- 客户端信息状态（初值 = SSG 占位文案） ---- */
-const ipText = ref(v.loading)
-const locationText = ref(v.loading)
-const ispText = ref(v.loading)
-const distanceText = ref(v.calculating)
-const osText = ref(v.loading)
-const browserText = ref(v.loading)
+/* ---- 客户端信息状态（初值 = SSG 占位文案；显式 string，避免 ui.ts as const 字面量锁死类型） ---- */
+const ipText = ref<string>(v.loading)
+const locationText = ref<string>(v.loading)
+const ispText = ref<string>(v.loading)
+const distanceText = ref<string>(v.calculating)
+const osText = ref<string>(v.loading)
+const browserText = ref<string>(v.loading)
 const cdnKind = ref<CdnKind>(null)
 
 const cdnLogo = computed(() => {

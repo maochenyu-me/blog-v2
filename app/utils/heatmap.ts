@@ -67,7 +67,7 @@ export function buildHeatmapDays(
   return {
     days,
     // 起点按 UTC 周日=0 对齐列；文章日期串均按 UTC 午夜解析，两端一致
-    leadingBlanks: new Date(`${days[0].date}T00:00:00Z`).getUTCDay(),
+    leadingBlanks: days.length ? new Date(`${days[0]!.date}T00:00:00Z`).getUTCDay() : 0,
     total,
   }
 }

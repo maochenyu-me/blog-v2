@@ -108,6 +108,58 @@ export default {
       },
     ],
 
+    /**
+     * 左侧导航面板（SiteSidePanel）—— 与主导航 nav **刻意分开的两套数据**。
+     *
+     * 面板定位是「站点链接总览」：把 nav 里折叠在分组里的叶子全部平铺出来，
+     * 按源站（blog.liushen.fun）左侧面板的效果分组成网格，组标题 + 图标 + 文字。
+     * 改这里的分组不影响顶栏；反之亦然。
+     *
+     * external: true 表示站外链接，新窗口打开。
+     */
+    panel: {
+      groups: [
+        {
+          label: '网站',
+          items: [
+            { label: '首页', to: '/', icon: 'tabler:home' },
+            { label: '说说', to: '/shuoshuo', icon: 'tabler:messages' },
+            { label: '相册', to: '/gallery', icon: 'tabler:photo' },
+            { label: '热搜', to: '/hot', icon: 'tabler:flame' },
+          ],
+        },
+        {
+          label: '内容',
+          items: [
+            { label: '归档', to: '/archive', icon: 'tabler:archive' },
+            { label: '分类', to: '/categories', icon: 'tabler:folder' },
+            { label: '标签', to: '/tags', icon: 'tabler:tag' },
+            { label: '友链', to: '/links', icon: 'tabler:link' },
+            { label: '朋友圈', to: '/fcircle', icon: 'tabler:rss' },
+            { label: '留言板', to: '/message', icon: 'tabler:message-2' },
+          ],
+        },
+        {
+          label: '工具',
+          items: [
+            { label: '封面生成器', to: '/tools/cover-generator', icon: 'tabler:photo-edit' },
+            { label: '从夯到拉', to: '/tools/tier-list', icon: 'tabler:chart-bar' },
+            { label: '图片格式转换', to: '/tools/image-converter', icon: 'tabler:refresh' },
+          ],
+        },
+        {
+          label: '关于',
+          items: [
+            { label: 'GitHub', to: 'https://github.com/kemiaosw', icon: 'tabler:brand-github', external: true },
+            { label: 'X', to: 'https://x.com/kemiaosw', icon: 'tabler:brand-x', external: true },
+            { label: '邮箱', to: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail', external: true },
+            { label: '关于', to: '/about', icon: 'tabler:user' },
+            { label: '更新日志', to: '/changelog', icon: 'tabler:history' },
+          ],
+        },
+      ],
+    },
+
     footer: {
       copyright: '克喵:)',
       startYear: 2024,

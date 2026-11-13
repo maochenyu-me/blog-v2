@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { createTierState, distributeTierItems, exportTierList, moveTierItem, removeTierItem, tierCounts, TIER_ROWS, type TierItem, type TierState, type TierZone } from '~/utils/tier-list'
 
-useHead({ title: '从夯到拉' })
+const { ui, t } = useUi()
+const text = ui.tools.tier
+
+useHead({ title: text.title })
 
 const state = ref<TierState>(createTierState())
-const title = ref('从夯到拉')
+const title = ref(text.title)
 const message = ref('')
 const isExporting = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -35,7 +38,7 @@ function createId() {
 function addImages(files: FileList | File[]) {
   const images = Array.from(files).filter(file => file.type.startsWith('image/') || /\.(avif|bmp|gif|ico|jpe?g|png|svg|webp)$/i.test(file.name))
   if (!images.length) {
-    message.value = '请选择有效的图片文件。'
+    message.value = text.invalidImageFile
     return
   }
   const generation = loadGeneration
@@ -158,12 +161,12 @@ async function saveRanking() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${title.value.trim().replace(/[\\/:*?"<>|]+/g, '-').slice(0, 80) || '从夯到拉'}.png`
+    link.download = `${title.value.trim().replace(/[\\/:*?"<>|]+/g, '-').slice(0, 80) || text.title}.png`
     link.click()
     window.setTimeout(() => URL.revokeObjectURL(url), 4000)
-    message.value = '排名图已保存为 PNG。'
+    message.value = text.saved
   } catch (error) {
-    message.value = error instanceof Error ? error.message : '排名图导出失败，请稍后重试。'
+    message.value = error instanceof Error ? error.message : text.exportFailed
   } finally {
     isExporting.value = false
   }
@@ -180,49 +183,49 @@ function onZoneDragOver(event: DragEvent, zone: TierZone) {
     <header class="tier-heading">
       <div>
         <p class="tier-kicker">LOCAL TIER STUDIO · 02</p>
-        <h1>从夯到拉</h1>
-        <p>把图片拖进对应档位，排出你的专属榜单。素材只在浏览器本地处理。</p>
+        <h1>{{ text.title }}</h1>
+        <p>{{ text.intro }}</p>
       </div>
-      <span class="local-badge"><Icon name="tabler:device-laptop" aria-hidden="true" /> 本地制作</span>
+      <span class="local-badge"><Icon name="tabler:device-laptop" aria-hidden="true" /> {{ text.localBadge }}</span>
     </header>
 
-    <section class="tier-board" aria-label="从夯到拉制作器">
+    <section class="tier-board" :aria-label="text.boardAria">
       <div class="board-head">
-        <div class="board-title"><Icon name="tabler:chart-bar" aria-hidden="true" /><h2>排名画布</h2></div>
-        <label class="title-field" for="tier-title"><span>导出标题</span><input id="tier-title" v-model="title" maxlength="80" spellcheck="false"></label>
+        <div class="board-title"><Icon name="tabler:chart-bar" aria-hidden="true" /><h2>{{ text.boardTitle }}</h2></div>
+        <label class="title-field" for="tier-title"><span>{{ text.exportTitleLabel }}</span><input id="tier-title" v-model="title" maxlength="80" spellcheck="false"></label>
       </div>
 
       <div class="tier-rows">
-        <section v-for="tier in TIER_ROWS" :key="tier.id" class="tier-row" :class="[`tier-row--${tier.id}`, { 'tier-row--over': drag.active && drag.over === tier.id }]" :aria-label="`${tier.label} 档位`">
+        <section v-for="tier in TIER_ROWS" :key="tier.id" class="tier-row" :class="[`tier-row--${tier.id}`, { 'tier-row--over': drag.active && drag.over === tier.id }]" :aria-label="t(text.tierZoneAria, { label: tier.label })">
           <div class="tier-label" :style="{ backgroundColor: tier.color }" :class="{ 'tier-label--light': tier.id === 'hang' }">{{ tier.label }}</div>
-          <div :ref="el => setZoneElement(tier.id, el as Element | null)" class="tier-dropzone" :data-tier-zone="tier.id" role="region" :aria-label="`${tier.label} 图片区`" @dragover.prevent="onZoneDragOver($event, tier.id)" @drop="onZoneDrop($event, tier.id)">
+          <div :ref="el => setZoneElement(tier.id, el as Element | null)" class="tier-dropzone" :data-tier-zone="tier.id" role="region" :aria-label="t(text.tierZoneImagesAria, { label: tier.label })" @dragover.prevent="onZoneDragOver($event, tier.id)" @drop="onZoneDrop($event, tier.id)">
             <article v-for="item in state[tier.id]" :key="item.id" :data-tier-card="item.id" class="tier-item" :class="{ 'tier-item--dragging': drag.id === item.id && drag.active }" :style="{ aspectRatio: `${item.ratio}` }" @pointerdown="beginDrag($event, item, tier.id)">
               <img :src="item.src" :alt="item.name" draggable="false">
-              <button class="remove-item" type="button" :aria-label="`删除 ${item.name}`" title="删除图片" @pointerdown.stop @click.stop="deleteItem(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
+              <button class="remove-item" type="button" :aria-label="t(text.deleteItemAria, { name: item.name })" :title="text.deleteItemTitle" @pointerdown.stop @click.stop="deleteItem(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
             </article>
-            <span v-if="!state[tier.id].length" class="empty-tier">拖到此处排名</span>
+            <span v-if="!state[tier.id].length" class="empty-tier">{{ text.emptyTier }}</span>
           </div>
         </section>
       </div>
 
       <div class="board-actions">
-        <button class="action-button action-button--primary" type="button" @click="fileInput?.click()"><Icon name="tabler:photo-plus" aria-hidden="true" /> 添加图片</button>
-        <input ref="fileInput" class="visually-hidden" type="file" accept="image/*" multiple aria-label="上传待分级图片" @change="onFiles">
-        <button class="action-button" type="button" :disabled="!counts.ranked || isExporting" @click="saveRanking"><Icon name="tabler:download" aria-hidden="true" /> {{ isExporting ? '正在保存…' : '保存排名图' }}</button>
-        <button class="action-button action-button--danger" type="button" :disabled="!counts.total" @click="clearAll"><Icon name="tabler:trash" aria-hidden="true" /> 清空</button>
-        <p class="tier-counts" aria-live="polite">{{ counts.total }} 张图片 · {{ counts.pending }} 张待排 · {{ counts.ranked }} 张已分级</p>
+        <button class="action-button action-button--primary" type="button" @click="fileInput?.click()"><Icon name="tabler:photo-plus" aria-hidden="true" /> {{ text.addImages }}</button>
+        <input ref="fileInput" class="visually-hidden" type="file" accept="image/*" multiple :aria-label="text.uploadAria" @change="onFiles">
+        <button class="action-button" type="button" :disabled="!counts.ranked || isExporting" @click="saveRanking"><Icon name="tabler:download" aria-hidden="true" /> {{ isExporting ? text.saving : text.saveRanking }}</button>
+        <button class="action-button action-button--danger" type="button" :disabled="!counts.total" @click="clearAll"><Icon name="tabler:trash" aria-hidden="true" /> {{ text.clearAll }}</button>
+        <p class="tier-counts" aria-live="polite">{{ t(text.counts, counts) }}</p>
       </div>
       <p v-if="message" class="tier-message" role="status">{{ message }}</p>
     </section>
 
-    <section class="pool-panel" :class="{ 'pool-panel--over': drag.active && drag.over === 'pool' }" aria-label="待排图片">
-      <div class="pool-heading"><div><span class="pool-kicker">UNRANKED</span><h2>待排图片</h2></div><span class="pool-count">{{ counts.pending }} 张</span></div>
-      <div :ref="el => setZoneElement('pool', el as Element | null)" class="pool-dropzone" data-tier-zone="pool" role="region" aria-label="待排图片区" @dragover.prevent="onZoneDragOver($event, 'pool')" @drop="onZoneDrop($event, 'pool')">
+    <section class="pool-panel" :class="{ 'pool-panel--over': drag.active && drag.over === 'pool' }" :aria-label="text.poolAria">
+      <div class="pool-heading"><div><span class="pool-kicker">UNRANKED</span><h2>{{ text.poolTitle }}</h2></div><span class="pool-count">{{ t(text.poolCount, { n: counts.pending }) }}</span></div>
+      <div :ref="el => setZoneElement('pool', el as Element | null)" class="pool-dropzone" data-tier-zone="pool" role="region" :aria-label="text.poolZoneAria" @dragover.prevent="onZoneDragOver($event, 'pool')" @drop="onZoneDrop($event, 'pool')">
         <article v-for="item in state.pool" :key="item.id" :data-tier-card="item.id" class="tier-item" :class="{ 'tier-item--dragging': drag.id === item.id && drag.active }" :style="{ aspectRatio: `${item.ratio}` }" @pointerdown="beginDrag($event, item, 'pool')">
           <img :src="item.src" :alt="item.name" draggable="false">
-          <button class="remove-item" type="button" :aria-label="`删除 ${item.name}`" title="删除图片" @pointerdown.stop @click.stop="deleteItem(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
+          <button class="remove-item" type="button" :aria-label="t(text.deleteItemAria, { name: item.name })" :title="text.deleteItemTitle" @pointerdown.stop @click.stop="deleteItem(item)"><Icon name="tabler:x" aria-hidden="true" /></button>
         </article>
-        <p v-if="!state.pool.length" class="pool-empty"><Icon name="tabler:photo" aria-hidden="true" /><span>这里会放置还没有排名的图片。<br>可点击添加，或将图片拖到此处。</span></p>
+        <p v-if="!state.pool.length" class="pool-empty"><Icon name="tabler:photo" aria-hidden="true" /><span>{{ text.poolEmptyLine1 }}<br>{{ text.poolEmptyLine2 }}</span></p>
       </div>
     </section>
 
