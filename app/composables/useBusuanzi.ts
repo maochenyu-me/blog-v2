@@ -1,11 +1,11 @@
 /**
- * 自建 busuanzi（bsz.518339.xyz）文章页计数。
+ * 自建 busuanzi（bsz.518339.xyz）站点/文章计数。
  *
  * 不用官方 /js 脚本：它靠 DOM 填充 busuanzi_value_* 元素，填充往往先于
  * Vue 水合完成，value span 的文本会被水合当作 children mismatch 清掉
  * （容器 inline style 不受影响，表现为「有容器无数值」）。
  * 改为直接 POST /api —— 与脚本同一端点、同一请求头，浏览器 CORS 已
- * 验证可通（预检 204）；数值走响应式 ref 渲染，无 DOM 注入竞态。
+ * 验证可通（预检 204）；站点/页面计数走响应式 ref 渲染，无 DOM 注入竞态。
  *
  * 请求头与官方脚本一致：
  *   x-bsz-referer  当前页面 URL（服务端据此分页计数）
@@ -24,6 +24,8 @@ interface BszResponse {
 export function useBusuanzi() {
   const pagePv = ref<string | null>(null)
   const pageUv = ref<string | null>(null)
+  const sitePv = ref<string | null>(null)
+  const siteUv = ref<string | null>(null)
 
   async function track() {
     try {
@@ -42,9 +44,11 @@ export function useBusuanzi() {
       if (json.success && json.data) {
         pagePv.value = json.data.page_pv.toLocaleString('zh-CN')
         pageUv.value = json.data.page_uv.toLocaleString('zh-CN')
+        sitePv.value = json.data.site_pv.toLocaleString('zh-CN')
+        siteUv.value = json.data.site_uv.toLocaleString('zh-CN')
       }
     } catch { /* 计数失败不打断页面，计数项保持隐藏 */ }
   }
 
-  return { pagePv, pageUv, track }
+  return { pagePv, pageUv, sitePv, siteUv, track }
 }

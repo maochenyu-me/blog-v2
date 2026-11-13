@@ -31,6 +31,7 @@
   --spacing-section: 4rem;
   --spacing-block: 2.5rem;
   --spacing-item: 1.5rem;
+  --spacing-widget-clearance: 4.5rem;
 
   --ease-base: ease-out;
 
@@ -104,6 +105,7 @@
   --space-block: 2.5rem;
   --space-item: 1.5rem;
   --space-gutter: 1.5rem;
+  --space-widget-clearance: 4.5rem;
 
   --duration-base: 200ms;
   --duration-slow: 300ms;

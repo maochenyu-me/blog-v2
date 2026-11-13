@@ -67,6 +67,13 @@ const { ui, t } = useUi()
 
 /* 触屏 / 窄屏：隐藏键帽提示，按钮收敛成纯图标 */
 @media (max-width: 767px) {
+  .search-trigger {
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
   .search-kbd {
     display: none;
   }

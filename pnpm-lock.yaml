@@ -182,8 +182,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(ce066816f27e3fa4c007d8fbfa49dc45)
       ecoku:
-        specifier: 0.5.6
-        version: 0.5.6
+        specifier: 0.5.7
+        version: 0.5.7
       marked:
         specifier: ^18.1.3
         version: 18.1.3
@@ -2747,8 +2747,8 @@ packages:
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
 
-  ecoku@0.5.6:
-    resolution: {integrity: sha512-SCUZ/Bt0FDOyMEiR4EiK5l8yzj/sP4KyTgal4kjkd+yyg9pC2iRF8yuKv4uV9JpOb59Kp2fZyYHBIsyjGR+1ew==}
+  ecoku@0.5.7:
+    resolution: {integrity: sha512-pL92GFwhZAB0E/RgK1viF0jzkAN3f1+NEHbszEdkobQ1Z/NoOe50hGKPBK1rDO8OKowEqD0rowvd9efEz3DXvg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   ee-first@1.1.1:
@@ -7936,7 +7936,7 @@ snapshots:
 
   duplexer@0.1.2: {}
 
-  ecoku@0.5.6: {}
+  ecoku@0.5.7: {}
 
   ee-first@1.1.1: {}
 

@@ -137,7 +137,10 @@ onBeforeUnmount(() => {
         :aria-label="ui.nav.menuDialog"
       >
         <div class="drawer-head">
-          <NuxtLink to="/" class="drawer-wordmark" @click="close">{{ site.shortName }}</NuxtLink>
+          <div class="drawer-heading">
+            <span class="drawer-kicker">MENU</span>
+            <h2 class="drawer-title">{{ ui.nav.menuDialog }}</h2>
+          </div>
           <button type="button" class="drawer-close" :aria-label="ui.nav.menuClose" @click="close">
             <Icon name="tabler:x" aria-hidden="true" />
           </button>
@@ -209,16 +212,32 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 1rem;
   flex: 0 0 auto;
-  height: var(--header-height);
-  padding-inline: var(--space-gutter);
+  height: auto;
+  min-height: var(--header-height);
+  padding: 0.5rem var(--space-gutter);
   border-bottom: 1px solid var(--border);
 }
 
-.drawer-wordmark {
-  font-size: var(--fs-body);
+.drawer-heading {
+  min-width: 0;
+}
+
+.drawer-kicker {
+  display: block;
+  margin-bottom: 0;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.1em;
+  line-height: 1.15;
+}
+
+.drawer-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: var(--fs-body-h);
   font-weight: var(--fw-body-h);
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+  line-height: 1.3;
 }
 
 .drawer-close {

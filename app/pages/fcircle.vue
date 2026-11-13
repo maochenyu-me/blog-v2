@@ -290,8 +290,6 @@ const gridVars = computed(() => ({
       </nav>
 
       <p class="source-note">{{ ui.fcircle.dataSourceNote }}</p>
-
-      <CommentSlot />
     </div>
   </div>
 </template>

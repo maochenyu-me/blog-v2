@@ -216,6 +216,12 @@ export default {
       block: '2.5rem',
       item: '1.5rem',
       gutter: '1.5rem',
+      /**
+       * 页脚面板底部为贴底固定按钮（音乐播放器、回顶键）预留的容身高度：
+       * 回顶键占位 = bottom 1rem + 44px ≈ 60px，留 12px 呼吸位。
+       * 页脚面板贴视口底后，按钮浮在这段玻璃上。
+       */
+      widgetClearance: '4.5rem',
     },
 
     animation: {

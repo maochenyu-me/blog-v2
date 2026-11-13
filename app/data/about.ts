@@ -231,11 +231,6 @@ export const aboutConfig = {
     countText: '共 {count} 人',
     emptyText: '还没有赞助记录，第一个支持者就是你~',
   },
-
-  /** 评论区（当前为 CommentSlot 占位） */
-  comments: {
-    enabled: true,
-  },
 }
 
 // ---------- 行结构 ----------
@@ -257,7 +252,7 @@ export const aboutRows: Array<Array<{ key: AboutBlockKey; span: number }>> = [
 
 export type AboutBlockKey = Exclude<keyof typeof aboutConfig, 'hero'>
 
-/** 区块是否启用（comments 无独立渲染组件，由页面判断） */
+/** 区块是否启用 */
 export function isBlockEnabled(key: AboutBlockKey): boolean {
   const block = aboutConfig[key] as { enabled?: boolean }
   return block.enabled !== false

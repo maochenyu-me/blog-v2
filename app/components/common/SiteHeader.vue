@@ -32,6 +32,7 @@ onBeforeUnmount(() => {
   <header class="site-header" :class="{ 'header-scrolled': scrolled }">
     <div class="header-inner">
       <div class="header-pill header-pill--left">
+        <NavPanel />
         <NuxtLink to="/" class="wordmark" :aria-label="site.name">
           {{ site.name }}
         </NuxtLink>
@@ -141,14 +142,19 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
+.header-pill--left > :deep(.nav-panel-root),
+.header-pill--left > .wordmark {
+  transform: translateX(-0.5rem);
+}
+
 .header-pill--right {
-  gap: 1rem;
+  gap: 0.25rem;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

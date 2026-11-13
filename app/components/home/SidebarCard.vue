@@ -13,9 +13,13 @@ defineProps<{
 
 <template>
   <section class="glass-card">
-    <header v-if="title" class="glass-head">
+    <header v-if="title || $slots.action" class="glass-head">
       <Icon v-if="icon" :name="icon" class="glass-icon" aria-hidden="true" />
-      <h2 class="glass-title">{{ title }}</h2>
+      <h2 v-if="title" class="glass-title">{{ title }}</h2>
+      <!-- 标题行右侧动作区（链接/按钮）：包一层整体推右，标题始终贴着图标 -->
+      <span v-if="$slots.action" class="glass-action">
+        <slot name="action" />
+      </span>
     </header>
     <div class="glass-body">
       <slot />
@@ -42,6 +46,14 @@ defineProps<{
   align-items: center;
   gap: 0.375rem;
   padding: 0.875rem 1rem 0;
+}
+
+/* 动作区整体推到标题行最右；无动作时标题自然紧跟图标 */
+.glass-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: auto;
 }
 
 .glass-icon {

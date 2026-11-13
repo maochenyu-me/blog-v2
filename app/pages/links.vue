@@ -326,8 +326,6 @@ const gridVars = computed(() => ({
           </div>
         </div>
       </details>
-
-      <CommentSlot />
     </div>
 
     <!-- ── 随机拜访确认模态 ── -->

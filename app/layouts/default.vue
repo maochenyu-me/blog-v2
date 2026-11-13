@@ -103,11 +103,10 @@ useHead({ link: feedLinks })
   flex-direction: column;
   min-height: 100dvh;
   /*
-   * 给贴底常驻的界面留出呼吸位：左下角音乐折叠按钮（2.25rem）+ 间距。
-   * 不加的话页脚最后几行永远压在按钮下面滚不上来。
-   * 用 padding 而不是 margin-bottom，配合 box-sizing: border-box（main.css 已全局设置）。
+   * 这里刻意不加 padding-bottom：页脚玻璃面板要直接贴到视口底部，
+   * 固定按钮（音乐播放器左下、回顶键右下）的容身位由页脚自身的
+   * --space-widget-clearance 底 padding 承担（按钮浮在玻璃上，视觉一体）。
    */
-  padding-bottom: 3rem;
 }
 
 .app-main {

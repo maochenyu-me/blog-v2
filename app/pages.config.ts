@@ -80,7 +80,7 @@ export default {
          * 想隐藏某个组件：把它的 enabled 设为 false，或从数组中移除。
          * 注意：分类已默认由顶部 categoryBar 承担，此处默认不再重复展示。
          */
-        order: ['profile', 'announcement', 'visitor', 'motto', 'stats', 'tags', 'calendar'],
+        order: ['profile', 'announcement', 'visitor', 'motto', 'stats', 'sponsors', 'tags', 'calendar'],
 
         profile: {
           /** 是否显示资料卡 */
@@ -142,19 +142,18 @@ export default {
           },
         },
 
+        sponsors: {
+          /** 是否显示赞赏者/能量榜卡（数据 app/data/sponsors.json） */
+          enabled: true,
+        },
         stats: {
           /** 是否显示站点统计 */
           enabled: true,
-          /** 建站日期（ISO 格式），运行天数以此为起点计算 */
-          siteStartDate: '2024-11-01',
-          /** 是否显示运行天数（ClientOnly 渲染，避免 SSG 水合不一致） */
-          showRunDays: true,
-          /** 是否显示文章数 */
           showPostCount: true,
-          /** 是否显示分类数 */
-          showCategoryCount: true,
-          /** 是否显示标签数 */
-          showTagCount: true,
+          showWordCount: true,
+          showVisitorCount: true,
+          showViewCount: true,
+          showLatestUpdate: true,
         },
 
         categories: {

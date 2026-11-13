@@ -243,13 +243,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* 触发按钮与 SearchTrigger / ThemeToggle 同规格：2rem 见方，半圆角 */
+/* 与其他移动端头部操作统一为 44px 热区 */
 .toc-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: calc(var(--radius) / 2);
   color: var(--muted-foreground);
   cursor: pointer;

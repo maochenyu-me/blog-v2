@@ -144,6 +144,7 @@ export default defineNuxtModule({
   --spacing-section: ${theme.spacing.section};
   --spacing-block: ${theme.spacing.block};
   --spacing-item: ${theme.spacing.item};
+  --spacing-widget-clearance: ${theme.spacing.widgetClearance};
 
   --ease-base: ${theme.animation.easing};
 
@@ -214,6 +215,7 @@ ${backdropVars('light')}
   --space-block: ${theme.spacing.block};
   --space-item: ${theme.spacing.item};
   --space-gutter: ${theme.spacing.gutter};
+  --space-widget-clearance: ${theme.spacing.widgetClearance};
 
   --duration-base: ${theme.animation.duration}ms;
   --duration-slow: ${theme.animation.durationSlow}ms;

@@ -80,11 +80,14 @@ export interface HomePageConfig {
     }
     stats: {
       enabled: boolean
-      siteStartDate: string
-      showRunDays: boolean
       showPostCount: boolean
-      showCategoryCount: boolean
-      showTagCount: boolean
+      showWordCount: boolean
+      showVisitorCount: boolean
+      showViewCount: boolean
+      showLatestUpdate: boolean
+    }
+    sponsors: {
+      enabled: boolean
     }
     categories: {
       enabled: boolean
@@ -107,6 +110,7 @@ export type SidebarWidgetKey =
   | 'visitor'
   | 'motto'
   | 'stats'
+  | 'sponsors'
   | 'categories'
   | 'tags'
   | 'calendar'

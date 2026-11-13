@@ -168,15 +168,14 @@ onBeforeUnmount(() => {
 }
 
 /* 玻璃主体：半透底 + 磨砂 + 顶部 1px 线（无阴影，暗色禁阴影规则下自洽）
- * 上下 padding 对称用 item 档，面板收口贴住内容，不留「下半段空面板」；
- * 固定按钮（音乐播放器左下、回顶键右下）的容身位在外层 .app-shell 的
- * padding-bottom 里，不靠这里撑 */
+ * 顶 padding 用 item 档；底 padding 用 widget-clearance 档——面板直接贴视口底，
+ * 音乐播放器（左下）与回顶键（右下）浮在这段玻璃上，不压文字 */
 .footer-body {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   border-top: 1px solid var(--border);
-  padding: var(--space-item) var(--space-gutter);
+  padding: var(--space-item) var(--space-gutter) var(--space-widget-clearance);
 }
 
 .footer-bottom {

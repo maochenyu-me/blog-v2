@@ -5,6 +5,9 @@ const { site } = useBlogConfig()
 const { ui, t } = useUi()
 const pageCfg = usePageConfig('home')
 const posts = usePosts()
+const { sitePv, siteUv, track: trackBsz } = useBusuanzi()
+
+onMounted(trackBsz)
 
 const PAGE_SIZE = pageCfg.cards.pageSize
 
@@ -13,10 +16,11 @@ const currentPage = ref(1)
 const activeCategory = ref('')
 
 const { data } = await useAsyncData('home-posts', async () => {
-  const [featured, pinned, all] = await Promise.all([
+  const [featured, pinned, all, siteStats] = await Promise.all([
     pageCfg.carousel.enabled ? posts.featuredPosts(pageCfg.carousel.maxFeatured) : Promise.resolve([]),
     posts.pinned(pageCfg.pinnedCount),
     posts.list(),
+    posts.siteStats(),
   ])
 
   // 卡片流：全部文章（已按 pinned DESC, date DESC 排序），分页在前端做
@@ -34,6 +38,7 @@ const { data } = await useAsyncData('home-posts', async () => {
     all,
     categories,
     tags,
+    siteStats,
     heat,
   }
 })
@@ -167,9 +172,14 @@ useHead({
             <StatsCard
               v-else-if="key === 'stats' && pageCfg.sidebar.stats.enabled"
               :cfg="pageCfg.sidebar.stats"
-              :post-count="total"
-              :category-count="data?.categories.length ?? 0"
-              :tag-count="data?.tags.length ?? 0"
+              :post-count="data?.siteStats.postCount ?? 0"
+              :word-count="data?.siteStats.wordCount ?? 0"
+              :visitor-count="siteUv"
+              :view-count="sitePv"
+              :latest-update="data?.siteStats.latestUpdate ?? null"
+            />
+            <SponsorCard
+              v-else-if="key === 'sponsors' && pageCfg.sidebar.sponsors.enabled"
             />
             <CategoryList
               v-else-if="key === 'categories' && pageCfg.sidebar.categories.enabled"

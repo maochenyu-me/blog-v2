@@ -164,8 +164,6 @@ const rowReward = aboutRows[6]
           />
         </div>
       </div>
-
-      <CommentSlot v-if="cfg.comments.enabled" class="about-comments" />
     </div>
   </div>
 </template>
@@ -209,11 +207,6 @@ const rowReward = aboutRows[6]
 
 .aboutme-prose {
   max-width: 90ch;
-}
-
-/* ---- 评论区 ---- */
-.about-comments {
-  margin-top: var(--space-section);
 }
 
 /* ---- 响应式：≤768px 单列 ---- */

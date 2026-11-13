@@ -7,6 +7,7 @@
  */
 
 import { toSlug } from '~/utils/taxonomy'
+import { aggregateSiteStats } from '~/utils/siteStats'
 
 export interface PostSummary {
   path: string
@@ -112,6 +113,22 @@ export function usePosts() {
     return all.find((t) => toSlug(t.name) === slug)?.name ?? null
   }
 
+  /** 网站信息统计：只取已发布文章，汇总字数并计算最近更新时间 */
+  async function siteStats() {
+    const query = queryCollection('posts')
+      .select('description', 'date', 'updated', 'draft', 'body')
+      .order('date', 'DESC')
+    const rows = (await query.all()) as unknown as Array<{
+      title: string
+      description: string
+      date: string | Date
+      updated?: string | Date
+      draft?: boolean
+      body?: unknown
+    }>
+    return aggregateSiteStats(rows)
+  }
+
   /** 全部分类 + 篇数 */
   async function categories(): Promise<Array<{ name: string; count: number; slug: string }>> {
     const all = await list()
@@ -208,6 +225,7 @@ export function usePosts() {
     tagBySlug,
     categories,
     tags,
+    siteStats,
     byYear,
     prevNext,
     related,

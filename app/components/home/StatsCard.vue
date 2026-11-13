@@ -1,56 +1,51 @@
 <script setup lang="ts">
-/**
- * 侧栏站点统计：运行天数 / 文章数 / 分类数 / 标签数。
- * 运行天数依赖客户端时钟，用 <ClientOnly> 包裹避免 SSG 预渲染与水合结果不一致。
- * 各项计数可经 sidebar.stats 单独开关。
- */
+import { getRelativeDateParts } from '~/utils/siteStats'
+
 interface StatsConfig {
-  siteStartDate: string
-  showRunDays: boolean
   showPostCount: boolean
-  showCategoryCount: boolean
-  showTagCount: boolean
+  showWordCount: boolean
+  showVisitorCount: boolean
+  showViewCount: boolean
+  showLatestUpdate: boolean
 }
 
 const props = defineProps<{
   cfg: StatsConfig
   postCount: number
-  categoryCount: number
-  tagCount: number
+  wordCount: number
+  visitorCount: string | null
+  viewCount: string | null
+  latestUpdate: string | null
 }>()
 
 const { ui, t } = useUi()
+const now = ref<number | null>(null)
+onMounted(() => { now.value = Date.now() })
 
-const runDays = ref<number | null>(null)
+const relativeUpdate = computed(() => {
+  if (!props.latestUpdate || now.value === null) return null
+  return getRelativeDateParts(props.latestUpdate, now.value)
+})
 
-onMounted(() => {
-  const start = new Date(props.cfg.siteStartDate).getTime()
-  if (Number.isNaN(start)) {
-    runDays.value = null
-    return
-  }
-  const diff = Date.now() - start
-  runDays.value = Math.max(0, Math.floor(diff / 86_400_000))
+const timeText = computed(() => {
+  if (!relativeUpdate.value) return ''
+  const parts = relativeUpdate.value
+  if (parts.key === 'today') return ui.pages.home.sidebar.relativeToday
+  const template = parts.key === 'days'
+    ? ui.pages.home.sidebar.relativeDays
+    : parts.key === 'months'
+      ? ui.pages.home.sidebar.relativeMonths
+      : ui.pages.home.sidebar.relativeYears
+  return t(template, { n: parts.amount })
 })
 
 const items = computed(() => {
-  const list: Array<{ key: string; label: string; value: string }> = []
-  if (props.cfg.showRunDays && runDays.value !== null) {
-    list.push({
-      key: 'run',
-      label: ui.pages.home.sidebar.runDays,
-      value: `${runDays.value}${ui.pages.home.sidebar.runDaysUnit}`,
-    })
-  }
-  if (props.cfg.showPostCount) {
-    list.push({ key: 'posts', label: ui.pages.home.sidebar.postCount, value: String(props.postCount) })
-  }
-  if (props.cfg.showCategoryCount) {
-    list.push({ key: 'cats', label: ui.pages.home.sidebar.categoryCount, value: String(props.categoryCount) })
-  }
-  if (props.cfg.showTagCount) {
-    list.push({ key: 'tags', label: ui.pages.home.sidebar.tagCount, value: String(props.tagCount) })
-  }
+  const list: Array<{ key: string; label: string; value: string; clientOnly?: boolean }> = []
+  if (props.cfg.showPostCount) list.push({ key: 'posts', label: ui.pages.home.sidebar.postCount, value: props.postCount.toLocaleString('zh-CN') })
+  if (props.cfg.showWordCount) list.push({ key: 'words', label: ui.pages.home.sidebar.wordCount, value: props.wordCount.toLocaleString('zh-CN') })
+  if (props.cfg.showVisitorCount) list.push({ key: 'visitors', label: ui.pages.home.sidebar.visitorCount, value: props.visitorCount ?? '', clientOnly: true })
+  if (props.cfg.showViewCount) list.push({ key: 'views', label: ui.pages.home.sidebar.viewCount, value: props.viewCount ?? '', clientOnly: true })
+  if (props.cfg.showLatestUpdate) list.push({ key: 'updated', label: ui.pages.home.sidebar.latestUpdate, value: timeText.value, clientOnly: true })
   return list
 })
 </script>
@@ -59,8 +54,16 @@ const items = computed(() => {
   <SidebarCard :title="ui.pages.home.sidebar.stats" icon="tabler:chart-bar">
     <dl class="stats">
       <div v-for="item in items" :key="item.key" class="stat">
-        <dd class="stat-value">{{ item.value }}</dd>
         <dt class="stat-label">{{ item.label }}</dt>
+        <dd class="stat-value">
+          <ClientOnly v-if="item.clientOnly">
+            {{ item.value || '—' }}
+            <template #fallback>
+              <span aria-hidden="true">—</span>
+            </template>
+          </ClientOnly>
+          <template v-else>{{ item.value }}</template>
+        </dd>
       </div>
     </dl>
   </SidebarCard>
@@ -69,31 +72,48 @@ const items = computed(() => {
 <style scoped>
 .stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem 0.5rem;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
 }
 
 .stat {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.125rem;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.75rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 75%, transparent);
 }
 
+.stat:last-child {
+  border-bottom: 0;
+}
+
+.stat-label,
 .stat-value {
-  font-family: var(--font-mono);
-  font-size: 1.25rem;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
   margin: 0;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
 }
 
 .stat-label {
-  font-size: var(--fs-meta);
-  line-height: var(--lh-meta);
   color: var(--muted-foreground);
+}
+
+.stat-value {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: clamp(var(--fs-meta), 4vw, 1rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .stat {
+    min-height: 2.625rem;
+    gap: 0.75rem;
+  }
 }
 </style>
