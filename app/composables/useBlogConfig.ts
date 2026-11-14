@@ -76,11 +76,14 @@ export interface FeedConfig {
 
 export interface MusicConfig {
   enabled: boolean
+  source: import('../utils/music').MusicSource
   api: string
   playlist: string
   warmup: string
   level: 'standard' | 'exhigh' | 'lossless'
   volume: number
+  tracks: import('../utils/music').LibraryTrack[]
+  meting: import('../utils/music').MetingConfig
 }
 
 export interface SearchConfig {

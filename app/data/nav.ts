@@ -43,6 +43,8 @@ export const navPanel: NavPanelSection[] = [
     links: [
       { label: '相册', to: '/gallery', icon: 'tabler:photo' },
       { label: '热搜', to: '/hot', icon: 'tabler:flame' },
+      { label: '音乐馆', to: '/music', icon: 'tabler:music' },
+      { label: '小空调', to: '/air-conditioner', icon: 'tabler:air-conditioning' },
       { label: '更新日志', to: '/changelog', icon: 'tabler:history' },
       { label: '项目源码', to: 'https://github.com/maochenyu-me/blog-v2', icon: 'tabler:brand-github', external: true },
       { label: '联系站长', to: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail', external: true },

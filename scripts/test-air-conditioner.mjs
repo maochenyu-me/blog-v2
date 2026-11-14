@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict'
+import { createAirConditioner, changeTemperature, changeMode, togglePower, energyHint } from '../app/utils/air-conditioner.ts'
+
+const initial = createAirConditioner()
+assert.deepEqual(initial, { powered: false, temperature: 26, mode: 'cool' })
+assert.notEqual(createAirConditioner(), initial)
+assert.equal(changeTemperature(initial, 1).temperature, 27)
+assert.equal(initial.temperature, 26)
+assert.equal(changeTemperature({ ...initial, temperature: 31 }, 1).temperature, 31)
+assert.equal(changeTemperature({ ...initial, temperature: 16 }, -1).temperature, 16)
+assert.equal(changeTemperature(initial, NaN).temperature, 26)
+assert.equal(changeMode(initial, 'heat').mode, 'heat')
+assert.equal(changeMode(initial, 'heat').powered, false)
+assert.equal(togglePower(initial).powered, true)
+assert.equal(togglePower(togglePower(initial)).powered, false)
+assert.equal(energyHint({ ...initial, temperature: 25 }), 'cool')
+assert.equal(energyHint({ ...initial, mode: 'heat', temperature: 21 }), 'heat')
+assert.equal(energyHint({ ...initial, mode: 'heat', temperature: 20 }), null)
+assert.equal(energyHint(initial), null)
+console.log('PASS: air conditioner defaults, independent state, temperature limits, power, modes and energy hints')

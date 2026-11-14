@@ -85,6 +85,8 @@ export default {
           { label: '说说', to: '/shuoshuo', icon: 'tabler:messages' },
           { label: '相册', to: '/gallery', icon: 'tabler:photo' },
           { label: '热搜', to: '/hot', icon: 'tabler:flame' },
+          { label: '音乐馆', to: '/music', icon: 'tabler:music' },
+          { label: '小空调', to: '/air-conditioner', icon: 'tabler:air-conditioning' },
         ],
       },
       {
@@ -226,6 +228,8 @@ export default {
    */
   music: {
     enabled: true,
+    /** 统一数据源：netease = 网易云解析，meting = 下方 Meting 配置；修改后重新构建。 */
+    source: 'meting' as const,
     /** 解析服务地址，末尾不要带斜杠 */
     api: 'https://netease.518339.xyz',
     /** 歌单 ID：从 https://music.163.com/playlist?id=xxx 里取纯数字部分 */
@@ -245,6 +249,20 @@ export default {
     level: 'exhigh' as const,
     /** 初始音量 0~1（用户拖动过则优先用本地记忆值） */
     volume: 0.6,
+    /** 本地/外链曲库：src、cover、lyricsUrl 支持 public 下的 /music/ 路径或 HTTPS。
+     * 每项含 id、name、src，可选 artists、album、cover、lyric（LRC 文本）、translation、lyricsUrl。
+     * 与上方 API 歌单合并；playlist 留空时仅使用本曲库。访客导入的文件只在浏览器内临时播放。
+     */
+    tracks: [] as import('./utils/music').LibraryTrack[],
+      /** Meting 元数据入口；播放/歌词直接使用响应中的签名 URL。 */
+      meting: {
+        enabled: true,
+        api: 'https://meting-api.518339.xyz/api',
+        /** Meting 协议的 server 参数（后端音源）：netease / tencent，别与顶层 music.source 混淆 */
+        server: 'netease' as const,
+        playlist: '2607560262',
+        name: 'Meting · 网易云歌单',
+      },
   },
 
   search: {

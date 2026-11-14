@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { site, feed } = useBlogConfig()
 const theme = useTheme()
+const route = useRoute()
+const musicPage = computed(() => route.path.replace(/\/$/, '') === '/music')
 
 /**
  * 全站背景图（LiuShen 式 backdrop）。
@@ -58,9 +60,9 @@ useHead({ link: feedLinks })
       <slot />
     </main>
 
-    <SiteFooter />
+    <SiteFooter v-if="!musicPage" />
     <SearchDialog />
-    <FloatingActions />
+    <FloatingActions v-if="!musicPage" />
     <MusicPlayer />
   </div>
 </template>
