@@ -27,10 +27,7 @@ import { join } from 'node:path'
 const DIST = join(process.cwd(), 'dist')
 const NUXT_DIR = join(DIST, '_nuxt')
 
-const PATTERNS = [
-  /^inter-latin-wght-normal\.[\w-]+\.woff2$/,
-  /^jetbrains-mono-latin-400-normal\.[\w-]+\.woff2$/,
-]
+const PATTERNS = [/^inter-latin-wght-normal\.[\w-]+\.woff2$/]
 
 const assets = await readdir(NUXT_DIR).catch(() => [])
 const targets = PATTERNS.map((re) => assets.find((f) => re.test(f))).filter(Boolean)
