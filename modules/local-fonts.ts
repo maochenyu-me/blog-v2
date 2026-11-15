@@ -4,7 +4,23 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * local-fonts —— 中文字体从「97 个 unicode-range 分片」收敛为「2 个单文件」，并在构建期校验覆盖。
+ * local-fonts —— 中文字体子集的构建期校验。
+ *
+ * ⚠ 当前默认关闭（fonts.css 已改用系统楷体栈，不再加载文楷 webfont）。
+ *
+ * 关闭原因：模块会在 build:before 校验 public/fonts 下的子集文件是否存在，
+ * 而字体已不参与渲染，继续校验只会在文件被清理时报错、在文件残留时白扫一遍
+ * 全站字符集。开关放在文件顶部，恢复字体时把 ENABLED 改回 true 即可，
+ * 校验逻辑与 scripts/font-subset.py 的输入约定原样保留。
+ *
+ * 若要恢复文楷，三处一起改：
+ *   1. fonts.css 恢复 @font-face（文件头注释里保留了完整写法）
+ *   2. nuxt.config.ts 的 app.head.link 恢复两个 preload
+ *   3. 本文件 ENABLED 改回 true
+ *
+ * ── 以下是原始的方案说明，保留备查 ──────────────────────────
+ *
+ * 中文字体从「97 个 unicode-range 分片」收敛为「2 个单文件」，并在构建期校验覆盖。
  *
  * ═══════════════ 要解决的问题 ═══════════════
  * 刷新页面时正文「闪一下」，字形整页替换。实测（CDP 逐帧录屏 + 帧差量化，1100×760）：
@@ -28,19 +44,19 @@ import { join } from 'node:path'
  *
  * 每片到达都独立触发一次 swap → 字形分 4 批替换 → 视觉上整页「闪几下」。
  *
- * ═══════════════ 方案与取舍 ═══════════════
- * 构建前用 scripts/font-subset.py 把 97 片合并成 1 片，并按**全站真实用字**子集化：
+ * ═══════════════ 当时的方案与取舍 ═══════════════
+ * 构建前用 scripts/font-subset.py 把 97 片合并成 1 片，并按全站真实用字子集化：
  *
  *   原方案：194 个 @font-face，首页拉 15 片 = 764 KB，闪 4 次
  *   本方案：2  个 @font-face，首页拉 2 片  = 474 KB，闪 1 次（且已被 preload 压到首帧前）
  *
- * 为什么产物提交进仓库、而不是每次构建现生成：
- *   CF Pages 构建机没有 python + fonttools。把 470 KB 的 woff2 提交进仓库，
- *   部署只做文件复制，零额外依赖。内容改动后用 `pnpm fonts` 重新生成即可。
- *
- * 为什么必须按「全站字符集」而非单页子集化：
- *   按单页子集，浏览到未收录的字就会回退系统字体，变成新的字形混排 —— 闪动换了个形式而已。
+ * 但最终实测证明：这 620 KB 在慢网下必然晚到，被 font-display: optional 整轮放弃，
+ * 用户看到的仍是系统楷体 —— 带宽白花。故彻底移除 webfont，见 fonts.css 头注释。
  */
+
+/** 设为 true 可恢复构建期字体子集校验（需先恢复 fonts.css 与 preload） */
+const ENABLED = false
+
 export default defineNuxtModule({
   meta: { name: 'local-fonts' },
 
@@ -52,6 +68,8 @@ export default defineNuxtModule({
     const fontDir = resolve('../public/fonts')
 
     nuxt.hook('build:before', async () => {
+      if (!ENABLED) return
+
       const required = ['lxgw-wenkai-lite-400.woff2', 'lxgw-wenkai-lite-700.woff2', 'coverage.json']
       const missing = required.filter((f) => !existsSync(join(fontDir, f)))
 

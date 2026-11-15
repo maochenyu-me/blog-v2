@@ -45,23 +45,21 @@ async function staticCheck() {
   if (!cssPath) problems.push('首页找不到 entry CSS 引用')
   else {
     const css = await (await fetch(BASE + cssPath)).text()
-    // LXGW 的两个 face 必须是 optional（swap / fallback 都会在弱网晚换字形）
+    // 中文已改走系统楷体栈，entry CSS 里不该再有 LXGW 的 @font-face。
+    // 若还残留，说明 fonts.css 没清干净 —— 浏览器会照常下载那两个 310KB 文件。
     const lxgwBlocks = [...css.matchAll(/@font-face\{[^}]*LXGW[^}]*\}/g)].map((m) => m[0])
-    if (!lxgwBlocks.length) problems.push('entry CSS 里没有找到 LXGW 的 @font-face')
-    for (const block of lxgwBlocks) {
-      if (!block.includes('font-display:optional')) {
-        const w = block.match(/font-weight:(\d+)/)?.[1] ?? '?'
-        problems.push(`LXGW 字重 ${w} 的 font-display 不是 optional（弱网会晚换字形）`)
-      }
+    if (lxgwBlocks.length) {
+      problems.push(`entry CSS 里仍有 ${lxgwBlocks.length} 个 LXGW @font-face（中文字体应改走系统楷体栈）`)
     }
-    // 回退栈里必须有楷体，否则「放弃换字」等于丢掉手写体身份
+    // 回退栈里必须有楷体，否则中文会退成黑体，丢掉手写体身份
     if (!/font-sans:[^;]*KaiTi[^;]*;/i.test(css)) problems.push('--font-sans 回退栈里没有系统楷体')
   }
 
-  // preload 四个字体：中文两个 + 拉丁两个（拉丁的文件名带构建哈希，由 postbuild 注入）
+  // 中文 webfont 已移除，不该再被 preload（否则白下载 620KB 且抢占 LCP 带宽）
   for (const f of ['/fonts/lxgw-wenkai-lite-400.woff2', '/fonts/lxgw-wenkai-lite-700.woff2']) {
-    if (!html.includes(`href="${f}"`)) problems.push(`首页缺少 ${f} 的 preload`)
+    if (html.includes(`href="${f}"`)) problems.push(`首页仍在 preload ${f}（中文字体已移除）`)
   }
+  // 拉丁字体仍然需要：文件名带构建哈希，由 postbuild 注入
   if (!/rel="preload"[^>]*inter-latin[^>]*\.woff2/.test(html)) problems.push('首页缺少 Inter 的 preload')
   if (!/rel="preload"[^>]*jetbrains-mono[^>]*\.woff2/.test(html)) problems.push('首页缺少 JetBrains Mono 的 preload')
 
@@ -72,10 +70,10 @@ const staticProblems = await staticCheck()
 if (staticProblems.length) {
   console.error('字体声明静态校验失败：')
   for (const p of staticProblems) console.error('  ✗ ' + p)
-  console.error('\n调整 fonts.css（font-display: optional）、theme.config.ts（楷体回退）、nuxt.config.ts（preload）后重跑')
+  console.error('\n调整 fonts.css（移除 LXGW @font-face）、theme.config.ts（楷体回退）、nuxt.config.ts（去掉中文 preload）后重跑')
   process.exit(1)
 }
-console.log('✓ 静态校验：font-display / 楷体回退 / preload 均正常\n')
+console.log('✓ 静态校验：无中文 webfont / 楷体回退 / 拉丁 preload 均正常\n')
 
 const browser = await puppeteer.launch({
   executablePath: CHROME,

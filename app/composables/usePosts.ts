@@ -24,6 +24,8 @@ export interface PostSummary {
 }
 
 export function usePosts() {
+  let listPromise: Promise<PostSummary[]> | null = null
+
   /**
    * 是否包含草稿。
    * 生产构建永远 false；开发环境允许 ?draft=1 预览（提示词 §8）。
@@ -40,27 +42,37 @@ export function usePosts() {
 
   /** 拉取全部文章（已按 pinned DESC, date DESC 排序） */
   async function list(): Promise<PostSummary[]> {
-    const query = queryCollection('posts')
-      .select(
-        'path',
-        'title',
-        'description',
-        'date',
-        'updated',
-        'tags',
-        'category',
-        'cover',
-        'draft',
-        'pinned',
-        'featured',
-      )
-      .order('pinned', 'DESC')
-      .order('date', 'DESC')
+    if (listPromise) return listPromise
 
-    const rows = (await query.all()) as unknown as PostSummary[]
+    listPromise = (async () => {
+      const query = queryCollection('posts')
+        .select(
+          'path',
+          'title',
+          'description',
+          'date',
+          'updated',
+          'tags',
+          'category',
+          'cover',
+          'draft',
+          'pinned',
+          'featured',
+        )
+        .order('pinned', 'DESC')
+        .order('date', 'DESC')
 
-    const withDrafts = includeDrafts()
-    return rows.filter((r) => withDrafts || !r.draft)
+      const rows = (await query.all()) as unknown as PostSummary[]
+      const withDrafts = includeDrafts()
+      return rows.filter((r) => withDrafts || !r.draft)
+    })()
+
+    try {
+      return await listPromise
+    } catch (error) {
+      listPromise = null
+      throw error
+    }
   }
 
   /** 置顶文章 */

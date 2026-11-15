@@ -56,6 +56,7 @@ watch(() => current.value?.id, () => { brokenCover.value = false })
 watch(() => current.value?.id, () => { if (current.value) void nextTick(() => { if (lyricsStatus.value === 'idle') void player.loadLyrics() }) })
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
+  void player.init()
   if (current.value && lyricsStatus.value === 'idle') void player.loadLyrics()
 })
 onBeforeUnmount(() => { window.removeEventListener('keydown', onKeydown); clearTimeout(noticeTimer); queueDialog.value?.close() })

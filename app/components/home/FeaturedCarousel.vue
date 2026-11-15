@@ -39,6 +39,14 @@ function srcOf(cover: string | undefined): string {
   return !cover || failed.has(cover) ? FALLBACK_COVER : cover
 }
 
+/**
+ * 该图能否交给 NuxtImg 做构建期优化（本地路径 + 位图）。
+ * 站外封面与 SVG 占位图走原生 <img>，见 app/utils/image-optimizable.ts。
+ */
+function optimizable(cover: string | undefined): boolean {
+  return canOptimizeImage(srcOf(cover))
+}
+
 function onCoverErr(cover: string | undefined) {
   if (cover) failed.add(cover)
 }
@@ -144,11 +152,36 @@ onBeforeUnmount(stopTimer)
           :aria-hidden="i !== current"
           :tabindex="i === current ? 0 : -1"
         >
-          <img
+          <!--
+            本地位图走 NuxtImg：构建期转 AVIF/WebP，按 densities 生成多档。
+            站外封面与 SVG 占位图不能优化，退回原生 <img> —— 见 image-optimizable.ts。
+            首张给 eager + high，它是 LCP 元素；其余 lazy + low。
+          -->
+          <NuxtImg
+            v-if="optimizable(post.cover)"
             class="carousel-img"
             :src="srcOf(post.cover)"
             :alt="t(ui.pages.home.card.coverAlt, { title: post.title })"
-            loading="eager"
+            :loading="i === 0 ? 'eager' : 'lazy'"
+            :fetchpriority="i === 0 ? 'high' : 'low'"
+            :preload="i === 0"
+            :width="1200"
+            :height="456"
+            format="avif,webp"
+            decoding="async"
+            draggable="false"
+            @error="onCoverErr(post.cover)"
+          />
+          <img
+            v-else
+            class="carousel-img"
+            :src="srcOf(post.cover)"
+            :alt="t(ui.pages.home.card.coverAlt, { title: post.title })"
+            :loading="i === 0 ? 'eager' : 'lazy'"
+            :fetchpriority="i === 0 ? 'high' : 'low'"
+            :width="1200"
+            :height="456"
+            decoding="async"
             draggable="false"
             @error="onCoverErr(post.cover)"
           >

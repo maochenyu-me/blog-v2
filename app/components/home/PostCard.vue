@@ -37,6 +37,12 @@ function onCoverError() {
   coverSrc.value = props.cfg.fallbackCover
 }
 
+/**
+ * 当前封面能否交给 NuxtImg 优化。
+ * 站外封面与 SVG 占位图走原生 <img>，见 app/utils/image-optimizable.ts。
+ */
+const coverOptimizable = computed(() => canOptimizeImage(coverSrc.value))
+
 const excerpt = computed(() => {
   const d = props.post.description
   if (!d) return t(ui.pages.home.card.noExcerpt)
@@ -51,13 +57,30 @@ const readingMinutes = computed(() => estimate(props.post.description))
 
 <template>
   <article class="post-card">
-    <NuxtLink :to="post.path" class="card-link">
+    <NuxtLink :to="post.path" class="card-link" prefetch-on="interaction">
       <div class="card-cover">
-        <img
+        <NuxtImg
+          v-if="coverOptimizable"
           class="cover-img"
           :src="coverSrc"
           :alt="t(ui.pages.home.card.coverAlt, { title: post.title })"
           loading="lazy"
+          :width="800"
+          :height="450"
+          format="avif,webp"
+          decoding="async"
+          draggable="false"
+          @error="onCoverError"
+        />
+        <img
+          v-else
+          class="cover-img"
+          :src="coverSrc"
+          :alt="t(ui.pages.home.card.coverAlt, { title: post.title })"
+          loading="lazy"
+          :width="800"
+          :height="450"
+          decoding="async"
           draggable="false"
           @error="onCoverError"
         >

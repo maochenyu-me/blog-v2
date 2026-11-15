@@ -3,12 +3,16 @@ import { formatTime } from '../../utils/music'
 const { music } = useBlogConfig()
 const { ui, t } = useUi()
 const route = useRoute()
-const { current, tracks, playing, buffering, status, unavailable, blocked, duration, currentTime, volume, mode, progress, togglePlay, prev, step, seek, setVolume, cycleMode, loadPlaylist } = useMusicPlayer()
+const { current, tracks, playing, buffering, status, unavailable, blocked, duration, currentTime, volume, mode, progress, togglePlay, prev, step, seek, setVolume, cycleMode, loadPlaylist, init } = useMusicPlayer()
 const expanded = ref(false)
 const visible = computed(() => music.enabled && route.path.replace(/\/$/, '') !== '/music')
 const trackName = computed(() => current.value?.name || (status.value === 'loading' ? ui.music.loading : ui.music.unknownTrack))
 const modeIcon = computed(() => ({ list: 'tabler:repeat', one: 'tabler:repeat-once', shuffle: 'tabler:arrows-shuffle' })[mode.value])
 function onKeydown(event: KeyboardEvent) { if (event.key === 'Escape') expanded.value = false }
+function expand() {
+  expanded.value = !expanded.value
+  if (expanded.value) void init()
+}
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 watch(() => route.path, () => { expanded.value = false })
@@ -52,7 +56,7 @@ watch(() => route.path, () => { expanded.value = false })
         <NuxtLink to="/music" class="music-room-link">{{ ui.music.openPage }}<Icon name="tabler:arrow-up-right" /></NuxtLink>
       </section>
     </Transition>
-    <button type="button" class="music-trigger" :class="{ 'music-trigger--playing': playing }" :aria-label="expanded ? ui.music.closeAria : ui.music.openAria" :aria-expanded="expanded" @click="expanded = !expanded">
+    <button type="button" class="music-trigger" :class="{ 'music-trigger--playing': playing }" :aria-label="expanded ? ui.music.closeAria : ui.music.openAria" :aria-expanded="expanded" @click="expand">
       <img v-if="current?.cover" :src="current.cover" alt="" /><Icon v-else name="tabler:music" />
       <Icon :name="expanded ? 'tabler:chevron-down' : 'tabler:chevron-up'" />
     </button>

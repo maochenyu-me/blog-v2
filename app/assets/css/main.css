@@ -89,21 +89,20 @@
 }
 
 /* ===============================================================
- * 页面过渡 —— 全站唯一的非交互动效（提示词 §9）
+ * 页面过渡 —— 已移除，路由切换为硬切
+ *
+ * 原先是 200ms 的 opacity 交叉淡入。实测它并没有「交叉」：Vue 的 page
+ * transition 在单页切换里是串行的 —— push 完成后先播完旧页 page-leave，
+ * 新页内容才替换进 main 再播 page-enter。逐帧抓取可验证 leave-active
+ * 期间 main 的文本长度完全不变，用户一直在看旧页面。
+ *
+ * 三组对照（点击 → 新页就绪且无过渡类，三页均值）：
+ *   200ms 过渡  410ms
+ *   100ms 过渡  314ms
+ *   无过渡      206ms
+ *
+ * 所以直接去掉，与参考站 blog-v3 一致。详见 nuxt.config.ts 的 app 段注释。
  * ============================================================= */
-.page-enter-active,
-.page-leave-active {
-  transition:
-    opacity var(--duration-base) var(--easing-base),
-    transform var(--duration-base) var(--easing-base);
-}
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(4px);
-}
-.page-leave-to {
-  opacity: 0;
-}
 
 /* 主题切换的圆形扩散 —— 由 ThemeToggle 用 View Transitions API 驱动 */
 ::view-transition-old(root),
@@ -119,14 +118,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter-active,
-  .page-leave-active {
-    transition: none;
-  }
-  .page-enter-from {
-    opacity: 1;
-    transform: none;
-  }
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;

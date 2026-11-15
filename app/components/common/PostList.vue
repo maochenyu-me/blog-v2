@@ -38,7 +38,7 @@ function formatDate(d: string) {
 <template>
   <ul class="post-list">
     <li v-for="post in posts" :key="post.path" class="post-row">
-      <NuxtLink :to="post.path" class="post-link">
+      <NuxtLink :to="post.path" class="post-link" prefetch-on="interaction">
         <time v-if="showDate" class="post-date" :datetime="iso(post.date)">
           {{ formatDate(post.date) }}
         </time>
