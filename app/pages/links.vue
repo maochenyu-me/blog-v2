@@ -659,6 +659,10 @@ const gridVars = computed(() => ({
   border-top: none;
 }
 
+.disclaimer {
+  background-color: var(--card);
+}
+
 .disclaimer-summary,
 .legend-summary {
   display: flex;
