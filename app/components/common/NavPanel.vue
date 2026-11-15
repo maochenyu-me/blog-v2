@@ -90,7 +90,6 @@ watch(() => route.fullPath, () => close())
               >
                 <Icon :name="item.icon" aria-hidden="true" />
                 <span>{{ item.label }}</span>
-                <Icon name="tabler:external-link" class="nav-panel__external" aria-hidden="true" />
               </a>
               <NuxtLink
                 v-else
@@ -250,12 +249,6 @@ watch(() => route.fullPath, () => close())
 
 .nav-panel__link:hover {
   transform: translateX(2px);
-}
-
-.nav-panel__external {
-  margin-inline-start: auto;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
 }
 
 .nav-panel-enter-active,

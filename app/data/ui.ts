@@ -54,6 +54,7 @@ export const ui = {
     hot: '热搜',
     message: '留言板',
     shuoshuo: '说说',
+    equipment: '我的装备',
     about: '关于',
     changelog: '更新日志',
     /** 相册页 */
@@ -199,6 +200,21 @@ export const ui = {
     },
   },
 
+  /** 装备页（/equipment） */
+  equipment: {
+    countAria: '装备数量',
+    bannerAlt: '参考装备页面横幅',
+    sectionKicker: 'A CLOSER LOOK',
+    listTitle: '日常装备清单',
+    categoryCount: '{categories} 个分类 · {items} 件物品',
+    itemCount: '{count} 件',
+    imageLinkAria: '{name}，查看商品详情（新窗口打开）',
+    itemCode: 'GEAR_{number}',
+    details: '查看详情',
+    sourceNote: '以下为参考站公开展示的示例数据，并非本站站长的实际装备；后续可在 app/data/equipment.ts 中替换。',
+    sourceLink: '参考来源',
+  },
+
   /** 留言板（/message） */
   message: {
     /** 页头副题与 chips（h1 复用 ui.pages.message） */
@@ -236,6 +252,7 @@ export const ui = {
       hot: '热搜',
       message: '留言板',
       shuoshuo: '说说',
+      equipment: '我的装备',
       gallery: '相册',
       about: '关于',
       changelog: '更新日志',
@@ -343,6 +360,13 @@ export const ui = {
   comment: {
     aria: '评论',
     closed: '评论暂未开放',
+    quote: '引用',
+    quoteAria: '引用 {name} 并前往评论框',
+    quotePrefix: '正在引用',
+    clearQuote: '取消引用',
+    clearQuoteAria: '取消当前引用',
+    quoteEmpty: '该装备暂无可引用的描述。',
+    formUnavailable: '评论框尚未加载，请稍后再试。',
   },
 
   /** 浮动操作按钮 */

@@ -60,6 +60,7 @@ const ROUTE_TABLE: Array<{ test: RegExp; parents: Crumb[]; leaf?: string }> = [
   { test: /^\/fcircle\/?$/, parents: [], leaf: ui.breadcrumb.routes.fcircle },
   { test: /^\/message\/?$/, parents: [], leaf: ui.breadcrumb.routes.message },
   { test: /^\/shuoshuo\/?$/, parents: [], leaf: ui.breadcrumb.routes.shuoshuo },
+  { test: /^\/equipment\/?$/, parents: [], leaf: ui.breadcrumb.routes.equipment },
   { test: /^\/gallery\/?$/, parents: [], leaf: ui.breadcrumb.routes.gallery },
   {
     test: /^\/gallery\/[^/]+\/?$/,

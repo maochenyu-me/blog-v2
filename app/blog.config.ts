@@ -87,6 +87,7 @@ export default {
           { label: '热搜', to: '/hot', icon: 'tabler:flame' },
           { label: '音乐馆', to: '/music', icon: 'tabler:music' },
           { label: '小空调', to: '/air-conditioner', icon: 'tabler:air-conditioning' },
+          { label: '我的装备', to: '/equipment', icon: 'tabler:device-laptop' },
         ],
       },
       {
