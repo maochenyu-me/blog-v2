@@ -1,21 +1,23 @@
 [
   {
     "name": "纸鹿摸鱼处",
-    "avatar": "/images/links/zhilu.png",
+    "avatar": "https://www.zhilu.site/api/avatar.png",
     "description": "纸鹿至麓不知路，支炉制露不止漉",
     "url": "https://blog.zhilu.site/",
     "rss": "https://blog.zhilu.site/atom.xml",
     "daysSince": "2025-09-03",
-    "recommended": true
+    "recommended": true,
+     "friendPage": "https://blog.zhilu.site/link"
   },
   {
     "name": "CWorld Site",
-    "avatar": "/images/links/cworld.png",
+    "avatar": "https://gravatar.loli.net/avatar/1ffe42aa45a6b1444a786b1f32dfa8aa?s=200",
     "description": "求知若愚，虚怀若谷",
     "url": "https://cworld0.com/",
     "rss": "https://cworld0.com/rss.xml",
     "daysSince": "2026-03-05",
-    "recommended": true
+    "recommended": true,
+    "friendPage": "https://cworld0.com/links"
   },
   {
     "name": "清羽飞扬",
