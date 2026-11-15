@@ -189,6 +189,7 @@ const commentTitle = computed(() => `${ui.pages.message} · ${site.name}`)
   padding: var(--space-item);
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) * 2);
+  background-color: var(--card);
 }
 
 @media (min-width: 860px) {
@@ -243,6 +244,7 @@ const commentTitle = computed(() => `${ui.pages.message} · ${site.name}`)
   margin-top: var(--space-item);
   border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
   border-radius: calc(var(--radius) * 1.5);
+  background-color: var(--card);
 }
 
 .rules-summary {

@@ -659,7 +659,8 @@ const gridVars = computed(() => ({
   border-top: none;
 }
 
-.disclaimer {
+.disclaimer,
+.legend {
   background-color: var(--card);
 }
 
