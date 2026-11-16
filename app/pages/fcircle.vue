@@ -220,13 +220,13 @@ onMounted(async () => {
           <div><dt>文章</dt><dd>{{ stats.articles }}</dd></div>
           <div><dt>友链</dt><dd>{{ stats.friends }}</dd></div>
           <div><dt>活跃</dt><dd>{{ stats.active }}</dd></div>
-          <div v-if="stats.errors" class="stats-error"><dt>异常</dt><dd>{{ stats.errors }}</dd></div>
+          <div class="stats-error"><dt>异常</dt><dd>{{ stats.errors }}</dd></div>
         </dl>
       </header>
 
       <section v-if="featured" class="featured" aria-labelledby="featured-title">
         <div class="featured-copy">
-          <p class="eyebrow">随机 dispatch</p>
+          <p class="eyebrow">随机漫步</p>
           <h2 id="featured-title"><a :href="featured.url" target="_blank" rel="noopener noreferrer">{{ featured.title }}</a></h2>
           <p class="featured-meta">{{ featured.author }} · {{ formatDate(featured.published) }}</p>
           <p v-if="featured.summary" class="featured-summary">{{ featured.summary }}</p>
@@ -246,20 +246,20 @@ onMounted(async () => {
       </section>
 
       <div class="timeline-layout">
-        <section class="timeline" aria-label="文章时间线">
-          <p class="list-status" role="status">显示 {{ visibleRecords.length }} / {{ filteredRecords.length }} 篇文章</p>
-          <div v-if="visibleRecords.length" class="timeline-list">
-            <article v-for="item in visibleRecords" :key="item.id" class="timeline-item">
-              <div class="timeline-dot" aria-hidden="true" />
-              <div class="timeline-content">
+        <section class="timeline" aria-label="文章瀑布流">
+          <div class="list-heading">
+            <p class="list-status" role="status">瀑布流 · 显示 {{ visibleRecords.length }} / {{ filteredRecords.length }} 篇文章</p>
+          </div>
+          <div v-if="visibleRecords.length" class="waterfall-grid">
+            <article v-for="item in visibleRecords" :key="item.id" class="waterfall-item">
+              <img v-if="item.cover" class="item-cover" :src="item.cover" :alt="`${item.title} cover`" referrerpolicy="no-referrer" loading="lazy" />
+              <div class="waterfall-content">
+                <h2><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h2>
+                <p v-if="item.summary" class="summary">{{ item.summary }}</p>
                 <div class="item-meta">
                   <a :href="item.home || item.url" target="_blank" rel="noopener noreferrer" class="author"><img v-if="item.avatar" :src="item.avatar" :alt="`${item.author} avatar`" referrerpolicy="no-referrer" loading="lazy" /><span>{{ item.author }}</span></a>
                   <time :datetime="item.published">{{ formatDate(item.published) }}</time>
-                  <span v-if="hostOf(item.home || item.url)" class="site">{{ hostOf(item.home || item.url) }}</span>
                 </div>
-                <h2><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h2>
-                <p v-if="item.summary" class="summary">{{ item.summary }}</p>
-                <img v-if="item.cover" class="item-cover" :src="item.cover" :alt="`${item.title} cover`" referrerpolicy="no-referrer" loading="lazy" />
                 <a class="source-link" :href="item.url" target="_blank" rel="noopener noreferrer">打开原文 <Icon name="tabler:arrow-up-right" aria-hidden="true" /></a>
               </div>
             </article>
@@ -302,28 +302,35 @@ onMounted(async () => {
 .search-field input, .filters select { min-height: 2.4rem; border: 0; color: var(--foreground); background: transparent; }
 .search-field input:focus-visible, .filters select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .filters select { padding: 0 .65rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); background-color: var(--muted); }
-.timeline-layout { display: grid; grid-template-columns: minmax(0, 1fr) 14rem; gap: 3rem; }
+.timeline-layout { display: block; }
 .timeline { min-width: 0; }
-.list-status { margin: 0 0 1rem; color: var(--muted-foreground); font: .75rem var(--font-mono); }
-.timeline-list { position: relative; }
-.timeline-list::before { content: ''; position: absolute; inset: .4rem auto 0 .45rem; width: 1px; background: var(--border); }
-.timeline-item { position: relative; display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 1rem; padding-bottom: 2rem; }
-.timeline-dot { width: .6rem; height: .6rem; margin-top: .35rem; border: 2px solid var(--accent); border-radius: 50%; background: var(--background); z-index: 1; }
-.item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; color: var(--muted-foreground); font-size: .75rem; }
-.author { display: inline-flex; align-items: center; gap: .4rem; color: var(--foreground); }
-.author img { width: 1.5rem; height: 1.5rem; border-radius: 50%; object-fit: cover; background: var(--muted); }
-.item-meta time { font-family: var(--font-mono); }
-.site { padding-left: .75rem; border-left: 1px solid var(--border); }
-.timeline h2 { margin: .5rem 0; font-size: clamp(1.1rem, 2vw, 1.4rem); line-height: 1.35; }
-.summary { max-width: 48rem; margin: 0; color: var(--muted-foreground); line-height: 1.7; }
-.item-cover { width: min(100%, 30rem); max-height: 12rem; margin-top: .75rem; object-fit: cover; border-radius: calc(var(--radius) / 2); }
+.list-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
+.list-status { margin: 0; color: var(--muted-foreground); font: .75rem var(--font-mono); }
+.waterfall-grid { column-count: 4; column-gap: .85rem; }
+.waterfall-item { display: inline-block; width: 100%; margin: 0 0 .85rem; overflow: hidden; break-inside: avoid; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); vertical-align: top; transition: border-color .2s ease, transform .2s ease; }
+.waterfall-item:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); transform: translateY(-2px); }
+.waterfall-content { padding: 1rem; }
+.item-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .45rem .7rem; color: var(--muted-foreground); font-size: .75rem; }
+.author { display: inline-flex; min-width: 0; align-items: center; gap: .4rem; color: var(--foreground); }
+.author span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.author img { width: 1.5rem; height: 1.5rem; flex: 0 0 auto; border-radius: 50%; object-fit: cover; background: var(--muted); }
+.item-meta time { font-family: var(--font-mono); white-space: nowrap; }
+.waterfall-item h2 { margin: 0 0 .55rem; font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.45; }
+.waterfall-item h2 a:hover { color: var(--accent); }
+.summary { margin: 0 0 .85rem; color: var(--muted-foreground); line-height: 1.65; }
+.item-cover { display: block; width: 100%; max-height: 15rem; object-fit: cover; }
 .source-link { display: inline-flex; align-items: center; gap: .25rem; margin-top: .8rem; color: var(--accent); font-size: .8rem; }
 .load-more { display: block; margin: .5rem auto 0; }
-.now-rail { align-self: start; padding-top: 1.8rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: .85rem; line-height: 1.7; }
-.rail-random { margin-top: .75rem; color: var(--accent); }
+.now-rail { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: .85rem; line-height: 1.7; }
+.now-rail .eyebrow { margin: 0; }
+.now-rail p:not(.eyebrow) { flex: 1; margin: 0; }
+.rail-random { flex: 0 0 auto; color: var(--accent); }
 .empty { padding: 3rem 1rem; color: var(--muted-foreground); text-align: center; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 :where(a, button, input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 1040px) {
+  .waterfall-grid { column-count: 3; }
+}
 @media (max-width: 760px) {
   .page-head, .timeline-layout { display: block; }
   .stats { margin-top: 1.25rem; }
@@ -332,6 +339,10 @@ onMounted(async () => {
   .featured-cover { max-height: 12rem; }
   .filters label:not(.search-field) { flex: 1 1 8rem; }
   .filters select { width: 100%; }
+  .waterfall-grid { column-count: 2; }
+}
+@media (max-width: 460px) {
+  .waterfall-grid { column-count: 1; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 </style>
