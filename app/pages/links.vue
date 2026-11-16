@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { badgeConfigs, getBadge, recommendedColor, type FriendLink } from '~/data/links'
+import type { LinkLatencyTone } from '~/utils/link-latency'
 
 const { ui, t } = useUi()
 const pageCfg = usePageConfig('links')
@@ -19,14 +20,48 @@ const badgeOf = (link: FriendLink) => getBadge(daysOf(link) ?? 0, link.lost)
 const absoluteAvatar = (link: FriendLink) =>
   link.avatar.startsWith('http') ? link.avatar : `${site.url}${link.avatar}`
 
-/** 分组：朋友们 → 失联。组内按建交天数降序（老朋友在前） */
+/* ── 友链延迟：客户端读 fcircle 的 link.json（爬虫最近一次探测结果） ──
+   数据到达前卡片保持原样，不占位、不显示「--」；未匹配到本站友链的也不渲染。 */
+const { statusOf: latencyStatusOf, load: loadLatency } = useLinkLatency()
+
+/** 单卡延迟的渲染视图 */
+interface LinkLatencyView {
+  tone: LinkLatencyTone
+  /** 数值文案，如「30 MS」「2.2 S」「不可达」 */
+  text: string
+  /** 悬停说明：探测口径 + 原始毫秒数 */
+  title: string
+}
+
+function latencyView(link: FriendLink): LinkLatencyView | null {
+  const status = latencyStatusOf(link.url)
+  if (!status) return null
+
+  const tone = linkLatencyTone(status, pageCfg.latency.fastMs, pageCfg.latency.slowMs)
+  if (tone === 'down') return { tone, text: ui.links.latencyDown, title: ui.links.latencyDownTitle }
+
+  const { value, unit } = linkLatencyValue(status)
+  return {
+    tone,
+    text: unit === 'ms' ? t(ui.links.latencyMs, { n: value }) : t(ui.links.latencySec, { n: value }),
+    title: t(ui.links.latencyTitle, { ms: Math.round(status.latency * 1000) }),
+  }
+}
+
+onMounted(() => {
+  void loadLatency()
+})
+
+/** 分组：朋友们 → 失联。组内按建交天数降序（老朋友在前），延迟随组预计算 */
 const groups = computed(() => {
   const lost = friendLinks.filter((l) => l.lost)
   const active = friendLinks.filter((l) => !l.lost)
   const byDays = (a: FriendLink, b: FriendLink) => (daysOf(b) ?? 0) - (daysOf(a) ?? 0)
+  /** 先算好延迟再进数组：模板只读 link.latency，避免每张卡渲染时重复查表 */
+  const decorate = (link: FriendLink) => ({ ...link, latency: latencyView(link) })
   return [
-    { key: 'active' as const, list: [...active].sort(byDays) },
-    { key: 'lost' as const, list: [...lost].sort(byDays) },
+    { key: 'active' as const, list: [...active].sort(byDays).map(decorate) },
+    { key: 'lost' as const, list: [...lost].sort(byDays).map(decorate) },
   ].filter((g) => g.list.length > 0)
 })
 
@@ -245,7 +280,7 @@ const gridVars = computed(() => ({
         </h2>
 
         <ul class="link-grid" :style="gridVars">
-          <li v-for="link in group.list" :key="link.url" class="link-cell">
+          <li v-for="(link, index) in group.list" :key="link.url" class="link-cell">
             <!-- 朋友卡：1:1 移植 Saneko FriendList —— 圆角独立卡 + hover 遮罩箭头 +
                  头像水墨背景 + 右上角 40px 裁切印章 + 右下 DAYS -->
             <a :href="link.url" class="link-card" target="_blank" rel="noopener noreferrer">
@@ -288,8 +323,22 @@ const gridVars = computed(() => ({
                 <!-- 无障碍文本放 link-name 外：朋友圈爬虫按 .link-name 全后代取文本，放里面会拼进作者名 -->
                 <span v-if="link.recommended" class="visually-hidden">{{ ui.links.recommendedAria }}</span>
                 <span class="link-desc">{{ link.description }}</span>
-                <span class="days-label">
-                  {{ link.lost ? ui.links.daysLost : t(ui.links.daysBadge, { n: daysOf(link) ?? 0 }) }}
+                <!-- 遥测栏：延迟（左）‖ 建交天数（右），同排贴底。
+                     不做右上角浮层——那里是等级印章，压上去必然遮住有效信息 -->
+                <span class="link-meta">
+                  <span
+                    v-if="link.latency"
+                    class="latency"
+                    :class="`is-${link.latency.tone}`"
+                    :title="link.latency.title"
+                    :style="{ '--latency-delay': `${index * pageCfg.latency.staggerMs}ms` }"
+                  >
+                    <span class="latency-dot" aria-hidden="true" />
+                    <span class="latency-value">{{ link.latency.text }}</span>
+                  </span>
+                  <span class="days-label">
+                    {{ link.lost ? ui.links.daysLost : t(ui.links.daysBadge, { n: daysOf(link) ?? 0 }) }}
+                  </span>
                 </span>
               </span>
               <!-- 等级印章：40px 徽标色图标溢出右上角，hover 逆转放大（Saneko 式） -->
@@ -657,11 +706,14 @@ const gridVars = computed(() => ({
 .legend {
   border: 1px solid var(--border);
   border-top: none;
+  background-color: var(--card);
 }
 
-.disclaimer,
 .legend {
-  background-color: var(--card);
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .disclaimer-summary,
@@ -886,9 +938,97 @@ details[open] .legend-summary .disclaimer-chevron {
   overflow: hidden;
 }
 
-/* 天数角标：右下角，10px mono（Saneko 口径 self-end text-[10px]） */
+/* ── 遥测栏：延迟（左）‖ 建交天数（右） ──
+   贴正文底部同排：左延迟、右天数，任何列宽下都不会互相挤压或越界。 */
+.link-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* 延迟：小圆点 + 10px mono 数值。颜色只落在点上，只有「慢 / 不可达」才让数值也染色
+   （BLOG_PROMPT §5 禁彩色 tag、禁玻璃拟态，故不做参考站那种着色胶囊） */
+.latency {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.3125rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  animation: latency-in var(--duration-base) var(--easing-base) both;
+  animation-delay: var(--latency-delay, 0ms);
+}
+
+.latency-dot {
+  flex: none;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  background-color: var(--latency-signal, var(--muted-foreground));
+}
+
+/* 档位色：纸底与暗底各一套，均 ≥4.5:1（10px 数字也得看得清） */
+.latency.is-fast {
+  --latency-signal: #2f6b48;
+}
+
+.latency.is-ok {
+  --latency-signal: var(--muted-foreground);
+}
+
+.latency.is-slow {
+  --latency-signal: #8a5718;
+  color: var(--latency-signal);
+}
+
+.latency.is-down {
+  --latency-signal: #a3303a;
+  color: var(--latency-signal);
+}
+
+/* 暗色档位：:global() 必须包住整条选择器，否则 scoped 编译会把 .latency.is-* 丢掉 */
+:global(.dark .latency.is-fast) {
+  --latency-signal: #8fcaa3;
+}
+
+:global(.dark .latency.is-ok) {
+  --latency-signal: var(--muted-foreground);
+}
+
+:global(.dark .latency.is-slow) {
+  --latency-signal: #e0a45c;
+}
+
+:global(.dark .latency.is-down) {
+  --latency-signal: #ec8f86;
+}
+
+/* 数据到达后单段淡入 + 2px 上浮：无回弹、无模糊（仓库动效口径 ≤200ms ease-out） */
+@keyframes latency-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.125rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .latency {
+    animation: none;
+  }
+}
+
+/* 天数角标：贴右端，10px mono（Saneko 口径 self-end text-[10px]） */
 .days-label {
-  align-self: flex-end;
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 0.625rem;
   line-height: 1;
@@ -929,9 +1069,15 @@ details[open] .legend-summary .disclaimer-chevron {
 /* ── 友链等级图例（16 级网格） ── */
 .legend-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
   padding: 0 var(--space-item) var(--space-item);
+}
+
+@media (min-width: 560px) {
+  .legend-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) {
@@ -943,11 +1089,13 @@ details[open] .legend-summary .disclaimer-chevron {
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) / 2);
+  gap: 0.75rem;
   min-width: 0;
+  min-height: 3.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: color-mix(in srgb, var(--card) 72%, var(--muted));
 }
 
 .legend-medal {

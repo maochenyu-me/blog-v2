@@ -74,7 +74,7 @@ useSeoMeta({
         <div class="banner-overlay" />
         <figcaption class="banner-caption">
           <span class="banner-index">GEAR / 01</span>
-          <span>{{ equipmentConfig.note }}</span>
+          <span>{{ text[equipmentConfig.noteKey] }}</span>
         </figcaption>
       </figure>
 

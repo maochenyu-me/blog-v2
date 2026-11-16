@@ -222,6 +222,22 @@ export default {
       showLegend: true,
       /** 是否显示「随机拜访」入口与确认模态 */
       randomVisit: true,
+      /**
+       * 友链延迟：客户端读取 fcircle 的 link.json（友链爬虫的最近一次探测结果），
+       * 在卡片底部遥测栏显示「响应耗时」。抓取失败或未命中就不显示，不编造数值。
+       */
+      latency: {
+        enabled: true,
+        /** 探测结果地址；换爬虫只需改这里 */
+        endpoint: 'https://fcircle.518339.xyz/link.json',
+        /** sessionStorage 缓存时长（分钟），过期才重新请求 */
+        refreshMinutes: 30,
+        /** 档位阈值（毫秒）：≤ fastMs 记为快，≤ slowMs 记为正常，更高记为慢 */
+        fastMs: 1000,
+        slowMs: 3000,
+        /** 数据到达后逐卡入场的错开间隔（毫秒） */
+        staggerMs: 30,
+      },
     },
 
     fcircle: {

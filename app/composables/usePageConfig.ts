@@ -143,6 +143,20 @@ export interface LinksPageConfig {
   expandedFields: number
   showLegend: boolean
   randomVisit: boolean
+  /** 友链延迟（fcircle link.json 探测结果）的展示配置 */
+  latency: {
+    enabled: boolean
+    /** 探测结果 JSON 地址 */
+    endpoint: string
+    /** 本地会话缓存时长（分钟） */
+    refreshMinutes: number
+    /** 「快」的上限（毫秒） */
+    fastMs: number
+    /** 「正常」的上限（毫秒），超过记为慢 */
+    slowMs: number
+    /** 逐卡入场错开间隔（毫秒） */
+    staggerMs: number
+  }
 }
 
 export interface FcirclePageConfig {

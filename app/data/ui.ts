@@ -560,6 +560,15 @@ export const ui = {
     legendLost: '失联',
     daysBadge: '{n} DAYS',
     daysLost: 'LOST',
+    /**
+     * 友链延迟（fcircle 爬虫的探测结果）。
+     * 单位口径：<1s 用整数毫秒，≥1s 用秒保留一位小数；不可达只写两个字。
+     */
+    latencyMs: '{n} MS',
+    latencySec: '{n} S',
+    latencyDown: '不可达',
+    latencyTitle: '最近检测可达，响应约 {ms} ms',
+    latencyDownTitle: '最近检测不可达',
     recommendedAria: '推荐标记',
     /** 随机拜访模态 */
     modalHeading: '随机拜访',
