@@ -1,12 +1,5 @@
 <script setup lang="ts">
-/**
- * 友链朋友圈 —— 聚合朋友们最近半年的博客更新。
- *
- * 数据源 app/data/fcircle.json 由 GitHub Actions 每日爬取（构建期内联），
- * 搜索 / 作者筛选 / 分页全部客户端完成，页面本体零运行时依赖。
- * 视觉沿用全站令牌，见 docs/design/07-fcircle.md。
- */
-interface FcircleArticle {
+interface FcircleRecord {
   id: string
   title: string
   url: string
@@ -18,680 +11,318 @@ interface FcircleArticle {
   cover: string | null
 }
 
-const { ui, t } = useUi()
-const pageCfg = usePageConfig('fcircle')
-const { site } = useBlogConfig()
-const { iso } = useDateFormat()
+interface LocalPayload {
+  generatedAt?: string
+  articles?: Array<Partial<FcircleRecord> & { link?: string; created?: string }>
+}
 
+interface RemoteArticle {
+  id?: string | number
+  title?: string
+  link?: string
+  url?: string
+  author?: string
+  avatar?: string
+  home?: string
+  created?: string
+  published?: string
+  summary?: string
+  description?: string
+  cover?: string | null
+  image?: string
+}
+
+type ArticleInput = {
+  id?: string | number
+  title?: string
+  link?: string
+  url?: string
+  author?: string
+  avatar?: string
+  home?: string
+  created?: string
+  published?: string
+  summary?: string
+  description?: string
+  cover?: string | null
+  image?: string
+}
+
+interface RemotePayload {
+  statistical_data?: Record<string, unknown>
+  article_data?: RemoteArticle[]
+}
+
+const { ui } = useUi()
 useHead({ title: ui.pages.fcircle })
 
-const { default: fcircleData } = await import('~/data/fcircle.json')
-const articles = fcircleData.articles as FcircleArticle[]
+const localPayload = (await import('~/data/fcircle.json')).default as LocalPayload
+const localArticles = Array.isArray(localPayload.articles) ? localPayload.articles : []
 
-const fallbackCover = '/images/covers/default.svg'
-
-/** ── 作者筛选：按文章数降序排 chip，「全部」置首 ── */
-const authors = computed(() => {
-  const map = new Map<string, { name: string; avatar: string; home: string; count: number }>()
-  for (const a of articles) {
-    const cur = map.get(a.author)
-    if (cur) cur.count += 1
-    else map.set(a.author, { name: a.author, avatar: a.avatar, home: a.home, count: 1 })
+const safeUrl = (value: unknown, fallback = '') => {
+  if (typeof value !== 'string' || !value.trim()) return fallback
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : fallback
+  } catch {
+    return fallback
   }
-  return [...map.values()].sort((x, y) => y.count - x.count)
-})
+}
 
-const activeAuthor = ref<string | null>(null)
+const safeDate = (value: unknown) => {
+  const date = new Date(typeof value === 'string' || typeof value === 'number' ? value : '')
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString()
+}
 
-/** ── 搜索：防抖 + 标题/摘要/作者忽略大小写匹配 ── */
-const searchInput = ref('')
-const searchQuery = ref('')
-let searchTimer: ReturnType<typeof setTimeout> | undefined
-watch(searchInput, (v) => {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    searchQuery.value = v.trim()
-  }, pageCfg.debounceMs)
-})
-
-const filtered = computed(() => {
-  const q = searchQuery.value.toLowerCase()
-  return articles.filter((a) => {
-    if (activeAuthor.value && a.author !== activeAuthor.value) return false
-    if (!q) return true
-    return (
-      a.title.toLowerCase().includes(q)
-      || a.summary.toLowerCase().includes(q)
-      || a.author.toLowerCase().includes(q)
-    )
-  })
-})
-
-/** ── 分页：页码分页，筛选/搜索变化回第 1 页 ── */
-const page = ref(1)
-const pageCount = computed(() => Math.max(1, Math.ceil(filtered.value.length / pageCfg.pageSize)))
-const paged = computed(() => {
-  const start = (page.value - 1) * pageCfg.pageSize
-  return filtered.value.slice(start, start + pageCfg.pageSize)
-})
-
-watch([activeAuthor, searchQuery], () => {
-  page.value = 1
-})
-/** 筛选后页数变少时，把当前页夹回有效范围 */
-watch(pageCount, (n) => {
-  if (page.value > n) page.value = n
-})
-
-/** 页码序列：1 … (c-1) c (c+1) … n，省略处用 0 占位 */
-const pageItems = computed<(number | 0)[]>(() => {
-  const n = pageCount.value
-  const c = page.value
-  if (n <= 7) return Array.from({ length: n }, (_, i) => i + 1)
-  const set = new Set([1, n, c - 1, c, c + 1].filter((p) => p >= 1 && p <= n))
-  const list = [...set].sort((a, b) => a - b)
-  const out: (number | 0)[] = []
-  for (let i = 0; i < list.length; i++) {
-    const current = list[i]!
-    const previous = i > 0 ? list[i - 1] : undefined
-    if (previous !== undefined && current - previous > 1) out.push(0)
-    out.push(current)
+const hostOf = (value: string) => {
+  try {
+    return new URL(value).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
   }
-  return out
+}
+
+const normalizeArticle = (article: ArticleInput, index: number): FcircleRecord | null => {
+  const url = safeUrl(article.link ?? article.url)
+  const title = typeof article.title === 'string' ? article.title.trim() : ''
+  if (!url || !title) return null
+  const home = safeUrl(article.home, `${new URL(url).origin}/`)
+  return {
+    id: String(article.id ?? `${url}-${index}`),
+    title,
+    url,
+    author: typeof article.author === 'string' && article.author.trim() ? article.author.trim() : hostOf(home) || '未知作者',
+    avatar: safeUrl(article.avatar),
+    home,
+    published: safeDate(article.created ?? article.published),
+    summary: typeof article.summary === 'string' ? article.summary.trim() : typeof article.description === 'string' ? article.description.trim() : '',
+    cover: safeUrl(article.cover ?? article.image) || null,
+  }
+}
+
+const localRecords = localArticles.map((article, index) => normalizeArticle(article, index)).filter((article): article is FcircleRecord => Boolean(article))
+const records = ref<FcircleRecord[]>(localRecords)
+const remoteStats = ref<Record<string, unknown> | null>(null)
+const remoteState = ref<'local' | 'loading' | 'remote'>('local')
+
+const query = ref('')
+const selectedSite = ref('all')
+const dateRange = ref('all')
+const sortOrder = ref<'newest' | 'oldest'>('newest')
+const visibleCount = ref(10)
+const featured = ref<FcircleRecord | null>(localRecords[0] ?? null)
+
+const formatDate = (value: string) => {
+  if (!value) return '日期未知'
+  try {
+    return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
+  } catch {
+    return value.slice(0, 10)
+  }
+}
+
+const sites = computed(() => {
+  const counts = new Map<string, number>()
+  for (const item of records.value) {
+    const site = hostOf(item.home || item.url)
+    if (site) counts.set(site, (counts.get(site) ?? 0) + 1)
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])
 })
 
-function goto(p: number) {
-  page.value = Math.min(Math.max(1, p), pageCount.value)
-}
+const filteredRecords = computed(() => {
+  const needle = query.value.trim().toLocaleLowerCase()
+  const now = Date.now()
+  const cutoff = dateRange.value === 'all' ? 0 : now - Number(dateRange.value) * 86_400_000
+  return records.value
+    .filter((item) => {
+      const site = hostOf(item.home || item.url)
+      if (selectedSite.value !== 'all' && site !== selectedSite.value) return false
+      if (cutoff && (!item.published || new Date(item.published).getTime() < cutoff)) return false
+      if (!needle) return true
+      return [item.title, item.summary, item.author, site].some((value) => value.toLocaleLowerCase().includes(needle))
+    })
+    .sort((a, b) => {
+      const left = new Date(a.published || 0).getTime()
+      const right = new Date(b.published || 0).getTime()
+      return sortOrder.value === 'newest' ? right - left : left - right
+    })
+})
 
-/** 翻页后把列表顶部滚回视口，键盘用户也不丢上下文 */
-const listTopEl = ref<HTMLElement | null>(null)
-function gotoAndScroll(p: number) {
-  goto(p)
-  nextTick(() => listTopEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
-
-/** ── 摘要展示层兜底截断 ── */
-const excerptOf = (a: FcircleArticle) => {
-  const s = a.summary
-  return s.length > pageCfg.excerptLength ? `${s.slice(0, pageCfg.excerptLength)}…` : s
-}
-
-/** ── 封面兜底：有 cover 用 cover（加载失败换全站占位图）；
-      无 cover 不硬拉头像，渲染装饰带（头像水印 + 图标），见 07-fcircle.md ── */
-const failedCovers = reactive(new Set<string>())
-const coverSrcOf = (a: FcircleArticle) =>
-  failedCovers.has(a.id) ? fallbackCover : (a.cover ?? undefined)
-const onCoverError = (a: FcircleArticle) => {
-  failedCovers.add(a.id)
-}
-
-const gridVars = computed(() => ({
-  '--cols-mobile': '1',
-  '--cols-tablet': '2',
-  '--cols-desktop': String(pageCfg.desktopColumns),
+const visibleRecords = computed(() => filteredRecords.value.slice(0, visibleCount.value))
+const hasMore = computed(() => visibleRecords.value.length < filteredRecords.value.length)
+const totalAuthors = computed(() => new Set(records.value.map((item) => item.author)).size)
+const totalSites = computed(() => sites.value.length)
+const stats = computed(() => ({
+  articles: typeof remoteStats.value?.articles === 'number' ? remoteStats.value.articles : records.value.length,
+  authors: typeof remoteStats.value?.authors === 'number' ? remoteStats.value.authors : totalAuthors.value,
+  sites: typeof remoteStats.value?.sites === 'number' ? remoteStats.value.sites : totalSites.value,
 }))
+
+watch([query, selectedSite, dateRange, sortOrder], () => {
+  visibleCount.value = 10
+})
+
+function pickRandom(open = false) {
+  const pool = filteredRecords.value.length ? filteredRecords.value : records.value
+  if (!pool.length) return
+  const next = pool[Math.floor(Math.random() * pool.length)]
+  if (!next) return
+  featured.value = next
+  if (open && import.meta.client) window.open(next.url, '_blank', 'noopener,noreferrer')
+}
+
+function loadMore() {
+  visibleCount.value += 10
+}
+
+onMounted(async () => {
+  remoteState.value = 'loading'
+  try {
+    const response = await fetch('https://fcircle.518339.xyz/all.json', { headers: { Accept: 'application/json' } })
+    if (!response.ok) throw new Error(`FCLite request failed: ${response.status}`)
+    const payload = (await response.json()) as RemotePayload
+    const remoteArticles = Array.isArray(payload.article_data)
+      ? payload.article_data.map((article, index) => normalizeArticle(article, index)).filter((article): article is FcircleRecord => Boolean(article))
+      : []
+    if (remoteArticles.length) {
+      records.value = remoteArticles
+      featured.value = remoteArticles[0] ?? null
+      remoteStats.value = payload.statistical_data ?? null
+      remoteState.value = 'remote'
+    } else {
+      remoteState.value = 'local'
+    }
+  } catch {
+    remoteState.value = 'local'
+  }
+})
 </script>
 
 <template>
-  <div class="page-fcircle">
+  <main class="page-fcircle">
     <div class="container">
       <SiteBreadcrumb />
-      <!-- ── 页头 ── -->
       <header class="page-head">
-        <h1 class="page-title">{{ ui.pages.fcircle }}</h1>
-        <p class="page-sub">
-          {{ t(ui.fcircle.subtitle, { n: authors.length, m: articles.length }) }}
-        </p>
+        <div>
+          <p class="eyebrow">FRIEND CIRCLE / {{ remoteState === 'remote' ? 'LIVE' : 'LOCAL' }}</p>
+          <h1 class="page-title">{{ ui.pages.fcircle }}</h1>
+          <p class="page-sub">来自 {{ stats.authors }} 位作者、{{ stats.sites }} 个站点的更新，安静地汇成一条时间线。</p>
+        </div>
+        <dl class="stats" aria-label="朋友圈统计">
+          <div><dt>文章</dt><dd>{{ stats.articles }}</dd></div>
+          <div><dt>作者</dt><dd>{{ stats.authors }}</dd></div>
+          <div><dt>站点</dt><dd>{{ stats.sites }}</dd></div>
+        </dl>
       </header>
 
-      <!-- ── 工具栏：搜索 + 作者筛选 ── -->
-      <div class="toolbar">
-        <div class="search-box">
-          <Icon name="tabler:search" class="search-icon" aria-hidden="true" />
-          <input
-            v-model="searchInput"
-            type="search"
-            class="search-input"
-            :placeholder="ui.fcircle.searchPlaceholder"
-            :aria-label="ui.fcircle.searchAria"
-          />
+      <section v-if="featured" class="featured" aria-labelledby="featured-title">
+        <div class="featured-copy">
+          <p class="eyebrow">随机 dispatch</p>
+          <h2 id="featured-title"><a :href="featured.url" target="_blank" rel="noopener noreferrer">{{ featured.title }}</a></h2>
+          <p class="featured-meta">{{ featured.author }} · {{ formatDate(featured.published) }}</p>
+          <p v-if="featured.summary" class="featured-summary">{{ featured.summary }}</p>
+          <div class="featured-actions">
+            <a class="button button-primary" :href="featured.url" target="_blank" rel="noopener noreferrer">阅读原文</a>
+            <button class="button" type="button" @click="pickRandom">再来亿点</button>
+          </div>
         </div>
+        <img v-if="featured.cover" class="featured-cover" :src="featured.cover" :alt="featured.title" referrerpolicy="no-referrer" loading="lazy" />
+      </section>
 
-        <nav class="author-filter" :aria-label="ui.fcircle.filterLabel">
-          <button
-            type="button"
-            class="chip"
-            :class="{ 'is-active': activeAuthor === null }"
-            @click="activeAuthor = null"
-          >
-            {{ ui.fcircle.filterAll }}
-          </button>
-          <button
-            v-for="author in authors"
-            :key="author.name"
-            type="button"
-            class="chip chip-author"
-            :class="{ 'is-active': activeAuthor === author.name }"
-            @click="activeAuthor = activeAuthor === author.name ? null : author.name"
-          >
-            <img
-              :src="author.avatar"
-              :alt="t(ui.fcircle.avatarAlt, { name: author.name })"
-              class="chip-avatar"
-              width="20"
-              height="20"
-              loading="lazy"
-              decoding="async"
-              referrerpolicy="no-referrer"
-            />
-            <span class="chip-name">{{ author.name }}</span>
-            <span class="chip-count">{{ author.count }}</span>
-          </button>
-        </nav>
-      </div>
+      <section class="filters" aria-label="筛选朋友圈">
+        <label class="search-field"><span class="sr-only">搜索文章</span><Icon name="tabler:search" aria-hidden="true" /><input v-model="query" type="search" placeholder="搜索标题、作者或站点" /></label>
+        <label><span class="sr-only">站点</span><select v-model="selectedSite"><option value="all">全部站点</option><option v-for="([site, count]) in sites" :key="site" :value="site">{{ site }} ({{ count }})</option></select></label>
+        <label><span class="sr-only">时间范围</span><select v-model="dateRange"><option value="all">全部时间</option><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="90">近 90 天</option><option value="365">近一年</option></select></label>
+        <label><span class="sr-only">排序</span><select v-model="sortOrder"><option value="newest">最新发布</option><option value="oldest">最早发布</option></select></label>
+      </section>
 
-      <!-- ── 状态行 + 卡片流 ── -->
-      <div ref="listTopEl" class="list-top" aria-hidden="true" />
-      <p class="list-status" role="status">
-        {{ t(ui.fcircle.status, { total: filtered.length, page, pages: pageCount }) }}
-      </p>
-
-      <ul v-if="paged.length > 0" class="card-grid" :style="gridVars">
-        <li v-for="a in paged" :key="a.id" class="card-cell">
-          <article class="fc-card">
-            <a :href="a.url" class="card-cover-link" target="_blank" rel="noopener noreferrer">
-              <span class="card-cover">
-                <img
-                  v-if="a.cover"
-                  :src="coverSrcOf(a)"
-                  :alt="t(ui.fcircle.coverAlt, { title: a.title })"
-                  class="cover-img"
-                  loading="lazy"
-                  decoding="async"
-                  referrerpolicy="no-referrer"
-                  @error="onCoverError(a)"
-                />
-                <span v-else class="cover-empty" aria-hidden="true">
-                  <span
-                    class="cover-watermark"
-                    :style="{ backgroundImage: `url(${a.avatar})` }"
-                  />
-                  <Icon name="tabler:newspaper" class="cover-icon" />
-                </span>
-              </span>
-            </a>
-            <div class="card-body">
-              <h3 class="card-title">
-                <a :href="a.url" class="card-title-link" target="_blank" rel="noopener noreferrer">
-                  {{ a.title }}
-                </a>
-              </h3>
-              <p class="card-excerpt">{{ excerptOf(a) }}</p>
-              <div class="card-meta">
-                <a :href="a.home" class="meta-author" target="_blank" rel="noopener noreferrer">
-                  <img
-                    :src="a.avatar"
-                    :alt="t(ui.fcircle.avatarAlt, { name: a.author })"
-                    class="meta-avatar"
-                    width="22"
-                    height="22"
-                    loading="lazy"
-                    decoding="async"
-                    referrerpolicy="no-referrer"
-                  />
-                  <span class="meta-name">{{ a.author }}</span>
-                </a>
-                <time class="meta-date" :datetime="iso(a.published)">{{ iso(a.published) }}</time>
+      <div class="timeline-layout">
+        <section class="timeline" aria-label="文章时间线">
+          <p class="list-status" role="status">显示 {{ visibleRecords.length }} / {{ filteredRecords.length }} 篇文章</p>
+          <div v-if="visibleRecords.length" class="timeline-list">
+            <article v-for="item in visibleRecords" :key="item.id" class="timeline-item">
+              <div class="timeline-dot" aria-hidden="true" />
+              <div class="timeline-content">
+                <div class="item-meta">
+                  <a :href="item.home || item.url" target="_blank" rel="noopener noreferrer" class="author"><img v-if="item.avatar" :src="item.avatar" :alt="`${item.author} avatar`" referrerpolicy="no-referrer" loading="lazy" /><span>{{ item.author }}</span></a>
+                  <time :datetime="item.published">{{ formatDate(item.published) }}</time>
+                  <span v-if="hostOf(item.home || item.url)" class="site">{{ hostOf(item.home || item.url) }}</span>
+                </div>
+                <h2><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h2>
+                <p v-if="item.summary" class="summary">{{ item.summary }}</p>
+                <img v-if="item.cover" class="item-cover" :src="item.cover" :alt="`${item.title} cover`" referrerpolicy="no-referrer" loading="lazy" />
+                <a class="source-link" :href="item.url" target="_blank" rel="noopener noreferrer">打开原文 <Icon name="tabler:arrow-up-right" aria-hidden="true" /></a>
               </div>
-            </div>
-          </article>
-        </li>
-      </ul>
-
-      <!-- ── 空态：全站无数据 / 筛选无结果 ── -->
-      <div v-else class="empty">
-        <Icon name="tabler:rss-off" class="empty-icon" aria-hidden="true" />
-        <p>{{ articles.length === 0 ? ui.fcircle.empty : ui.fcircle.emptyFiltered }}</p>
+            </article>
+          </div>
+          <div v-else class="empty" role="status">没有匹配的文章，换个关键词试试。</div>
+          <button v-if="hasMore" class="load-more" type="button" @click="loadMore">加载更多</button>
+        </section>
+        <aside class="now-rail" aria-label="当前筛选状态">
+          <p class="eyebrow">NOW</p>
+          <p>{{ filteredRecords.length ? `正在浏览 ${filteredRecords.length} 条更新。` : '暂无符合条件的更新。' }}</p>
+          <button type="button" class="rail-random" @click="pickRandom(true)">随机打开一篇</button>
+        </aside>
       </div>
-
-      <!-- ── 页码分页 ── -->
-      <nav v-if="pageCount > 1" class="pager" :aria-label="ui.fcircle.pagerAria">
-        <button
-          type="button"
-          class="pager-btn"
-          :disabled="page === 1"
-          :aria-label="ui.fcircle.prevPage"
-          @click="gotoAndScroll(page - 1)"
-        >
-          <Icon name="tabler:chevron-left" aria-hidden="true" />
-        </button>
-        <template v-for="(item, i) in pageItems" :key="`${item}-${i}`">
-          <span v-if="item === 0" class="pager-ellipsis" aria-hidden="true">…</span>
-          <button
-            v-else
-            type="button"
-            class="pager-btn pager-num"
-            :class="{ 'is-current': item === page }"
-            :aria-label="t(ui.fcircle.pageAria, { n: item })"
-            :aria-current="item === page ? 'page' : undefined"
-            @click="gotoAndScroll(item)"
-          >
-            {{ item }}
-          </button>
-        </template>
-        <button
-          type="button"
-          class="pager-btn"
-          :disabled="page === pageCount"
-          :aria-label="ui.fcircle.nextPage"
-          @click="gotoAndScroll(page + 1)"
-        >
-          <Icon name="tabler:chevron-right" aria-hidden="true" />
-        </button>
-      </nav>
-
-      <p class="source-note">{{ ui.fcircle.dataSourceNote }}</p>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
-.page-fcircle {
-  padding-block: var(--space-section) var(--space-block);
+.page-fcircle { padding-block: var(--space-section) var(--space-block); }
+.container { max-width: var(--wide-max-width); margin-inline: auto; padding-inline: var(--space-gutter); }
+.page-head { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin: 2rem 0 2.5rem; }
+.eyebrow { margin: 0 0 .5rem; color: var(--muted-foreground); font: .7rem/1.2 var(--font-mono); letter-spacing: .08em; }
+.page-title { margin: 0; font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: -.03em; }
+.page-sub { max-width: 42rem; margin: .75rem 0 0; color: var(--muted-foreground); }
+.stats { display: flex; gap: 1.25rem; margin: 0; }
+.stats div { min-width: 4.5rem; padding-left: .75rem; border-left: 1px solid var(--border); }
+.stats dt { color: var(--muted-foreground); font-size: .75rem; }
+.stats dd { margin: .2rem 0 0; color: var(--foreground); font: 1.25rem var(--font-mono); }
+.featured { display: grid; grid-template-columns: 1fr minmax(12rem, 24rem); gap: 1.5rem; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); }
+.featured h2 { margin: 0; max-width: 38rem; font-size: clamp(1.35rem, 3vw, 2rem); line-height: 1.25; }
+.featured h2 a:hover, .timeline h2 a:hover { color: var(--accent); }
+.featured-meta, .featured-summary { color: var(--muted-foreground); }
+.featured-cover { width: 100%; height: 100%; min-height: 10rem; max-height: 15rem; object-fit: cover; border-radius: calc(var(--radius) / 2); }
+.featured-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
+.button, .load-more, .rail-random { display: inline-flex; align-items: center; justify-content: center; min-height: 2.4rem; padding: .5rem .9rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); color: var(--foreground); background: var(--muted); cursor: pointer; }
+.button-primary { border-color: var(--accent); color: var(--background); background: var(--accent); }
+.filters { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.75rem; }
+.filters label { display: flex; align-items: center; }
+.search-field { flex: 1 1 18rem; gap: .5rem; padding: 0 .75rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); background: var(--muted); }
+.search-field input, .filters select { min-height: 2.4rem; border: 0; outline: 0; color: var(--foreground); background: transparent; }
+.filters select { padding: 0 .65rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); background-color: var(--muted); }
+.timeline-layout { display: grid; grid-template-columns: minmax(0, 1fr) 14rem; gap: 3rem; }
+.timeline { min-width: 0; }
+.list-status { margin: 0 0 1rem; color: var(--muted-foreground); font: .75rem var(--font-mono); }
+.timeline-list { position: relative; }
+.timeline-list::before { content: ''; position: absolute; inset: .4rem auto 0 .45rem; width: 1px; background: var(--border); }
+.timeline-item { position: relative; display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 1rem; padding-bottom: 2rem; }
+.timeline-dot { width: .6rem; height: .6rem; margin-top: .35rem; border: 2px solid var(--accent); border-radius: 50%; background: var(--background); z-index: 1; }
+.item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; color: var(--muted-foreground); font-size: .75rem; }
+.author { display: inline-flex; align-items: center; gap: .4rem; color: var(--foreground); }
+.author img { width: 1.5rem; height: 1.5rem; border-radius: 50%; object-fit: cover; background: var(--muted); }
+.item-meta time { font-family: var(--font-mono); }
+.site { padding-left: .75rem; border-left: 1px solid var(--border); }
+.timeline h2 { margin: .5rem 0; font-size: clamp(1.1rem, 2vw, 1.4rem); line-height: 1.35; }
+.summary { max-width: 48rem; margin: 0; color: var(--muted-foreground); line-height: 1.7; }
+.item-cover { width: min(100%, 30rem); max-height: 12rem; margin-top: .75rem; object-fit: cover; border-radius: calc(var(--radius) / 2); }
+.source-link { display: inline-flex; align-items: center; gap: .25rem; margin-top: .8rem; color: var(--accent); font-size: .8rem; }
+.load-more { display: block; margin: .5rem auto 0; }
+.now-rail { align-self: start; padding-top: 1.8rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: .85rem; line-height: 1.7; }
+.rail-random { margin-top: .75rem; color: var(--accent); }
+.empty { padding: 3rem 1rem; color: var(--muted-foreground); text-align: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+:where(a, button, input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .page-head, .timeline-layout { display: block; }
+  .stats { margin-top: 1.25rem; }
+  .now-rail { margin-top: 2rem; }
+  .featured { grid-template-columns: 1fr; padding: 1rem; }
+  .featured-cover { max-height: 12rem; }
+  .filters label:not(.search-field) { flex: 1 1 8rem; }
+  .filters select { width: 100%; }
 }
-
-.container {
-  max-width: var(--wide-max-width);
-  margin-inline: auto;
-  padding-inline: var(--space-gutter);
-}
-
-.page-head {
-  margin-bottom: var(--space-block);
-}
-
-.page-title {
-  font-size: var(--fs-h1);
-  line-height: var(--lh-h1);
-  font-weight: var(--fw-h1);
-  letter-spacing: -0.02em;
-}
-
-.page-sub {
-  margin-top: 0.375rem;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
-
-/* ── 工具栏：搜索框 + 作者 chips，窄屏纵向堆叠 ── */
-.toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.875rem;
-  width: 1rem;
-  height: 1rem;
-  color: var(--muted-foreground);
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.625rem 1rem 0.625rem 2.5rem;
-  font-size: var(--fs-meta);
-  color: var(--foreground);
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 2);
-  outline: none;
-  transition:
-    border-color var(--duration-base) var(--easing-base),
-    background-color var(--duration-base) var(--easing-base);
-}
-
-.search-input::placeholder {
-  color: var(--muted-foreground);
-}
-
-.search-input:focus-visible {
-  border-color: var(--accent);
-  background-color: var(--card);
-}
-
-/* 作者筛选：横向滚动条，移动端滑得动 */
-.author-filter {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-  scrollbar-width: none;
-}
-
-.author-filter::-webkit-scrollbar {
-  display: none;
-}
-
-.chip {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-base);
-  cursor: pointer;
-  transition:
-    color var(--duration-base) var(--easing-base),
-    border-color var(--duration-base) var(--easing-base),
-    background-color var(--duration-base) var(--easing-base);
-}
-
-.chip:hover {
-  color: var(--foreground);
-  border-color: var(--accent);
-}
-
-.chip.is-active {
-  color: var(--accent);
-  border-color: var(--accent);
-  background-color: color-mix(in srgb, var(--accent) 8%, var(--card));
-}
-
-.chip-avatar {
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: var(--muted);
-}
-
-.chip-name {
-  max-width: 8em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chip-count {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── 状态行：mono 数字，读屏可感知筛选结果变化 ── */
-.list-top {
-  scroll-margin-top: 5rem;
-}
-
-.list-status {
-  margin-bottom: 1rem;
-  font-size: var(--fs-meta);
-  font-family: var(--font-mono);
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── 卡片流：1/2/3 列，16:9 封面卡 ── */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--cols-mobile, 1), minmax(0, 1fr));
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .card-grid {
-    grid-template-columns: repeat(var(--cols-tablet, 2), minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .card-grid {
-    grid-template-columns: repeat(var(--cols-desktop, 3), minmax(0, 1fr));
-  }
-}
-
-.fc-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 2);
-  transition: background-color var(--duration-base) var(--easing-base);
-}
-
-.fc-card:hover {
-  background-color: color-mix(in srgb, var(--muted) 85%, var(--foreground));
-}
-
-.card-cover-link {
-  display: block;
-}
-
-.card-cover {
-  display: block;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background-color: var(--muted);
-}
-
-.cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform var(--duration-slow) var(--easing-base);
-}
-
-/* 无封面装饰带：头像低透明水印 + 图标，不做拉伸填充 */
-.cover-empty {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.cover-watermark {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.12;
-  mask-image: radial-gradient(circle at 30% 40%, black 0%, transparent 75%);
-  -webkit-mask-image: radial-gradient(circle at 30% 40%, black 0%, transparent 75%);
-  pointer-events: none;
-}
-
-.cover-icon {
-  width: 2rem;
-  height: 2rem;
-  color: var(--muted-foreground);
-  opacity: 0.55;
-}
-
-.fc-card:hover .cover-img {
-  transform: scale(1.03);
-}
-
-.card-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.875rem 1rem 1rem;
-}
-
-.card-title {
-  font-size: var(--fs-meta);
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.card-title-link {
-  color: inherit;
-  transition: color var(--duration-base) var(--easing-base);
-}
-
-.card-title-link:hover {
-  color: var(--accent);
-}
-
-.card-excerpt {
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: var(--muted-foreground);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: auto;
-  padding-top: 0.625rem;
-  border-top: 1px solid var(--border);
-}
-
-.meta-author {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4375rem;
-  min-width: 0;
-}
-
-.meta-avatar {
-  flex: none;
-  width: 1.375rem;
-  height: 1.375rem;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: var(--muted);
-}
-
-.meta-name {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--duration-base) var(--easing-base);
-}
-
-.meta-author:hover .meta-name {
-  color: var(--accent);
-}
-
-.meta-date {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── 空态 ── */
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding-block: 4rem;
-  color: var(--muted-foreground);
-}
-
-.empty-icon {
-  width: 2rem;
-  height: 2rem;
-  opacity: 0.5;
-}
-
-.empty p {
-  font-size: var(--fs-meta);
-}
-
-/* ── 页码分页 ── */
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-top: var(--space-block);
-}
-
-.pager-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.25rem;
-  height: 2.25rem;
-  padding-inline: 0.5rem;
-  font-size: var(--fs-meta);
-  font-family: var(--font-mono);
-  color: var(--muted-foreground);
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) / 2);
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-  transition:
-    color var(--duration-base) var(--easing-base),
-    border-color var(--duration-base) var(--easing-base);
-}
-
-.pager-btn:hover:not(:disabled):not(.is-current) {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.pager-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pager-btn.is-current {
-  color: var(--background);
-  background-color: var(--accent);
-  border-color: var(--accent);
-}
-
-.pager-ellipsis {
-  min-width: 1.5rem;
-  text-align: center;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
-
-.source-note {
-  margin-top: 1rem;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  text-align: center;
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 </style>
