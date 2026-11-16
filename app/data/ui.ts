@@ -569,26 +569,54 @@ export const ui = {
     modalDescAria: '待拜访站点描述',
   },
 
-  /** 友链朋友圈（数据源：fcircle.json，构建期爬取） */
+  /** 友链朋友圈（数据源：本地 fcircle.json + FCLite all.json） */
   fcircle: {
-    /** 页头副题 */
-    subtitle: '{n} 位朋友 · 近半年 {m} 篇文章',
-    searchPlaceholder: '搜索标题、摘要或作者…',
-    searchAria: '搜索朋友圈文章',
-    filterLabel: '按作者筛选',
-    filterAll: '全部',
+    /** 页头 */
+    eyebrow: '友链朋友圈 · {state}',
+    stateRemote: '实时数据',
+    stateLocal: '本地快照',
+    subtitle: '来自 {friends} 个友链、{active} 个活跃站点的更新，安静地汇成一条时间线。',
+    statsAria: '朋友圈统计',
+    statArticles: '文章',
+    statFriends: '友链',
+    statActive: '活跃',
+    statErrors: '异常',
+    /** 随机漫步 */
+    featuredEyebrow: '随机漫步',
+    featuredMeta: '{author} · {date}',
+    readOriginal: '阅读原文',
+    shuffle: '再来亿点',
+    /** 筛选 */
+    filtersAria: '筛选朋友圈',
+    searchLabel: '搜索文章',
+    searchPlaceholder: '搜索标题、作者或站点',
+    siteLabel: '站点',
+    siteAll: '全部站点',
+    rangeLabel: '时间范围',
+    rangeAll: '全部时间',
+    rangeWeek: '近 7 天',
+    rangeMonth: '近 30 天',
+    rangeQuarter: '近 90 天',
+    rangeYear: '近一年',
+    sortLabel: '排序',
+    sortNewest: '最新发布',
+    sortOldest: '最早发布',
+    /** 瀑布流 */
+    listAria: '文章瀑布流',
+    listStatus: '瀑布流 · 显示 {visible} / {total} 篇文章',
+    openSource: '打开原文',
+    loadMore: '加载更多',
+    empty: '没有匹配的文章，换个关键词试试',
+    /** 筛选状态栏 */
+    railAria: '当前筛选状态',
+    railBrowsing: '正在浏览 {n} 条更新。',
+    railNone: '暂无符合条件的更新。',
+    railRandom: '随机打开一篇',
+    /** 媒体与兜底 */
     avatarAlt: '{name} 的头像',
     coverAlt: '{title} 的封面',
-    pagerAria: '朋友圈分页',
-    prevPage: '上一页',
-    nextPage: '下一页',
-    pageAria: '第 {n} 页',
-    status: '共 {total} 篇 · 第 {page} / {pages} 页',
-    /** 空态 */
-    empty: '朋友们最近半年还没有更新',
-    emptyFiltered: '没有匹配的文章，换个关键词或作者试试',
-    /** 数据说明 */
-    dataSourceNote: '数据每天自动聚合自朋友们的 RSS 订阅源',
+    unknownAuthor: '未知作者',
+    unknownDate: '日期未知',
   },
 
   /** 热搜（数据源：hot-api.liiiu.cn，客户端拉取） */

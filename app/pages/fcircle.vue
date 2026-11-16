@@ -53,7 +53,7 @@ interface RemotePayload {
   article_data?: RemoteArticle[]
 }
 
-const { ui } = useUi()
+const { ui, t } = useUi()
 useHead({ title: ui.pages.fcircle })
 
 const localPayload = (await import('~/data/fcircle.json')).default as LocalPayload
@@ -91,7 +91,7 @@ const normalizeArticle = (article: ArticleInput, index: number): FcircleRecord |
     id: String(article.id ?? `${url}-${index}`),
     title,
     url,
-    author: typeof article.author === 'string' && article.author.trim() ? article.author.trim() : hostOf(home) || '未知作者',
+    author: typeof article.author === 'string' && article.author.trim() ? article.author.trim() : hostOf(home) || ui.fcircle.unknownAuthor,
     avatar: safeUrl(article.avatar),
     home,
     published: safeDate(article.created ?? article.published),
@@ -113,7 +113,7 @@ const visibleCount = ref(10)
 const featured = ref<FcircleRecord | null>(localRecords[0] ?? null)
 
 const formatDate = (value: string) => {
-  if (!value) return '日期未知'
+  if (!value) return ui.fcircle.unknownDate
   try {
     return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Shanghai' }).format(new Date(value))
   } catch {
@@ -212,65 +212,65 @@ onMounted(async () => {
       <SiteBreadcrumb />
       <header class="page-head">
         <div>
-          <p class="eyebrow">友链朋友圈 · {{ remoteState === 'remote' ? '实时数据' : '本地快照' }}</p>
+          <p class="eyebrow">{{ t(ui.fcircle.eyebrow, { state: remoteState === 'remote' ? ui.fcircle.stateRemote : ui.fcircle.stateLocal }) }}</p>
           <h1 class="page-title">{{ ui.pages.fcircle }}</h1>
-          <p class="page-sub">来自 {{ stats.friends }} 个友链、{{ stats.active }} 个活跃站点的更新，安静地汇成一条时间线。</p>
+          <p class="page-sub">{{ t(ui.fcircle.subtitle, { friends: stats.friends, active: stats.active }) }}</p>
         </div>
-        <dl class="stats" aria-label="朋友圈统计">
-          <div><dt>文章</dt><dd>{{ stats.articles }}</dd></div>
-          <div><dt>友链</dt><dd>{{ stats.friends }}</dd></div>
-          <div><dt>活跃</dt><dd>{{ stats.active }}</dd></div>
-          <div class="stats-error"><dt>异常</dt><dd>{{ stats.errors }}</dd></div>
+        <dl class="stats" :aria-label="ui.fcircle.statsAria">
+          <div><dt>{{ ui.fcircle.statArticles }}</dt><dd>{{ stats.articles }}</dd></div>
+          <div><dt>{{ ui.fcircle.statFriends }}</dt><dd>{{ stats.friends }}</dd></div>
+          <div><dt>{{ ui.fcircle.statActive }}</dt><dd>{{ stats.active }}</dd></div>
+          <div class="stats-error"><dt>{{ ui.fcircle.statErrors }}</dt><dd>{{ stats.errors }}</dd></div>
         </dl>
       </header>
 
       <section v-if="featured" class="featured" aria-labelledby="featured-title">
         <div class="featured-copy">
-          <p class="eyebrow">随机漫步</p>
+          <p class="eyebrow">{{ ui.fcircle.featuredEyebrow }}</p>
           <h2 id="featured-title"><a :href="featured.url" target="_blank" rel="noopener noreferrer">{{ featured.title }}</a></h2>
-          <p class="featured-meta">{{ featured.author }} · {{ formatDate(featured.published) }}</p>
+          <p class="featured-meta">{{ t(ui.fcircle.featuredMeta, { author: featured.author, date: formatDate(featured.published) }) }}</p>
           <p v-if="featured.summary" class="featured-summary">{{ featured.summary }}</p>
           <div class="featured-actions">
-            <a class="button button-primary" :href="featured.url" target="_blank" rel="noopener noreferrer">阅读原文</a>
-            <button class="button" type="button" @click="pickRandom()">再来亿点</button>
+            <a class="button button-primary" :href="featured.url" target="_blank" rel="noopener noreferrer">{{ ui.fcircle.readOriginal }}</a>
+            <button class="button" type="button" @click="pickRandom()">{{ ui.fcircle.shuffle }}</button>
           </div>
         </div>
-        <img v-if="featured.cover" class="featured-cover" :src="featured.cover" :alt="featured.title" referrerpolicy="no-referrer" loading="lazy" />
+        <img v-if="featured.cover" class="featured-cover" :src="featured.cover" :alt="t(ui.fcircle.coverAlt, { title: featured.title })" referrerpolicy="no-referrer" loading="lazy" />
       </section>
 
-      <section class="filters" aria-label="筛选朋友圈">
-        <label class="search-field"><span class="sr-only">搜索文章</span><Icon name="tabler:search" aria-hidden="true" /><input v-model="query" type="search" placeholder="搜索标题、作者或站点" /></label>
-        <label><span class="sr-only">站点</span><select v-model="selectedSite"><option value="all">全部站点</option><option v-for="([site, count]) in sites" :key="site" :value="site">{{ site }} ({{ count }})</option></select></label>
-        <label><span class="sr-only">时间范围</span><select v-model="dateRange"><option value="all">全部时间</option><option value="7">近 7 天</option><option value="30">近 30 天</option><option value="90">近 90 天</option><option value="365">近一年</option></select></label>
-        <label><span class="sr-only">排序</span><select v-model="sortOrder"><option value="newest">最新发布</option><option value="oldest">最早发布</option></select></label>
+      <section class="filters" :aria-label="ui.fcircle.filtersAria">
+        <label class="search-field"><span class="sr-only">{{ ui.fcircle.searchLabel }}</span><Icon name="tabler:search" aria-hidden="true" /><input v-model="query" type="search" :placeholder="ui.fcircle.searchPlaceholder" /></label>
+        <label><span class="sr-only">{{ ui.fcircle.siteLabel }}</span><select v-model="selectedSite"><option value="all">{{ ui.fcircle.siteAll }}</option><option v-for="([site, count]) in sites" :key="site" :value="site">{{ site }} ({{ count }})</option></select></label>
+        <label><span class="sr-only">{{ ui.fcircle.rangeLabel }}</span><select v-model="dateRange"><option value="all">{{ ui.fcircle.rangeAll }}</option><option value="7">{{ ui.fcircle.rangeWeek }}</option><option value="30">{{ ui.fcircle.rangeMonth }}</option><option value="90">{{ ui.fcircle.rangeQuarter }}</option><option value="365">{{ ui.fcircle.rangeYear }}</option></select></label>
+        <label><span class="sr-only">{{ ui.fcircle.sortLabel }}</span><select v-model="sortOrder"><option value="newest">{{ ui.fcircle.sortNewest }}</option><option value="oldest">{{ ui.fcircle.sortOldest }}</option></select></label>
       </section>
 
       <div class="timeline-layout">
-        <section class="timeline" aria-label="文章瀑布流">
+        <section class="timeline" :aria-label="ui.fcircle.listAria">
           <div class="list-heading">
-            <p class="list-status" role="status">瀑布流 · 显示 {{ visibleRecords.length }} / {{ filteredRecords.length }} 篇文章</p>
+            <p class="list-status" role="status">{{ t(ui.fcircle.listStatus, { visible: visibleRecords.length, total: filteredRecords.length }) }}</p>
           </div>
           <div v-if="visibleRecords.length" class="waterfall-grid">
             <article v-for="item in visibleRecords" :key="item.id" class="waterfall-item">
-              <img v-if="item.cover" class="item-cover" :src="item.cover" :alt="`${item.title} cover`" referrerpolicy="no-referrer" loading="lazy" />
+              <img v-if="item.cover" class="item-cover" :src="item.cover" :alt="t(ui.fcircle.coverAlt, { title: item.title })" referrerpolicy="no-referrer" loading="lazy" />
               <div class="waterfall-content">
                 <h2><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></h2>
                 <p v-if="item.summary" class="summary">{{ item.summary }}</p>
                 <div class="item-meta">
-                  <a :href="item.home || item.url" target="_blank" rel="noopener noreferrer" class="author"><img v-if="item.avatar" :src="item.avatar" :alt="`${item.author} avatar`" referrerpolicy="no-referrer" loading="lazy" /><span>{{ item.author }}</span></a>
+                  <a :href="item.home || item.url" target="_blank" rel="noopener noreferrer" class="author"><img v-if="item.avatar" :src="item.avatar" :alt="t(ui.fcircle.avatarAlt, { name: item.author })" referrerpolicy="no-referrer" loading="lazy" /><span>{{ item.author }}</span></a>
                   <time :datetime="item.published">{{ formatDate(item.published) }}</time>
                 </div>
-                <a class="source-link" :href="item.url" target="_blank" rel="noopener noreferrer">打开原文 <Icon name="tabler:arrow-up-right" aria-hidden="true" /></a>
+                <a class="source-link" :href="item.url" target="_blank" rel="noopener noreferrer">{{ ui.fcircle.openSource }} <Icon name="tabler:arrow-up-right" aria-hidden="true" /></a>
               </div>
             </article>
           </div>
-          <div v-else class="empty" role="status">没有匹配的文章，换个关键词试试。</div>
-          <button v-if="hasMore" class="load-more" type="button" @click="loadMore">加载更多</button>
+          <div v-else class="empty" role="status">{{ ui.fcircle.empty }}</div>
+          <button v-if="hasMore" class="load-more" type="button" @click="loadMore">{{ ui.fcircle.loadMore }}</button>
         </section>
-        <aside class="now-rail" aria-label="当前筛选状态">
+        <aside class="now-rail" :aria-label="ui.fcircle.railAria">
           <p class="eyebrow">NOW</p>
-          <p>{{ filteredRecords.length ? `正在浏览 ${filteredRecords.length} 条更新。` : '暂无符合条件的更新。' }}</p>
-          <button type="button" class="rail-random" @click="pickRandom(true)">随机打开一篇</button>
+          <p>{{ filteredRecords.length ? t(ui.fcircle.railBrowsing, { n: filteredRecords.length }) : ui.fcircle.railNone }}</p>
+          <button type="button" class="rail-random" @click="pickRandom(true)">{{ ui.fcircle.railRandom }}</button>
         </aside>
       </div>
     </div>
