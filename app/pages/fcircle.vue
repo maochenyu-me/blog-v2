@@ -115,7 +115,7 @@ const featured = ref<FcircleRecord | null>(localRecords[0] ?? null)
 const formatDate = (value: string) => {
   if (!value) return '日期未知'
   try {
-    return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
+    return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Shanghai' }).format(new Date(value))
   } catch {
     return value.slice(0, 10)
   }
@@ -153,10 +153,17 @@ const visibleRecords = computed(() => filteredRecords.value.slice(0, visibleCoun
 const hasMore = computed(() => visibleRecords.value.length < filteredRecords.value.length)
 const totalAuthors = computed(() => new Set(records.value.map((item) => item.author)).size)
 const totalSites = computed(() => sites.value.length)
+const statNumber = (key: string, fallback: number) => {
+  const value = remoteStats.value?.[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
 const stats = computed(() => ({
-  articles: typeof remoteStats.value?.articles === 'number' ? remoteStats.value.articles : records.value.length,
-  authors: typeof remoteStats.value?.authors === 'number' ? remoteStats.value.authors : totalAuthors.value,
-  sites: typeof remoteStats.value?.sites === 'number' ? remoteStats.value.sites : totalSites.value,
+  articles: statNumber('article_num', records.value.length),
+  friends: statNumber('friends_num', totalSites.value),
+  active: statNumber('active_num', totalAuthors.value),
+  errors: statNumber('error_num', 0),
+  authors: totalAuthors.value,
+  sites: totalSites.value,
 }))
 
 watch([query, selectedSite, dateRange, sortOrder], () => {
@@ -205,14 +212,15 @@ onMounted(async () => {
       <SiteBreadcrumb />
       <header class="page-head">
         <div>
-          <p class="eyebrow">FRIEND CIRCLE / {{ remoteState === 'remote' ? 'LIVE' : 'LOCAL' }}</p>
+          <p class="eyebrow">友链朋友圈 · {{ remoteState === 'remote' ? '实时数据' : '本地快照' }}</p>
           <h1 class="page-title">{{ ui.pages.fcircle }}</h1>
-          <p class="page-sub">来自 {{ stats.authors }} 位作者、{{ stats.sites }} 个站点的更新，安静地汇成一条时间线。</p>
+          <p class="page-sub">来自 {{ stats.friends }} 个友链、{{ stats.active }} 个活跃站点的更新，安静地汇成一条时间线。</p>
         </div>
         <dl class="stats" aria-label="朋友圈统计">
           <div><dt>文章</dt><dd>{{ stats.articles }}</dd></div>
-          <div><dt>作者</dt><dd>{{ stats.authors }}</dd></div>
-          <div><dt>站点</dt><dd>{{ stats.sites }}</dd></div>
+          <div><dt>友链</dt><dd>{{ stats.friends }}</dd></div>
+          <div><dt>活跃</dt><dd>{{ stats.active }}</dd></div>
+          <div v-if="stats.errors" class="stats-error"><dt>异常</dt><dd>{{ stats.errors }}</dd></div>
         </dl>
       </header>
 
@@ -224,7 +232,7 @@ onMounted(async () => {
           <p v-if="featured.summary" class="featured-summary">{{ featured.summary }}</p>
           <div class="featured-actions">
             <a class="button button-primary" :href="featured.url" target="_blank" rel="noopener noreferrer">阅读原文</a>
-            <button class="button" type="button" @click="pickRandom">再来亿点</button>
+            <button class="button" type="button" @click="pickRandom()">再来亿点</button>
           </div>
         </div>
         <img v-if="featured.cover" class="featured-cover" :src="featured.cover" :alt="featured.title" referrerpolicy="no-referrer" loading="lazy" />
@@ -291,7 +299,8 @@ onMounted(async () => {
 .filters { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.75rem; }
 .filters label { display: flex; align-items: center; }
 .search-field { flex: 1 1 18rem; gap: .5rem; padding: 0 .75rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); background: var(--muted); }
-.search-field input, .filters select { min-height: 2.4rem; border: 0; outline: 0; color: var(--foreground); background: transparent; }
+.search-field input, .filters select { min-height: 2.4rem; border: 0; color: var(--foreground); background: transparent; }
+.search-field input:focus-visible, .filters select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .filters select { padding: 0 .65rem; border: 1px solid var(--border); border-radius: calc(var(--radius) / 2); background-color: var(--muted); }
 .timeline-layout { display: grid; grid-template-columns: minmax(0, 1fr) 14rem; gap: 3rem; }
 .timeline { min-width: 0; }
