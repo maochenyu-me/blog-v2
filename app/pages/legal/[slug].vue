@@ -30,7 +30,7 @@ const { data: siblings } = await useAsyncData('legal-siblings', () =>
 
 <template>
   <div v-if="page" class="page-legal">
-    <div class="legal-shell">
+    <div class="legal-shell glass-panel">
       <SiteBreadcrumb :current="page.title" />
       <h1 class="legal-title">{{ page.title }}</h1>
 
@@ -62,6 +62,8 @@ const { data: siblings } = await useAsyncData('legal-siblings', () =>
   max-width: var(--content-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
+  /* 玻璃面板的块向内边距；行向由沟槽 padding 充当（1.5rem，四周均匀） */
+  padding-block: var(--space-item);
 }
 
 .legal-title {

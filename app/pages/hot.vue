@@ -108,7 +108,7 @@ const skeletonCount = computed(() =>
     <div class="container">
       <SiteBreadcrumb />
       <!-- ── 页头 ── -->
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <h1 class="page-title">{{ ui.pages.hot }}</h1>
         <p class="page-sub">
           {{ timeText ? t(ui.hot.subtitle, { platform: activePlatform.label, time: timeText }) : activePlatform.label }}
@@ -232,6 +232,7 @@ const skeletonCount = computed(() =>
 
 .page-head {
   margin-bottom: var(--space-block);
+  padding: 1.25rem 1.5rem;
 }
 
 .page-title {

@@ -180,7 +180,7 @@ function onZoneDragOver(event: DragEvent, zone: TierZone) {
 
 <template>
   <main class="tier-page" @dragover.prevent="onZoneDragOver($event, 'pool')" @drop="onPageDrop">
-    <header class="tier-heading">
+    <header class="tier-heading glass-panel">
       <div>
         <p class="tier-kicker">LOCAL TIER STUDIO · 02</p>
         <h1>{{ text.title }}</h1>
@@ -235,7 +235,7 @@ function onZoneDragOver(event: DragEvent, zone: TierZone) {
 
 <style scoped>
 .tier-page { --tier-line:var(--border); --tier-muted:var(--muted-foreground); max-width:1500px; margin:0 auto; padding:1.4rem clamp(1rem,2.3vw,2rem) 4rem; }
-.tier-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:1.4rem; }
+.tier-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:1.4rem; padding:1.25rem 1.5rem; }
 .tier-kicker,.pool-kicker { margin:0 0 .45rem; color:var(--accent); font:600 .67rem/1.4 var(--font-mono); letter-spacing:.13em; }
 .tier-heading h1 { margin:0; font-family:'Georgia','LXGW WenKai Lite',serif; font-size:clamp(1.9rem,3.2vw,2.7rem); font-weight:500; letter-spacing:-.04em; line-height:1.05; }
 .tier-heading p:not(.tier-kicker) { margin:.6rem 0 0; color:var(--tier-muted); font-size:var(--fs-meta); line-height:1.65; }

@@ -25,7 +25,7 @@ const stats = computed(() => t(ui.pages.gallery.pageMeta, {
   <div class="page-gallery">
     <div class="container">
       <SiteBreadcrumb />
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <h1 class="page-title">{{ ui.pages.gallery.title }}</h1>
         <p class="page-desc">{{ ui.pages.gallery.description }}</p>
         <p class="page-meta">{{ stats }}</p>
@@ -77,6 +77,7 @@ const stats = computed(() => t(ui.pages.gallery.pageMeta, {
 /* ---- 页头 ---- */
 .page-head {
   margin-bottom: var(--space-block);
+  padding: 1.25rem 1.5rem;
 }
 
 .page-title {

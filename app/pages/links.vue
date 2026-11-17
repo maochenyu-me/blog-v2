@@ -152,7 +152,7 @@ const gridVars = computed(() => ({
     <div class="container">
       <SiteBreadcrumb />
       <!-- ── 页头：标题 + 计数副题 + 随机拜访 ── -->
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <div class="page-head-text">
           <h1 class="page-title">{{ ui.pages.links }}</h1>
           <p class="page-sub">{{ t(ui.links.subtitle, { n: friendCount }) }}</p>
@@ -441,6 +441,7 @@ const gridVars = computed(() => ({
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: var(--space-block);
+  padding: 1.25rem 1.5rem;
 }
 
 .page-title {

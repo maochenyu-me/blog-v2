@@ -210,7 +210,7 @@ onMounted(async () => {
   <main class="page-fcircle">
     <div class="container">
       <SiteBreadcrumb />
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <div>
           <p class="eyebrow">{{ t(ui.fcircle.eyebrow, { state: remoteState === 'remote' ? ui.fcircle.stateRemote : ui.fcircle.stateLocal }) }}</p>
           <h1 class="page-title">{{ ui.pages.fcircle }}</h1>
@@ -280,11 +280,11 @@ onMounted(async () => {
 <style scoped>
 .page-fcircle { padding-block: var(--space-section) var(--space-block); }
 .container { max-width: var(--wide-max-width); margin-inline: auto; padding-inline: var(--space-gutter); }
-.page-head { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin: 2rem 0 2.5rem; }
+.page-head { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin: 2rem 0 2.5rem; padding: 1.25rem 1.5rem; }
 .eyebrow { margin: 0 0 .5rem; color: var(--muted-foreground); font: .7rem/1.2 var(--font-mono); letter-spacing: .08em; }
 .page-title { margin: 0; font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: -.03em; }
 .page-sub { max-width: 42rem; margin: .75rem 0 0; color: var(--muted-foreground); }
-.stats { display: flex; gap: 1.25rem; margin: 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 1.25rem; margin: 0; }
 .stats div { min-width: 4.5rem; padding-left: .75rem; border-left: 1px solid var(--border); }
 .stats dt { color: var(--muted-foreground); font-size: .75rem; }
 .stats dd { margin: .2rem 0 0; color: var(--foreground); font: 1.25rem var(--font-mono); }

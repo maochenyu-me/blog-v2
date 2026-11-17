@@ -73,20 +73,23 @@ export default {
       light: '/images/backdrop-light.webp',
       dark: '/images/backdrop-dark.webp',
       blur: 6,
-      saturate: { light: 1.16, dark: 1.05 },
-      opacity: { light: 0.34, dark: 0.32 },
+      /** 与参考站 blog.liushen.fun 逐项对齐（运行时 getComputedStyle 实测值） */
+      saturate: { light: 1.16, dark: 1.18 },
+      opacity: { light: 0.34, dark: 0.38 },
       fade: {
         light: [
           { mix: 0.2, at: 0 },
           { mix: 0.6, at: 40 },
         ],
         /**
-         * 暗色遮罩加重（0.35→0.85 渐进）：夜空图带蓝调，压在暖炭底上
-         * 色温冲突，加大背景色混合让图只在页头露一点、蓝味快速退场。
+         * 暗色遮罩对齐参考站实测（透明@0 → 0.8@60 → 1@100 自动收底）：
+         * 参考站的思路是「图片大胆透出，可读性交给玻璃卡片」，暗色下
+         * 图片几乎全幅可见；旧值（0.35@0 → 0.85@50）把图压到只剩页头，
+         * 与参考站观感差距大，已弃。可读性由 .glass-panel 面板体系兜底。
          */
         dark: [
-          { mix: 0.35, at: 0 },
-          { mix: 0.85, at: 50 },
+          { mix: 0, at: 0 },
+          { mix: 0.8, at: 60 },
         ],
       },
     },

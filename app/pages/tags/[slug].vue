@@ -32,7 +32,7 @@ useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tagName.value 
 
 <template>
   <div class="page-tag">
-    <div class="container">
+    <div class="container glass-panel">
       <SiteBreadcrumb :current="tagName" />
       <header class="page-head">
         <NuxtLink to="/tags" class="back-link">{{ ui.collection.backToTags }}</NuxtLink>
@@ -54,6 +54,8 @@ useHead({ title: computed(() => t(ui.collection.tagTitle, { name: tagName.value 
   max-width: var(--content-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
+  /* 玻璃面板的块向内边距；行向由沟槽 padding 充当（1.5rem，四周均匀） */
+  padding-block: var(--space-item);
 }
 
 .page-head {

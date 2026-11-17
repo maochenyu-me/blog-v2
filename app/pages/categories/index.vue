@@ -9,7 +9,7 @@ useHead({ title: ui.pages.categories })
 
 <template>
   <div class="page-categories">
-    <div class="container">
+    <div class="container glass-panel">
       <SiteBreadcrumb />
       <header class="page-head">
         <h1 class="page-title">{{ ui.pages.categories }}</h1>
@@ -36,6 +36,8 @@ useHead({ title: ui.pages.categories })
   max-width: var(--content-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
+  /* 玻璃面板的块向内边距；行向由沟槽 padding 充当（1.5rem，四周均匀） */
+  padding-block: var(--space-item);
 }
 
 .page-head {

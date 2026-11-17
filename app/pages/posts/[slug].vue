@@ -99,7 +99,7 @@ useHead({
 <template>
   <div v-if="post" class="page-post">
     <div class="post-shell">
-      <article class="post-article">
+      <article class="post-article glass-panel">
         <!-- 面包屑放在 article 内：≥1280px 时 post-shell 是「正文 + 目录」两列 grid，
              作为独立 grid item 会抢占列位、打乱 article/aside 的自动放置 -->
         <SiteBreadcrumb :current="title" back />
@@ -165,11 +165,12 @@ useHead({
       </article>
 
       <!-- 桌面端目录旁栏，挂在正文右侧沟槽外（<1280px 时目录在顶栏按钮里）；
-           相关文章挂在目录下方，与目录同组吸顶常驻 -->
+           目录与相关文章是两块完全独立的玻璃卡（与参考站一致）：无共享滚动条，
+           整组随页面吸附（参考站同为 sticky 列 + 无内滚，超高内容截断于折叠线下） -->
       <aside class="post-aside">
         <div class="aside-toc">
-          <ProseToc />
-          <PostRelated :items="related ?? []" stacked />
+          <ProseToc class="aside-panel glass-panel" />
+          <PostRelated class="aside-panel glass-panel" :items="related ?? []" stacked />
         </div>
       </aside>
     </div>
@@ -199,6 +200,16 @@ useHead({
   max-width: var(--content-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
+}
+
+/*
+ * 文章玻璃面板（LiuShen 式 backdrop 的可读性配套）。
+ * 玻璃配方在全局 .glass-panel（main.css），这里只补内边距；
+ * 内部卡片（头卡 / AI 摘要 / 页脚 / 上下篇）保持各自的实色
+ * --card 背景，形成「玻璃底 + 实色卡」的嵌套层次。
+ */
+.post-article {
+  padding: var(--space-item);
 }
 
 /* 目录旁栏默认隐藏，≥1280px 才挂到右侧沟槽（见文件末尾） */
@@ -271,7 +282,9 @@ useHead({
     display: grid;
     grid-template-columns: minmax(0, var(--content-max-width)) var(--toc-width);
     gap: var(--toc-gap);
-    max-width: calc(var(--content-max-width) + var(--toc-width) + var(--toc-gap));
+    /* 列宽补偿玻璃面板左右 padding（--space-item 各 1 份）：
+       正文文字行宽保持面板化之前的 ≈764px，不因加底板而变窄 */
+    max-width: calc(var(--content-max-width) + var(--space-item) * 2 + var(--toc-width) + var(--toc-gap));
     /* 正文仍在原位置，目录挂在右侧沟槽外 */
     justify-content: start;
     /* aside 拉伸到与正文列等高：给内部 sticky toc 留出滑动区间 */
@@ -281,7 +294,9 @@ useHead({
   /*
    * sticky 挂在 aside 内部的 toc wrapper 上：aside 被 stretch 成正文列等高
    * （grid area 高度），wrapper 才有完整滑动区间；相关文章在 wrapper 下方
-   * 随页面正常流动，不参与吸顶。
+   * 随页面正常流动，不参与吸顶。玻璃面板挂在 wrapper（align-self:start），
+   * 高度紧贴目录+相关文章的内容，不会随 aside 被拉伸成通高空玻璃柱。
+   * wrapper 与正文面板同一套玻璃语言，隔缝相望，风格一致。
    */
   .post-aside {
     display: flex;
@@ -290,22 +305,36 @@ useHead({
     min-width: 0;
   }
 
+  /*
+   * aside-toc 是参考站同款的「sticky 列」：只负责整组吸附（top 与参考站同为
+   * 头高 + 一个让位），不设 max-height、不做内部滚动 —— 目录卡与相关卡是
+   * 两块完全独立的玻璃面板，之间没有共享滚动条（参考站实测行为：列总高
+   * 超过视口时，底部内容随吸附截断在折叠线以下，站方接受此取舍）。
+   */
   .aside-toc {
     display: flex;
     flex-direction: column;
-    gap: var(--space-item);
+    gap: 1rem;
     position: sticky;
     top: calc(var(--header-height) + var(--toc-sticky-offset));
     align-self: start;
-    /* 目录 + 相关高于视口时内部滚动，上下各留一个 stickyOffset */
-    max-height: calc(100dvh - var(--header-height) - var(--toc-sticky-offset) * 2);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  }
+
+  .aside-panel {
+    padding: 1.25rem 1rem;
   }
 
   /* 桌面端相关文章由旁栏实例接管，正文列里的移动端实例隐藏 */
   .related-inline {
     display: none;
+  }
+}
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 767px) {
+  /* 窄屏玻璃面板收小 padding，把宽度还给正文（每行字数不再缩水） */
+  .post-article {
+    padding: 1.25rem 1rem;
   }
 }
 

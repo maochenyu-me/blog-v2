@@ -51,7 +51,7 @@ useSeoMeta({
     <div class="container">
       <SiteBreadcrumb />
 
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <div class="page-heading">
           <p class="page-kicker"><span class="kicker-line" />{{ equipmentConfig.title }}</p>
           <h1 class="page-title">{{ equipmentConfig.englishTitle }}<span class="title-period">.</span></h1>
@@ -209,6 +209,7 @@ useSeoMeta({
   justify-content: space-between;
   gap: 2rem;
   margin: 2.25rem 0 2rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .page-kicker,

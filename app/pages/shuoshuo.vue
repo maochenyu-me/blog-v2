@@ -105,7 +105,7 @@ const listEl = ref<HTMLElement | null>(null)
   <div class="page-shuoshuo">
     <div class="container">
       <SiteBreadcrumb />
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <div class="page-head-text">
           <h1 class="page-title">{{ ui.pages.shuoshuo }}</h1>
           <p class="page-sub">{{ t(ui.shuoshuo.subtitle, { n: total }) }}</p>
@@ -213,6 +213,7 @@ const listEl = ref<HTMLElement | null>(null)
 
 .page-head {
   margin-bottom: var(--space-block);
+  padding: 1.25rem 1.5rem;
 }
 
 .page-title {

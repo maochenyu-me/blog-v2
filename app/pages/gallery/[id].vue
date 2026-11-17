@@ -41,7 +41,7 @@ function closeLightbox() {
   <div class="page-gallery-folder">
     <div class="container">
       <SiteBreadcrumb :current="folder?.name" />
-      <header class="page-head">
+      <header class="page-head glass-panel">
         <NuxtLink to="/gallery" class="back-link">
           <Icon name="tabler:chevron-left" aria-hidden="true" />
           {{ ui.pages.gallery.backToFolders }}
@@ -102,6 +102,7 @@ function closeLightbox() {
 /* ---- 页头 ---- */
 .page-head {
   margin-bottom: var(--space-block);
+  padding: 1.25rem 1.5rem;
 }
 
 .back-link {
