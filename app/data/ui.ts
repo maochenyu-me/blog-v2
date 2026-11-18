@@ -577,6 +577,7 @@ export const ui = {
     modalCloseAria: '关闭随机拜访',
     modalDescAria: '待拜访站点描述',
     /** 友链魔方（复刻 Demius rubiks-friends） */
+    rubiksEyebrow: 'FRIEND LINKS / RANDOM ENCOUNTER',
     rubiksTitle: '复原一面，遇见一个站点',
     rubiksDesc: '魔方会先随机打乱，再按相反步骤逐层复原。每次完成后，留下一个新的友链预览。',
     rubiksCubeAria: '由友链站点截图拼成的三阶魔方，会自动打乱并复原',

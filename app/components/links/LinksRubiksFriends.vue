@@ -325,6 +325,7 @@ function onPreviewImgError(e: Event) {
   >
     <div class="rubiks-feature">
       <div class="rubiks-heading">
+        <p class="rubiks-eyebrow">{{ ui.links.rubiksEyebrow }}</p>
         <h2 id="rubiks-title" class="rubiks-title">{{ ui.links.rubiksTitle }}</h2>
         <p class="rubiks-desc">{{ ui.links.rubiksDesc }}</p>
       </div>
@@ -339,6 +340,7 @@ function onPreviewImgError(e: Event) {
       >
         <span class="rubiks-preview-media">
           <img
+            :key="current.url"
             :src="stickerSrc(current)"
             :alt="`${current.name} 首页预览`"
             loading="lazy"
@@ -411,7 +413,7 @@ function onPreviewImgError(e: Event) {
   grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr);
   align-items: center;
   gap: clamp(1.8rem, 5vw, 4.5rem);
-  margin: 0.25rem 0 2.5rem;
+  margin: 0 0 2.5rem;
   padding: clamp(1.2rem, 3vw, 2.1rem);
   overflow: hidden;
 }
@@ -422,19 +424,30 @@ function onPreviewImgError(e: Event) {
   min-width: 0;
 }
 
-.rubiks-title {
+/* 眉标：mono 大写 + 强调色（同 music.css .room-eyebrow 的站内惯用法） */
+.rubiks-eyebrow {
   margin: 0;
-  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1.5;
+}
+
+.rubiks-title {
+  margin: 0.42rem 0 0.58rem;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
   text-wrap: balance;
 }
 
 .rubiks-desc {
   max-width: 37rem;
-  margin: 0.5rem 0 0;
-  font-size: var(--fs-meta);
+  margin: 0;
+  font-size: 0.82rem;
   line-height: 1.75;
   color: var(--muted-foreground);
 }
@@ -453,7 +466,7 @@ function onPreviewImgError(e: Event) {
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: calc(var(--radius) / 2);
+  border-radius: 0.38rem;
   background-color: var(--muted);
 }
 
@@ -471,7 +484,19 @@ function onPreviewImgError(e: Event) {
   height: 100%;
   object-fit: cover;
   object-position: top center;
+  /* 换友链时重新挂载（:key），淡入对齐参考站的 is-changing 过渡 */
+  animation: rubiks-preview-in 0.45s ease;
   transition: opacity 0.22s, transform 0.45s;
+}
+
+@keyframes rubiks-preview-in {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .rubiks-preview:hover .rubiks-preview-media img {
@@ -589,10 +614,11 @@ function onPreviewImgError(e: Event) {
    * translateZ(cubie-half) 贴到 cubie 表面，魔方才是「实心」的。
    * 参考站用了 cube-size/2，贴纸面悬在体外 98px——暗色贴纸看不出来，
    * 我们明色贴纸 + 明色页面会透底，视觉上就是贴纸散架。这里修正。
-   * 本站友链容器（1000px）比参考站窄，右栏 ~410px；
-   * 3D 投影约占元素宽的 1.35 倍，取 17.5rem 上限保证打乱到对角位也不压文字。
+   * 本站友链容器（1000px）比参考站窄，右栏 ~400px；
+   * 参考站桌面为 clamp(12rem, 23vw, 18.5rem)，元素宽 cube*1.32 ≈ 391px 恰好放得下，
+   * 沿用参考值；越界投影由区块 overflow:hidden 兜底（与参考站同策略）。
    */
-  --cube-size: clamp(12rem, 21vw, 17.5rem);
+  --cube-size: clamp(12rem, 23vw, 18.5rem);
   --cubie-size: calc(var(--cube-size) / 3);
   --cubie-step: calc(var(--cubie-size) + 2px);
   --cubie-half: calc(var(--cubie-size) / 2);
@@ -671,6 +697,15 @@ function onPreviewImgError(e: Event) {
   background-position: var(--tile-x) var(--tile-y);
   background-size: 300% 300%;
   box-shadow: inset 0 0 0 1px rgb(9 13 17 / 0.16);
+  transition: background-image 0.18s;
+}
+
+/* 参考站在贴纸上叠的极淡暖色，压掉纯白截图的生硬感 */
+.rubiks-sticker::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(239 105 78 / 0.04);
 }
 
 /* ---------- 多端 / 降级 ---------- */
@@ -684,8 +719,8 @@ function onPreviewImgError(e: Event) {
   /*
    * 3D 投影不受元素盒约束（打乱到对角位时视觉宽度可达元素宽 ~1.9 倍），
    * 窄屏上会盖住上下内容。stage 裁掉越界部分：旋转中的 cubie 被裁一瞬
-   * 不可察觉，换来的是魔方永不入侵预览卡/标题区（桌面端两栏有整列余量，
-   * 不需要裁）。
+   * 不可察觉，换来的是魔方永不入侵预览卡/标题区（参考站靠区块级
+   * overflow:hidden 兜底，这里是同一策略的更紧版本）。
    */
   .rubiks-stage {
     overflow: hidden;
@@ -693,7 +728,8 @@ function onPreviewImgError(e: Event) {
   }
 
   .rubiks-cube {
-    --cube-size: clamp(9.5rem, 46vw, 13.5rem);
+    /* 参考站移动端为 clamp(11.5rem, 57vw, 16rem)，照抄 */
+    --cube-size: clamp(11.5rem, 57vw, 16rem);
     width: min(100%, calc(var(--cube-size) * 1.36));
   }
 
