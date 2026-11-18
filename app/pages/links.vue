@@ -117,12 +117,11 @@ function confirmRandom() {
   randomOpen.value = false
 }
 
-/** 模态关闭时把焦点还给触发按钮 */
-const randomBtnEl = ref<HTMLButtonElement | null>(null)
+/** 模态关闭时把焦点还给魔方组件内的触发按钮（按钮在子组件里，按 id 取） */
 const dialogEl = ref<HTMLElement | null>(null)
 function closeRandom() {
   randomOpen.value = false
-  nextTick(() => randomBtnEl.value?.focus())
+  nextTick(() => document.getElementById('rubiks-random-btn')?.focus())
 }
 
 /** 印记图例：完整 16 级，按建交天数区间划分（数据与颜色来自 links.ts） */
@@ -154,26 +153,12 @@ const gridVars = computed(() => ({
   <div class="page-links">
     <div class="container">
       <SiteBreadcrumb />
-      <!-- ── 友链魔方：随机打乱 → 反向复原，预览卡轮换友链 ── -->
-      <LinksRubiksFriends :links="cubeLinks" />
-      <!-- ── 页头：标题 + 计数副题 + 随机拜访 ── -->
-      <header class="page-head glass-panel">
-        <div class="page-head-text">
-          <h1 class="page-title">{{ ui.pages.links }}</h1>
-          <p class="page-sub">{{ t(ui.links.subtitle, { n: friendCount }) }}</p>
-        </div>
-        <button
-          v-if="pageCfg.randomVisit && friendCount > 0"
-          ref="randomBtnEl"
-          type="button"
-          class="random-btn"
-          :aria-label="ui.links.randomAria"
-          @click="pickRandom"
-        >
-          <Icon name="tabler:dice-5" aria-hidden="true" />
-          <span>{{ ui.links.randomVisit }}</span>
-        </button>
-      </header>
+      <!-- ── 友链魔方：随机打乱 → 反向复原，预览卡轮换友链；随机拜访按钮内嵌于此 ── -->
+      <LinksRubiksFriends
+        :links="cubeLinks"
+        :show-random="pageCfg.randomVisit && friendCount > 0"
+        @random="pickRandom"
+      />
 
       <!-- ── 本站信息 ‖ 申请须知（窄屏上下堆叠） ── -->
       <div class="info-grid">
@@ -438,49 +423,6 @@ const gridVars = computed(() => ({
   max-width: var(--wide-max-width);
   margin-inline: auto;
   padding-inline: var(--space-gutter);
-}
-
-.page-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: var(--space-block);
-  padding: 1.25rem 1.5rem;
-}
-
-.page-title {
-  font-size: var(--fs-h1);
-  line-height: var(--lh-h1);
-  font-weight: var(--fw-h1);
-  letter-spacing: -0.02em;
-}
-
-.page-sub {
-  margin-top: 0.375rem;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-}
-
-.random-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  flex: none;
-  font-size: var(--fs-meta);
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-base);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition:
-    color var(--duration-base) var(--easing-base),
-    border-color var(--duration-base) var(--easing-base);
-}
-
-.random-btn:hover {
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 /* ── 信息区：双栏（信息 ‖ 须知），窄屏堆叠 ── */

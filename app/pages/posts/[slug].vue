@@ -11,6 +11,21 @@ const { pagePv, pageUv, track: trackBsz } = useBusuanzi()
 const shareOpen = ref(false)
 const rewardOpen = ref(false)
 
+/**
+ * 评论区延后挂载：viewTransition 路由切换时，页面结构切换发生在
+ * startViewTransition 的同步回调里，评论 SDK 的动态 import + init
+ * 若同帧进行会与整页样式重算竞争出长任务（实测 ~72ms）。挪到转场
+ * 前两帧之后再挂载，评论区位于页面末尾，延后两帧无感知。
+ */
+const commentsMounted = ref(false)
+onMounted(() => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      commentsMounted.value = true
+    })
+  })
+})
+
 const path = computed(() => `/posts/${route.params.slug as string}`)
 
 /** 文章页计数：进入时上报一次；SPA 站内切换文章时组件复用，重新上报 */
@@ -175,8 +190,8 @@ useHead({
       </aside>
     </div>
 
-    <!-- Ecoku 评论区（仅文章页） -->
-    <EcokuComments :page-title="title" />
+    <!-- Ecoku 评论区（仅文章页；延后到转场前两帧之后挂载，见脚本注释） -->
+    <EcokuComments v-if="commentsMounted" :page-title="title" />
 
     <!-- 分享 / 打赏弹窗（Teleport 到 body） -->
     <PostShareModal

@@ -48,6 +48,7 @@ export interface VisitStatsData {
   yesterdayUv: string
   yesterdayPv: string
   lastMonthPv: string
+  totalUv: string
   totalPv: string
 }
 
@@ -207,6 +208,7 @@ export const aboutConfig = {
       yesterdayUv: '36',
       yesterdayPv: '102',
       lastMonthPv: '1,286',
+      totalUv: '1,024',
       totalPv: '4,096',
     } as VisitStatsData,
   },

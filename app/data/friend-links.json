@@ -7,7 +7,8 @@
     "rss": "https://blog.zhilu.site/atom.xml",
     "daysSince": "2025-09-03",
     "recommended": true,
-     "friendPage": "https://blog.zhilu.site/link"
+     "friendPage": "https://blog.zhilu.site/link",
+     "screenshot": "https://cdn.jsdmirror.com/gh/kmoretti/piclist-img@main/img/screenshot-zhilu.webp"
   },
   {
     "name": "CWorld Site",
@@ -17,7 +18,8 @@
     "rss": "https://cworld0.com/rss.xml",
     "daysSince": "2026-03-05",
     "recommended": true,
-    "friendPage": "https://cworld0.com/links"
+    "friendPage": "https://cworld0.com/links",
+    "screenshot": "https://jsd.268682.xyz/gh/Kemeow0815/img@main/img/screenshot-cworld0.webp"
   },
   {
     "name": "清羽飞扬",

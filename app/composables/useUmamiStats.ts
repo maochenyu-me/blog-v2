@@ -80,6 +80,7 @@ async function loadStats(): Promise<VisitStatsData | null> {
     yesterdayUv: fmt(yesterday.visitors),
     yesterdayPv: fmt(yesterday.pageviews),
     lastMonthPv: fmt(lastMonth.pageviews),
+    totalUv: fmt(total.visitors),
     totalPv: fmt(total.pageviews),
   }
 }
@@ -89,6 +90,9 @@ function readCache(): VisitStatsData | null {
     const raw = sessionStorage.getItem(CACHE_KEY)
     if (!raw) return null
     const cached = JSON.parse(raw) as { data: VisitStatsData; at: number }
+    // 校验结构：totalUv 是后加的字段，旧缓存缺它会让单项显示「暂不可用」，
+    // 这里把缺字段的旧缓存当作过期，触发重新拉取
+    if (!cached.data || typeof cached.data.totalUv !== 'string') return null
     return Date.now() - cached.at < CACHE_TTL ? cached.data : null
   } catch {
     return null

@@ -26,7 +26,12 @@ import type { FriendLink } from '~/data/links'
 const props = defineProps<{
   /** 友链数据（页面已过滤失联条目；至少 1 条才渲染） */
   links: FriendLink[]
+  /** 是否显示「随机拜访」按钮（页面按站点配置与友链数判断） */
+  showRandom?: boolean
 }>()
+
+/** 点击随机拜访：模态与抽取逻辑在页面侧，这里只冒泡 */
+const emit = defineEmits<{ random: [] }>()
 
 const { ui, t } = useUi()
 
@@ -127,6 +132,30 @@ const destroyed = ref(false)
 const inView = ref(false)
 let observer: IntersectionObserver | null = null
 
+/* 滚动让路：滚动进行中不在步骤间启动新的层旋转。
+ * 被动监听只记一个截止时间戳，不读布局、不用 scroll 值驱动动画本身。 */
+let scrollPauseUntil = 0
+let scrollClean: (() => void) | null = null
+
+/* 主题切换让路：切主题会整批重绘全站毛玻璃（backdrop-filter）并跑
+ * 圆形扩散 view transition，与魔方 27 个 cubie 的 3D 动画同帧叠加会
+ * 打穿帧率（实测 165Hz 屏上 /links 掉到 ~80fps，弱机 4x 节流近冻结）。
+ * 监听全局广播，暂停 1.2s 覆盖重绘 + 转场窗口。 */
+let themePauseUntil = 0
+const onThemeTransition = () => {
+  themePauseUntil = Date.now() + 1200
+}
+
+/* 低端设备降级：核心数少或内存小时拉长动画间隔、降低循环频率，
+ * 并去掉落地投影的大面积 blur（纯重绘开销）。 */
+const lowPower = ref(false)
+function detectLowPower(): boolean {
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  const cores = nav.hardwareConcurrency ?? 8
+  const mem = nav.deviceMemory ?? 8
+  return cores <= 4 || mem <= 2
+}
+
 type Axis = 'x' | 'y' | 'z'
 interface Move {
   axis: Axis
@@ -186,7 +215,7 @@ async function applyMove(move: Move, ms: number) {
     el.style.transition = `transform ${ms}ms cubic-bezier(.72, 0, .2, 1)`
     el.style.transform = `${rotate} ${transformOf(el)}`
   })
-  await sleep(ms + 24)
+  await sleep(ms + (lowPower.value ? 90 : 24))
   group.forEach((el) => {
     rotateCoords(el, move)
     rotationMemo.set(el, `${rotate} ${rotationMemo.get(el) ?? ''}`)
@@ -246,7 +275,13 @@ function pickNextFace(): Record<FaceName, FriendLink | undefined> {
 }
 
 async function waitVisible() {
-  while (!destroyed.value && (!inView.value || document.hidden)) {
+  while (
+    !destroyed.value &&
+    (!inView.value ||
+      document.hidden ||
+      Date.now() < scrollPauseUntil ||
+      Date.now() < themePauseUntil)
+  ) {
     await sleep(240)
   }
 }
@@ -259,6 +294,8 @@ onMounted(() => {
   cubieEls = [
     ...(rootEl.value?.querySelectorAll<HTMLElement>('.rubiks-cubie') ?? []),
   ]
+  lowPower.value = detectLowPower()
+  window.addEventListener(THEME_TRANSITION_EVENT, onThemeTransition)
   observer = new IntersectionObserver(
     ([entry]) => {
       inView.value = entry?.isIntersecting ?? false
@@ -266,13 +303,22 @@ onMounted(() => {
     { rootMargin: '120px 0px', threshold: 0.05 },
   )
   if (rootEl.value) observer.observe(rootEl.value)
+
+  const onScroll = () => {
+    scrollPauseUntil = Date.now() + 160
+  }
+  window.addEventListener('scroll', onScroll, { passive: true })
+  scrollClean = () => window.removeEventListener('scroll', onScroll)
+
   void run()
 })
 
 onBeforeUnmount(() => {
   destroyed.value = true
   observer?.disconnect()
+  scrollClean?.()
   resizeClean?.()
+  window.removeEventListener(THEME_TRANSITION_EVENT, onThemeTransition)
 })
 
 async function run() {
@@ -301,7 +347,8 @@ async function run() {
     resetLayout()
     current.value = assignments.value.front ?? null
     phase.value = 'solved'
-    await sleep(4200)
+    // 低端设备拉长静止停留，降低整轮动画的触发频率
+    await sleep(lowPower.value ? 15000 : 4200)
   }
 }
 
@@ -321,12 +368,13 @@ function onPreviewImgError(e: Event) {
     v-if="enabled"
     ref="rootEl"
     class="rubiks-friends glass-panel"
+    :class="{ 'is-low-power': lowPower }"
     aria-labelledby="rubiks-title"
   >
     <div class="rubiks-feature">
       <div class="rubiks-heading">
         <p class="rubiks-eyebrow">{{ ui.links.rubiksEyebrow }}</p>
-        <h2 id="rubiks-title" class="rubiks-title">{{ ui.links.rubiksTitle }}</h2>
+        <h1 id="rubiks-title" class="rubiks-title">{{ ui.links.rubiksTitle }}</h1>
         <p class="rubiks-desc">{{ ui.links.rubiksDesc }}</p>
       </div>
 
@@ -366,6 +414,20 @@ function onPreviewImgError(e: Event) {
           <Icon name="tabler:arrow-up-right" class="rubiks-preview-arrow" aria-hidden="true" />
         </span>
       </a>
+
+      <!-- 随机拜访：点击冒泡给页面，抽取/确认模态/焦点归还都在页面侧 -->
+      <div v-if="showRandom" class="rubiks-actions">
+        <button
+          id="rubiks-random-btn"
+          type="button"
+          class="rubiks-random-btn"
+          :aria-label="ui.links.randomAria"
+          @click="emit('random')"
+        >
+          <Icon name="tabler:dice-5" aria-hidden="true" />
+          <span>{{ ui.links.randomVisit }}</span>
+        </button>
+      </div>
     </div>
 
     <div class="rubiks-stage">
@@ -387,18 +449,21 @@ function onPreviewImgError(e: Event) {
             :data-home-z="c.z"
             :style="{ '--tx': axisCss(c.x), '--ty': axisCss(c.y), '--tz': axisCss(c.z) }"
           >
-            <span
-              v-for="face in FACES"
-              :key="face"
-              class="rubiks-cubie-face"
-              :class="`is-${face}`"
-            >
+            <!-- 中心 cubie (0,0,0) 永远被 26 个邻居包住、又不在任何外层，6 个面永不露脸，不渲染 -->
+            <template v-if="c.x !== 0 || c.y !== 0 || c.z !== 0">
               <span
-                v-if="isOnFace(c, face)"
-                class="rubiks-sticker"
-                :style="stickerStyle(c, face)"
-              />
-            </span>
+                v-for="face in FACES"
+                :key="face"
+                class="rubiks-cubie-face"
+                :class="`is-${face}`"
+              >
+                <span
+                  v-if="isOnFace(c, face)"
+                  class="rubiks-sticker"
+                  :style="stickerStyle(c, face)"
+                />
+              </span>
+            </template>
           </span>
         </div>
       </div>
@@ -422,6 +487,37 @@ function onPreviewImgError(e: Event) {
   display: grid;
   gap: 1.05rem;
   min-width: 0;
+}
+
+/* 随机拜访：预览卡下方的操作行（fixed 导航会盖住面板顶缘，故不放右上角） */
+.rubiks-actions {
+  display: flex;
+}
+
+.rubiks-random-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--fs-meta);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background: none;
+  transition:
+    color var(--duration-base) var(--easing-base),
+    border-color var(--duration-base) var(--easing-base);
+}
+
+.rubiks-random-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.rubiks-random-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* 眉标：mono 大写 + 强调色（同 music.css .room-eyebrow 的站内惯用法） */
@@ -665,7 +761,21 @@ function onPreviewImgError(e: Event) {
   transform: translate3d(var(--tx), var(--ty), var(--tz));
   transform-origin: center center 0;
   transform-style: preserve-3d;
-  will-change: transform;
+  /* 不写常驻 will-change：27 个 cubie 常驻提升会拖累整页滚动合成。
+   * transform 过渡期间浏览器会自动临时提升动画元素，静止期零提升。 */
+}
+
+/*
+ * 注：实测过「动画期给 27 个 cubie 全量 will-change: transform」，结果
+ * 净负优化——preserve-3d 场景里 27 个常驻合成层让每帧 3D 重投影/排序
+ * 更贵，/links 静置动画期从 ~131-155fps 跌到 ~78-84fps，弱机长任务
+ * 也没有改善，已回退。维持浏览器默认：transition 期间自动临时提升
+ * 动画元素，静止期零提升。
+ */
+
+/* 低端设备：落地投影的 1rem 大模糊是纯重绘开销，直接去掉 */
+.rubiks-friends.is-low-power .rubiks-cube::after {
+  filter: none;
 }
 
 .rubiks-cubie-face {
@@ -697,7 +807,6 @@ function onPreviewImgError(e: Event) {
   background-position: var(--tile-x) var(--tile-y);
   background-size: 300% 300%;
   box-shadow: inset 0 0 0 1px rgb(9 13 17 / 0.16);
-  transition: background-image 0.18s;
 }
 
 /* 参考站在贴纸上叠的极淡暖色，压掉纯白截图的生硬感 */
@@ -717,16 +826,10 @@ function onPreviewImgError(e: Event) {
   }
 
   /*
-   * 3D 投影不受元素盒约束（打乱到对角位时视觉宽度可达元素宽 ~1.9 倍），
-   * 窄屏上会盖住上下内容。stage 裁掉越界部分：旋转中的 cubie 被裁一瞬
-   * 不可察觉，换来的是魔方永不入侵预览卡/标题区（参考站靠区块级
-   * overflow:hidden 兜底，这里是同一策略的更紧版本）。
+   * 打乱中 cubie 的 3D 投影会略微超出 stage 盒（实测 ≤10px/侧，仍在区块面板内，
+   * 永不越出区块或产生页面横向滚动），与参考站一致不做 stage 级裁切——
+   * 裁了就会像被切边的贴图。
    */
-  .rubiks-stage {
-    overflow: hidden;
-    padding-block: 0.5rem;
-  }
-
   .rubiks-cube {
     /* 参考站移动端为 clamp(11.5rem, 57vw, 16rem)，照抄 */
     --cube-size: clamp(11.5rem, 57vw, 16rem);

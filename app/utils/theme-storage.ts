@@ -4,6 +4,13 @@
  */
 export const THEME_STORAGE_KEY = 'theme-mode'
 
+/**
+ * 主题切换广播事件名：切换瞬间全站 backdrop-filter 毛玻璃表面要整批重绘，
+ * 重动画区块（友链魔方等）监听它，让自己先暂停一步给重绘让路，
+ * 避免两组合成压力同帧叠加（实测 165Hz 屏上 /links 切主题会掉到 ~80fps）。
+ */
+export const THEME_TRANSITION_EVENT = 'kemiao:theme-transition'
+
 /** 生成首帧前执行的内联防 FOUC 脚本 */
 export function buildThemeInitScript(): string {
   return [

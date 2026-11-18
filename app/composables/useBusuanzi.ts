@@ -15,21 +15,38 @@
 
 const BSZ_API = 'https://bsz.518339.xyz/api'
 const BSZ_IDENTITY_KEY = 'bsz-id'
+const BSZ_DEDUPE_TTL = 10_000
+
+interface BszData {
+  site_pv: number
+  site_uv: number
+  page_pv: number
+  page_uv: number
+}
 
 interface BszResponse {
   success: boolean
-  data?: { site_pv: number; site_uv: number; page_pv: number; page_uv: number }
+  data?: BszData
 }
 
-export function useBusuanzi() {
-  const pagePv = ref<string | null>(null)
-  const pageUv = ref<string | null>(null)
-  const sitePv = ref<string | null>(null)
-  const siteUv = ref<string | null>(null)
+/**
+ * 模块级去重：同一页面地址在短窗口内只发一次计数请求。
+ * 页面组件（首页/文章页）与页脚兜底可能先后调用 track()，
+ * 不去重会让 site_pv 被重复 +1。
+ */
+let lastKey = ''
+let lastData: BszData | null = null
+let lastAt = 0
+let inflight: Promise<BszData | null> | null = null
 
-  async function track() {
+async function requestCount(): Promise<BszData | null> {
+  const key = window.location.href
+  if (key === lastKey && lastData && Date.now() - lastAt < BSZ_DEDUPE_TTL) return lastData
+  if (inflight) return await inflight
+
+  inflight = (async () => {
     try {
-      const headers: Record<string, string> = { 'x-bsz-referer': window.location.href }
+      const headers: Record<string, string> = { 'x-bsz-referer': key }
       let identity: string | null = null
       try { identity = localStorage.getItem(BSZ_IDENTITY_KEY) } catch { /* 隐私模式 */ }
       if (identity) headers.Authorization = `Bearer ${identity}`
@@ -41,13 +58,37 @@ export function useBusuanzi() {
       }
 
       const json = (await res.json()) as BszResponse
-      if (json.success && json.data) {
-        pagePv.value = json.data.page_pv.toLocaleString('zh-CN')
-        pageUv.value = json.data.page_uv.toLocaleString('zh-CN')
-        sitePv.value = json.data.site_pv.toLocaleString('zh-CN')
-        siteUv.value = json.data.site_uv.toLocaleString('zh-CN')
+      const data = json.success && json.data ? json.data : null
+      if (data) {
+        lastKey = key
+        lastData = data
+        lastAt = Date.now()
       }
-    } catch { /* 计数失败不打断页面，计数项保持隐藏 */ }
+      return data
+    } catch {
+      /* 计数失败不打断页面，计数项保持隐藏 */
+      return null
+    } finally {
+      inflight = null
+    }
+  })()
+
+  return await inflight
+}
+
+export function useBusuanzi() {
+  const pagePv = ref<string | null>(null)
+  const pageUv = ref<string | null>(null)
+  const sitePv = ref<string | null>(null)
+  const siteUv = ref<string | null>(null)
+
+  async function track() {
+    const data = await requestCount()
+    if (!data) return
+    pagePv.value = data.page_pv.toLocaleString('zh-CN')
+    pageUv.value = data.page_uv.toLocaleString('zh-CN')
+    sitePv.value = data.site_pv.toLocaleString('zh-CN')
+    siteUv.value = data.site_uv.toLocaleString('zh-CN')
   }
 
   return { pagePv, pageUv, sitePv, siteUv, track }

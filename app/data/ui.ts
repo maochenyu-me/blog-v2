@@ -33,8 +33,22 @@ export const ui = {
 
   /** 页脚 */
   footer: {
-    uptimeLabel: '小站已存活：',
-    uptimeValue: '{d} 天 {h} 时 {m} 分 {s} 秒',
+    navAria: '页脚导航',
+    navHome: '首页',
+    navFriends: '友链',
+    runtimeAria: '本站运行时间',
+    runtimeLabel: '本站已运行',
+    runtimeValue: '{d} 天 {h} 小时 {m} 分 {s} 秒',
+    trafficAria: '网站访问统计',
+    trafficTodayUv: '今日访客：',
+    trafficTodayPv: '今日访问：',
+    trafficTotalUv: '本站访客：',
+    trafficTotalPv: '本站访问：',
+    trafficLoading: '加载中...',
+    trafficUnavailable: '暂不可用',
+    stackAria: '本站使用的技术',
+    animalsAlt: '一排可爱的动物装饰',
+    poweredBy: 'Powered by',
     legalNavAria: '站点法务页面',
   },
 

@@ -58,6 +58,11 @@ export function useTheme() {
   async function setMode(next: ThemeMode, origin?: { x: number; y: number }) {
     if (!import.meta.client) return
 
+    // 广播切换意图：重动画区块（友链魔方）监听后暂停 1.2s。切主题会
+    // 整批重绘全站毛玻璃 + 跑圆形扩散转场，与魔方 27 个 cubie 的 3D
+    // 动画同帧叠加会打穿帧率（实测 /links 掉到 ~80fps，弱机更差）。
+    window.dispatchEvent(new CustomEvent(THEME_TRANSITION_EVENT))
+
     const nextDark = resolve(next)
 
     // 不支持 View Transitions 或用户偏好减少动效 → 瞬时切换
