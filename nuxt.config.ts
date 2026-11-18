@@ -45,6 +45,7 @@ export default defineNuxtConfig({
     { path: '~/components/post', pathPrefix: false },
     { path: '~/components/gallery', pathPrefix: false },
     { path: '~/components/hot', pathPrefix: false },
+    { path: '~/components/links', pathPrefix: false },
   ],
 
   // ---------- 渲染模式：纯 SSG ----------

@@ -7,6 +7,9 @@ const pageCfg = usePageConfig('links')
 const { site, feed } = useBlogConfig()
 const { friendLinks } = await import('~/data/links')
 
+/** 魔方数据源：非失联友链（组件内部再按有截图优先排序） */
+const cubeLinks = computed(() => friendLinks.filter((l) => !l.lost))
+
 useHead({ title: ui.pages.links })
 
 /** 建交天数与等级印记：SSG 期计算，客户端不重算 */
@@ -151,6 +154,8 @@ const gridVars = computed(() => ({
   <div class="page-links">
     <div class="container">
       <SiteBreadcrumb />
+      <!-- ── 友链魔方：随机打乱 → 反向复原，预览卡轮换友链 ── -->
+      <LinksRubiksFriends :links="cubeLinks" />
       <!-- ── 页头：标题 + 计数副题 + 随机拜访 ── -->
       <header class="page-head glass-panel">
         <div class="page-head-text">

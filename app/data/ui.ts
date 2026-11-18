@@ -425,7 +425,7 @@ export const ui = {
       one: '单曲循环',
       shuffle: '随机播放',
     },
-    loading: '正在取歌单…',
+    loading: '正在获取歌单…',
     loadFailed: '歌单没取回来',
     retry: '重试',
     unavailable: '这首暂时听不了，可以重试或切换下一首',
@@ -576,6 +576,14 @@ export const ui = {
     modalCancel: '取消',
     modalCloseAria: '关闭随机拜访',
     modalDescAria: '待拜访站点描述',
+    /** 友链魔方（复刻 Demius rubiks-friends） */
+    rubiksTitle: '复原一面，遇见一个站点',
+    rubiksDesc: '魔方会先随机打乱，再按相反步骤逐层复原。每次完成后，留下一个新的友链预览。',
+    rubiksCubeAria: '由友链站点截图拼成的三阶魔方，会自动打乱并复原',
+    rubiksMixing: '正在打乱',
+    rubiksSolving: '正在复原',
+    rubiksSolved: '已复原',
+    rubiksPreviewAlt: '{name} 首页预览',
   },
 
   /** 友链朋友圈（数据源：本地 fcircle.json + FCLite all.json） */
