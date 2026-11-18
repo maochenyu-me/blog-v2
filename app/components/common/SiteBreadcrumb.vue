@@ -274,6 +274,17 @@ const backAria = computed(() =>
   white-space: nowrap;
 }
 
+/*
+ * 末级所在的 item 必须允许收缩（min-width: 0 + flex-shrink: 1）：
+ * 长标题要在「真实剩余宽度」内省略。之前 max-width 按 vw 封顶
+ * （52vw 大于返回药丸挤占后的剩余空间），chip 溢出容器、省略号
+ * 被推出可视区，视觉上就是被容器边缘硬裁。
+ */
+.crumb-item.is-current {
+  flex-shrink: 1;
+  min-width: 0;
+}
+
 /* 根节点 ~ */
 .crumb-home {
   justify-content: center;
@@ -308,9 +319,11 @@ const backAria = computed(() =>
   color: var(--accent);
 }
 
-/* 末级：accent 底胶囊（本站强调色的受控使用点之一） */
+/* 末级：accent 底胶囊（本站强调色的受控使用点之一）。
+   宽度上限 = 美学上限(34ch) 与 真实可用空间(100%) 取小 —— 移动端被
+   返回药丸挤占后自动收紧，省略号落在容器边缘而不是被它裁掉 */
 .crumb-current {
-  max-width: min(34ch, 64vw);
+  max-width: min(34ch, 100%);
   overflow: hidden;
   padding: 0.35rem 0.55rem;
   text-overflow: ellipsis;
@@ -330,10 +343,6 @@ const backAria = computed(() =>
 
   .crumb-bar.has-back .crumb-item:not(.is-root):not(.is-current) {
     display: none;
-  }
-
-  .crumb-current {
-    max-width: 52vw;
   }
 }
 

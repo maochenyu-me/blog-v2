@@ -99,7 +99,7 @@ useHead({
 <template>
   <div v-if="post" class="page-post">
     <div class="post-shell">
-      <article class="post-article glass-panel">
+      <article class="post-article">
         <!-- 面包屑放在 article 内：≥1280px 时 post-shell 是「正文 + 目录」两列 grid，
              作为独立 grid item 会抢占列位、打乱 article/aside 的自动放置 -->
         <SiteBreadcrumb :current="title" back />
@@ -203,14 +203,10 @@ useHead({
 }
 
 /*
- * 文章玻璃面板（LiuShen 式 backdrop 的可读性配套）。
- * 玻璃配方在全局 .glass-panel（main.css），这里只补内边距；
- * 内部卡片（头卡 / AI 摘要 / 页脚 / 上下篇）保持各自的实色
- * --card 背景，形成「玻璃底 + 实色卡」的嵌套层次。
+ * 正文不套面板（参考站同款）：文字直接坐在画布上，可读性由 backdrop
+ * 的渐变遮罩守住（遮罩盖在图片上方，视口上部露图、向下淡出到纯色）。
+ * 头卡 / AI 摘要 / 页脚 / 上下篇保持各自的实色 --card 卡片语言。
  */
-.post-article {
-  padding: var(--space-item);
-}
 
 /* 目录旁栏默认隐藏，≥1280px 才挂到右侧沟槽（见文件末尾） */
 .post-aside {
@@ -282,9 +278,7 @@ useHead({
     display: grid;
     grid-template-columns: minmax(0, var(--content-max-width)) var(--toc-width);
     gap: var(--toc-gap);
-    /* 列宽补偿玻璃面板左右 padding（--space-item 各 1 份）：
-       正文文字行宽保持面板化之前的 ≈764px，不因加底板而变窄 */
-    max-width: calc(var(--content-max-width) + var(--space-item) * 2 + var(--toc-width) + var(--toc-gap));
+    max-width: calc(var(--content-max-width) + var(--toc-width) + var(--toc-gap));
     /* 正文仍在原位置，目录挂在右侧沟槽外 */
     justify-content: start;
     /* aside 拉伸到与正文列等高：给内部 sticky toc 留出滑动区间 */
@@ -331,13 +325,6 @@ useHead({
 }
 
 /* ---------- 移动端 ---------- */
-@media (max-width: 767px) {
-  /* 窄屏玻璃面板收小 padding，把宽度还给正文（每行字数不再缩水） */
-  .post-article {
-    padding: 1.25rem 1rem;
-  }
-}
-
 @media (max-width: 600px) {
   .post-nav {
     grid-template-columns: 1fr;

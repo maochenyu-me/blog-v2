@@ -75,18 +75,16 @@ useHead({ link: feedLinks })
   overflow: hidden;
   pointer-events: none;
   /*
-   * 背景图延后加载（见 app/plugins/backdrop-deferred.client.ts）：
-   * 构建期只给出 --backdrop-gradient，--backdrop-image 由客户端在 load 之后
-   * 写入根元素内联样式。首帧只画渐变 —— 渐变本身就是「顶部露图、向下淡出到
-   * 纯背景色」的形状，中间态看起来是一层被压平的氛围底色，不会突兀。
-   *
-   * 图片放在伪元素上而不是本层：background-image 无法参与 transition
-   * （不可插值），晚到的图会「跳」出来。伪元素用 opacity 淡入才是真正的渐显。
+   * 三层结构（与参考站 background-image: gradient, url 的层序同义）：
+   *   ::before 图片层 —— 延后加载（app/plugins/backdrop-deferred.client.ts），
+   *                      --backdrop-image 由客户端在 load 之后写入根元素，
+   *                      opacity 渐显，避免晚到的图「跳」出来；
+   *   ::after  遮罩层 —— --backdrop-gradient 以视口为基准盖在图片上方。
+   * 遮罩必须在图片之上：图片只在视口上部透出、向下淡出到纯背景色，
+   * 正文直接坐在近纯色画布上 —— 这是不靠面板的可读性来源（参考站把
+   * gradient 放在 background-image 首层正是这个用意）。
+   * 整层再统一吃 filter（blur+saturate）与 opacity（参考站实测同值）。
    */
-  background-image: var(--backdrop-gradient);
-  background-position: top center;
-  background-size: cover;
-  background-repeat: no-repeat;
   filter: var(--backdrop-filter);
   opacity: var(--backdrop-opacity);
   /* 放大盖住模糊边缘，防止四周露出模糊发虚的接缝 */
@@ -94,7 +92,7 @@ useHead({ link: feedLinks })
   transform-origin: top;
 }
 
-/* 背景图承载层：变量未定义时 background-image 为空，opacity 保持 0 → 不可见 */
+/* 图片层：变量未定义时 background-image 为空，opacity 保持 0 → 不可见 */
 .site-backdrop::before {
   content: '';
   position: absolute;
@@ -106,6 +104,14 @@ useHead({ link: feedLinks })
   /* 变量由插件注入 → 该元素从无图变为有图，过渡由下面的 opacity 驱动 */
   opacity: var(--backdrop-image-opacity, 0);
   transition: opacity 320ms var(--easing-base);
+}
+
+/* 渐变遮罩层：::after 后绘于 ::before 之上，压淡图片、守住正文可读性 */
+.site-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--backdrop-gradient);
 }
 
 /*

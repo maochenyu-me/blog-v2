@@ -33,6 +33,14 @@ onBeforeUnmount(() => {
     <div class="header-inner">
       <div class="header-pill header-pill--left">
         <NavPanel />
+        <!--
+          移动端站名换成头像圆标（参考站同款）：窄屏上文字站名挤压右胶囊
+          （≤375px 时还要省略号），图标+回首页语义更干净；桌面端保持站名。
+          两个节点各自挂显示断点，aria-label 都带站名保证读屏一致。
+        -->
+        <NuxtLink to="/" class="wordmark-avatar" :aria-label="site.name">
+          <img :src="site.author.avatar" :alt="site.name" class="wordmark-avatar-img" />
+        </NuxtLink>
         <NuxtLink to="/" class="wordmark" :aria-label="site.name">
           {{ site.name }}
         </NuxtLink>
@@ -138,12 +146,52 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+/*
+ * 头像圆标（仅移动端显示）：替代窄屏上被挤压的站名。
+ * 与右胶囊的动作按钮同尺寸（40px），头像裁圆、描边用玻璃边色，
+ * hover 轻浮反馈与 ~ 根节点一致。
+ */
+.wordmark-avatar {
+  display: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  transition:
+    transform var(--duration-base) var(--easing-base),
+    border-color var(--duration-base) var(--easing-base);
+}
+
+.wordmark-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wordmark-avatar:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+/* 移动端：站名让位给头像圆标 */
+@media (max-width: 640px) {
+  .wordmark {
+    display: none;
+  }
+
+  .wordmark-avatar {
+    display: inline-flex;
+  }
+}
+
 .header-pill--left {
   min-width: 0;
 }
 
 .header-pill--left > :deep(.nav-panel-root),
-.header-pill--left > .wordmark {
+.header-pill--left > .wordmark,
+.header-pill--left > .wordmark-avatar {
   transform: translateX(-0.5rem);
 }
 
@@ -162,14 +210,6 @@ onBeforeUnmount(() => {
   .header-pill::before,
   .header-pill::after {
     transition: none;
-  }
-}
-
-/* 极窄屏：站名省略号，避免把右胶囊挤出视口 */
-@media (max-width: 375px) {
-  .wordmark {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 }
 </style>

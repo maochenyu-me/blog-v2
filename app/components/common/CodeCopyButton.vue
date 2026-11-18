@@ -28,6 +28,8 @@ const targets = ref<Target[]>([])
 const copiedId = ref<number | null>(null)
 const mounted = ref(false)
 let timer: ReturnType<typeof setTimeout> | null = null
+/** body 尺寸观察器：正文任何回流后重新测量（见 onMounted 注释） */
+let ro: ResizeObserver | null = null
 
 function collect() {
   if (!import.meta.client || !props.enabled) return
@@ -72,11 +74,22 @@ onMounted(() => {
   // 等水合完全结束再定位，避免干扰校验过程
   nextTick(() => {
     collect()
+    /*
+     * 头部条钉在 body 上，坐标只在测量瞬间有效。正文在测量之后还会回流：
+     * webfont 晚到替换回退字体（首访必现，整段行高一变代码块就移位）、
+     * 图片加载、KaTeX 排版……absolute 头部条不会自己跟着走，于是浮到
+     * 上方压住段落。挂一个 body 尺寸观察器，高度一变就重新测量。
+     * collect 只读几何、不改布局（头部条是 absolute），不会触发观察器循环。
+     */
+    ro = new ResizeObserver(() => collect())
+    ro.observe(document.body)
     window.addEventListener('resize', collect, { passive: true })
   })
 })
 
 onBeforeUnmount(() => {
+  ro?.disconnect()
+  ro = null
   if (timer) clearTimeout(timer)
   if (import.meta.client) window.removeEventListener('resize', collect)
 })

@@ -31,6 +31,8 @@ const hoveredId = ref<number | null>(null)
 const copiedId = ref<number | null>(null)
 const mounted = ref(false)
 let timer: ReturnType<typeof setTimeout> | null = null
+/** body 尺寸观察器：正文任何回流后重新测量（同 CodeCopyButton） */
+let ro: ResizeObserver | null = null
 
 /** 公式元素 → 绑定过的监听器，卸载时逐个摘掉 */
 const bound = new Map<HTMLElement, { enter: () => void; leave: () => void }>()
@@ -98,11 +100,17 @@ onMounted(() => {
   // 等水合结束再定位与绑定，避免干扰校验过程
   nextTick(() => {
     collect()
+    // webfont 晚到 / 图片加载等回流会让钉在 body 上的按钮错位，
+    // body 高度一变就重新测量（同 CodeCopyButton）
+    ro = new ResizeObserver(() => collect())
+    ro.observe(document.body)
     window.addEventListener('resize', collect, { passive: true })
   })
 })
 
 onBeforeUnmount(() => {
+  ro?.disconnect()
+  ro = null
   if (timer) clearTimeout(timer)
   if (import.meta.client) {
     window.removeEventListener('resize', collect)
