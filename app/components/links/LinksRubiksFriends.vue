@@ -28,7 +28,7 @@ const props = defineProps<{
   links: FriendLink[]
 }>()
 
-const { ui } = useUi()
+const { ui, t } = useUi()
 
 /* ---------- 面定义（朝向与参考站 SSR 结构逐一核对） ---------- */
 
@@ -342,7 +342,7 @@ function onPreviewImgError(e: Event) {
           <img
             :key="current.url"
             :src="stickerSrc(current)"
-            :alt="`${current.name} 首页预览`"
+            :alt="t(ui.links.rubiksPreviewAlt, { name: current.name })"
             loading="lazy"
             decoding="async"
             @error="onPreviewImgError"
