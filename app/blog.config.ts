@@ -266,6 +266,39 @@ export default {
       },
   },
 
+  /**
+   * 外链中转页（/safego）。
+   * 点击非白名单域名的站外链接时，先跳到中转页确认，倒计时结束或手动点击后再离开本站。
+   * 拦截逻辑见 app/plugins/safego.client.ts，页面见 app/pages/safego.vue。
+   */
+  safego: {
+    /** 总开关：false 时插件不安装，所有外链行为与原来一致 */
+    enabled: true,
+    /**
+     * 信任域名白名单 —— 命中即直接跳转，不走中转页。
+     * 匹配规则：域名等于条目，或是其子域名（xxx.kemiaosw.top 命中 kemiaosw.top）。
+     */
+    whitelist: [
+      'kemiaosw.top',
+      '518339.xyz',
+      'github.com',
+    ],
+    /** 倒计时秒数，到 0 自动跳转；0 或负数表示不自动跳转，只能手动点击 */
+    countdown: 5,
+    /** 目标 URL 的查询参数名（base64url 编码后放在 ?u=） */
+    paramName: 'u',
+    /**
+     * 启用拦截的页面路径（正则匹配当前路由 path）。
+     * 只有命中这些正则的页面，外链点击才会被拦截走中转页；
+     * 其他页面上的外链保持原始行为（直接跳转）。
+     * 留空数组 = 所有页面都启用。
+     */
+    pages: [
+      '^/links',       // 友链页
+      '^/posts/',      // 文章详情页
+    ],
+  },
+
   search: {
     enabled: true,
     shortcut: 'mod+k',

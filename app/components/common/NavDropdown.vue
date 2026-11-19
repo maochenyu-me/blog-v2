@@ -137,10 +137,8 @@ watch(() => route.fullPath, close)
   line-height: 1;
   color: var(--muted-foreground);
   padding-block: 0.25rem;
-  border-bottom: 1px solid transparent;
-  transition:
-    color var(--duration-base) var(--easing-base),
-    border-color var(--duration-base) var(--easing-base);
+  text-decoration: none;
+  transition: color var(--duration-base) var(--easing-base);
 }
 
 .nav-link__icon {
@@ -151,10 +149,11 @@ watch(() => route.fullPath, close)
   color: var(--foreground);
 }
 
-/* 强调色使用的四处之一：当前导航项的下划线 */
+/* 强调色使用的四处之一：当前导航项的波浪下划线 */
 .nav-link.is-active {
   color: var(--foreground);
-  border-bottom-color: var(--accent);
+  text-decoration: underline wavy var(--accent);
+  text-underline-offset: 0.25em;
 }
 
 .nav-group {

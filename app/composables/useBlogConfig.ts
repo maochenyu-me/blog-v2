@@ -119,6 +119,24 @@ export interface AiConfig {
   animation: boolean
 }
 
+/** 外链中转页（/safego）配置 */
+export interface SafegoConfig {
+  /** 总开关：false 时插件不安装，外链行为与原来一致 */
+  enabled: boolean
+  /** 信任域名白名单 —— 命中即直接跳转，不走中转页 */
+  whitelist: string[]
+  /** 倒计时秒数；0 或负数表示不自动跳转 */
+  countdown: number
+  /** 目标 URL 的查询参数名 */
+  paramName: string
+  /**
+   * 启用拦截的页面路径（正则数组）。
+   * 只有命中这些正则的页面，外链点击才会被拦截走中转页。
+   * 留空数组 = 所有页面都启用。
+   */
+  pages?: string[]
+}
+
 export function useBlogConfig() {
   const appConfig = useAppConfig()
   return {
@@ -129,5 +147,6 @@ export function useBlogConfig() {
     copyright: appConfig.copyright as CopyrightConfig,
     reward: appConfig.reward as RewardConfig,
     ai: appConfig.ai as AiConfig,
+    safego: appConfig.safego as SafegoConfig,
   }
 }
