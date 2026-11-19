@@ -331,14 +331,52 @@ function isDirectLink(to: string) {
 <style scoped>
 /* ===================================================================
  * 页脚舞台 —— 复刻 blog.demius.tech 的「夜幕收尾」式页脚：
- * 深色星空（暗色模式）/ 浅蓝灰（亮色模式）舞台上，一排动物横图、
- * 技术徽章，下面是一张浅蓝玻璃卡。蓝色系为页脚专用色，不占用
- * 全局主题 token（页脚是独立的「收尾幕」，配色刻意与正文区分离）。
+ * 亮色模式 = 浅蓝灰昼空卡；暗色模式 = 深蓝夜幕卡（星点更亮、行星
+ * 变暮色、文字提亮）。蓝色系为页脚专用色，不占用全局主题 token
+ * （页脚是独立的「收尾幕」，配色刻意与正文区分离）。
  * =================================================================== */
 .footer-stage {
+  /* ---- 通用蓝族 ---- */
   --footer-blue: #0874ef;
   --footer-blue-deep: #1767bb;
   --footer-blue-soft: #65b3f4;
+
+  /* ---- 文字层级（亮色）---- */
+  --footer-nav-ink: #4696d4;
+  --footer-ink: #5677a6;
+  --footer-ink-weak: #7994ba;
+  --footer-traffic-ink: #6281aa;
+  --footer-hover-ink: #064c9f;
+
+  /* ---- 分隔 / 焦点 ---- */
+  --footer-separator: #3584e457;
+  --footer-divider-glow: #5ba7ec;
+  --footer-focus: #075cbf;
+
+  /* ---- 玻璃卡（亮色：昼空）---- */
+  --footer-card-bg:
+    radial-gradient(circle at 50% 14%, #fffffffa, transparent 38%),
+    radial-gradient(circle at 10% 78%, #75b4f933, transparent 35%),
+    radial-gradient(circle at 91% 77%, #6cacf73d, transparent 37%),
+    linear-gradient(112deg, #e0f1ffd6, #fcfeffeb 50%, #dceeffdb);
+  --footer-card-border: #fffffff0;
+  --footer-card-shadow:
+    0 0.65rem 1.5rem #2575ce1f,
+    0 0 1.35rem #61aaf824,
+    inset 0 0 1.5rem #ffffffc7,
+    inset 0 -1.2rem 2.1rem #64a8f51a;
+  --footer-card-ring: #ffffffd1;
+  --footer-card-ring-glow: #ffffff6b;
+  --footer-card-sheen: #ffffff8c;
+  --footer-card-sheen-2: #ffffff7a;
+  --footer-card-stars: 0.85;
+
+  /* ---- 运行时间胶囊（亮色）---- */
+  --footer-runtime-bg: #ffffff7a;
+  --footer-runtime-border: #fffffff0;
+  --footer-runtime-shadow:
+    0 0.36rem 0.75rem #2370d026,
+    inset 0 0 0 0.2rem #ffffff2e;
 
   position: relative;
   z-index: 2;
@@ -350,6 +388,49 @@ function isDirectLink(to: string) {
   text-align: center;
   /* 完全透明：直接与页面背景接轨，不留任何底色与分隔线 */
   background: transparent;
+}
+
+/* ===================================================================
+ * 夜幕（dark）模式：整套换深色夜空卡 —— 深蓝玻璃 + 星点提亮 + 文字
+ * 提亮，保留「收尾幕」的蓝色身份，与正文暖棕暗色形成昼夜对照。
+ * =================================================================== */
+html.dark .footer-stage {
+  --footer-blue: #5fa8f7;
+  --footer-blue-deep: #a9c8ef;
+  --footer-blue-soft: #79b8f7;
+
+  --footer-nav-ink: #7ab3ee;
+  --footer-ink: #8ba3c7;
+  --footer-ink-weak: #8fa3bd;
+  --footer-traffic-ink: #8fa5c9;
+  --footer-hover-ink: #b4d4f9;
+
+  --footer-separator: rgba(110, 160, 225, 0.32);
+  --footer-divider-glow: rgba(95, 150, 215, 0.75);
+  --footer-focus: #7ab8f8;
+
+  --footer-card-bg:
+    radial-gradient(circle at 50% 14%, rgba(125, 175, 240, 0.14), transparent 38%),
+    radial-gradient(circle at 10% 78%, rgba(65, 115, 195, 0.15), transparent 35%),
+    radial-gradient(circle at 91% 77%, rgba(75, 135, 215, 0.17), transparent 37%),
+    linear-gradient(112deg, rgba(26, 38, 63, 0.94), rgba(19, 29, 50, 0.96) 50%, rgba(17, 26, 45, 0.94));
+  --footer-card-border: rgba(140, 185, 240, 0.26);
+  --footer-card-shadow:
+    0 0.65rem 1.5rem rgba(0, 0, 0, 0.4),
+    0 0 1.35rem rgba(70, 125, 205, 0.10),
+    inset 0 0 1.5rem rgba(115, 165, 230, 0.09),
+    inset 0 -1.2rem 2.1rem rgba(65, 115, 195, 0.13);
+  --footer-card-ring: rgba(150, 195, 245, 0.20);
+  --footer-card-ring-glow: rgba(110, 160, 225, 0.09);
+  --footer-card-sheen: rgba(170, 205, 250, 0.40);
+  --footer-card-sheen-2: rgba(150, 190, 240, 0.30);
+  --footer-card-stars: 1;
+
+  --footer-runtime-bg: rgba(38, 54, 86, 0.50);
+  --footer-runtime-border: rgba(150, 190, 240, 0.28);
+  --footer-runtime-shadow:
+    0 0.36rem 0.75rem rgba(0, 0, 0, 0.30),
+    inset 0 0 0 0.2rem rgba(150, 190, 240, 0.07);
 }
 
 .footer-stage :deep(a) {
@@ -438,18 +519,10 @@ function isDirectLink(to: string) {
   width: min(100%, 46rem);
   min-height: 13.55rem;
   margin: 0 auto;
-  border: 1.5px solid #fffffff0;
+  border: 1.5px solid var(--footer-card-border);
   border-radius: 1.1rem;
-  background:
-    radial-gradient(circle at 50% 14%, #fffffffa, transparent 38%),
-    radial-gradient(circle at 10% 78%, #75b4f933, transparent 35%),
-    radial-gradient(circle at 91% 77%, #6cacf73d, transparent 37%),
-    linear-gradient(112deg, #e0f1ffd6, #fcfeffeb 50%, #dceeffdb);
-  box-shadow:
-    0 0.65rem 1.5rem #2575ce1f,
-    0 0 1.35rem #61aaf824,
-    inset 0 0 1.5rem #ffffffc7,
-    inset 0 -1.2rem 2.1rem #64a8f51a;
+  background: var(--footer-card-bg);
+  box-shadow: var(--footer-card-shadow);
 }
 
 /* 卡面细碎星点（静态） */
@@ -458,7 +531,7 @@ function isDirectLink(to: string) {
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.85;
+  opacity: var(--footer-card-stars);
   pointer-events: none;
   background-image:
     radial-gradient(circle at 8% 18%, #fff 0 1px, transparent 1.8px),
@@ -479,8 +552,8 @@ function isDirectLink(to: string) {
   height: 80%;
   opacity: 0.8;
   pointer-events: none;
-  border-top: 1px solid #ffffff8c;
-  border-right: 1px solid #ffffff7a;
+  border-top: 1px solid var(--footer-card-sheen);
+  border-right: 1px solid var(--footer-card-sheen-2);
   border-radius: 50%;
 }
 
@@ -489,9 +562,9 @@ function isDirectLink(to: string) {
   inset: 0.4rem;
   z-index: 4;
   pointer-events: none;
-  border: 1px solid #ffffffd1;
+  border: 1px solid var(--footer-card-ring);
   border-radius: 0.82rem;
-  box-shadow: inset 0 0 0.85rem #ffffff6b;
+  box-shadow: inset 0 0 0.85rem var(--footer-card-ring-glow);
 }
 
 /* ---- 卡内装饰：行星 / 波浪 / 闪烁星 ---- */
@@ -631,7 +704,7 @@ function isDirectLink(to: string) {
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
-  color: #4696d4;
+  color: var(--footer-nav-ink);
   font-size: 0.72rem;
   font-weight: 500;
   transition:
@@ -658,12 +731,10 @@ function isDirectLink(to: string) {
   width: min(21rem, 76%);
   min-height: 2.18rem;
   padding: 0.35rem 1.1rem 0.35rem 3.65rem;
-  border: 1px solid #fffffff0;
+  border: 1px solid var(--footer-runtime-border);
   border-radius: 999px;
-  background: #ffffff7a;
-  box-shadow:
-    0 0.36rem 0.75rem #2370d026,
-    inset 0 0 0 0.2rem #ffffff2e;
+  background: var(--footer-runtime-bg);
+  box-shadow: var(--footer-runtime-shadow);
   -webkit-backdrop-filter: blur(0.65rem) saturate(135%);
   backdrop-filter: blur(0.65rem) saturate(135%);
 }
@@ -768,7 +839,7 @@ function isDirectLink(to: string) {
   gap: 0.42rem;
   min-height: 1.05rem;
   margin-top: 0.52rem;
-  color: #6281aa;
+  color: var(--footer-traffic-ink);
   font-size: 0.62rem;
   font-weight: 470;
   white-space: nowrap;
@@ -810,8 +881,8 @@ function isDirectLink(to: string) {
   position: relative;
   width: 50%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #5ba7ec 14% 88%, transparent);
-  box-shadow: 0 0 0.25rem #4b9dec4d;
+  background: linear-gradient(90deg, transparent, var(--footer-divider-glow) 14% 88%, transparent);
+  box-shadow: 0 0 0.25rem var(--footer-divider-glow);
 }
 
 .footer-divider span:first-child::before,
@@ -849,7 +920,7 @@ function isDirectLink(to: string) {
   gap: clamp(0.55rem, 1.1vw, 0.9rem);
   min-height: 1.1rem;
   margin-top: 0.2rem;
-  color: #5677a6;
+  color: var(--footer-ink);
   font-size: 0.67rem;
   font-weight: 430;
 }
@@ -867,7 +938,7 @@ function isDirectLink(to: string) {
 
 .footer-meta a:hover,
 .footer-powered a:hover {
-  color: #064c9f;
+  color: var(--footer-hover-ink);
   transform: translateY(-1px);
 }
 
@@ -885,7 +956,7 @@ function isDirectLink(to: string) {
 .footer-meta-separator {
   width: 1px;
   height: 0.9rem;
-  background: #3584e457;
+  background: var(--footer-separator);
 }
 
 /* ---- 法务 / 备案 ---- */
@@ -897,7 +968,7 @@ function isDirectLink(to: string) {
   gap: 0.35rem 0.9rem;
   min-height: 1rem;
   margin-top: 0.28rem;
-  color: #7994ba;
+  color: var(--footer-ink-weak);
   font-size: 0.62rem;
   font-weight: 430;
 }
@@ -909,7 +980,7 @@ function isDirectLink(to: string) {
 }
 
 .footer-legal a:hover {
-  color: #064c9f;
+  color: var(--footer-hover-ink);
   transform: translateY(-1px);
 }
 
@@ -921,7 +992,7 @@ function isDirectLink(to: string) {
   gap: 0.28rem;
   min-height: 1rem;
   margin-top: 0.22rem;
-  color: #7994ba;
+  color: var(--footer-ink-weak);
   font-size: 0.64rem;
   font-weight: 450;
 }
@@ -951,7 +1022,7 @@ function isDirectLink(to: string) {
 .footer-meta a:focus-visible,
 .footer-legal a:focus-visible,
 .footer-powered a:focus-visible {
-  outline: 2px solid #075cbf;
+  outline: 2px solid var(--footer-focus);
   outline-offset: 0.18rem;
 }
 

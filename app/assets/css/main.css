@@ -125,6 +125,30 @@
 }
 
 /* ===============================================================
+ * 主题切换冻结（LiuShen 式瞬时切换兜底）
+ *
+ * useTheme.setMode() 在换类前挂 data-theme-switching，下一个任务
+ * 摘除。挂住期间：
+ *   1. 全站 transition 压成 none → ~290 个颜色过渡不再同时启动
+ *      （此前实测 F3 p95 +100ms，最大单项）
+ *   2. 全站 backdrop-filter 压成 none → 18 个毛玻璃不再整批重栅格
+ *      （此前实测 F2 p95 +40ms）
+ *   3. .site-backdrop 的 filter:none → 背景层 6px blur 不再重栅格
+ * 属性延后到下一任务摘除，避免与最后一帧同帧重栅格。
+ * ============================================================= */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-theme-switching] .site-backdrop {
+  filter: none !important;
+}
+
+/* ===============================================================
  * 玻璃面板 —— LiuShen 式 backdrop 的可读性配套
  *
  * 背景图以全站 backdrop 透出，正文不能直接坐在图片上：

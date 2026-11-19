@@ -16,3 +16,6 @@ app/data/changelog.json
 .wrangler/
 blog-v2-friends-circle/
 .opencode/
+
+# 验收/调试截图，不进版本库
+screenshot/

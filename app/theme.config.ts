@@ -251,7 +251,10 @@ export default {
 
     darkMode: {
       defaultMode: 'system' as const,
-      enableCircularReveal: true,
+      // LiuShen 式瞬时切换（2026-11-19 决策）：不再跑 VT 圆形扩散。
+      // enableCircularReveal 字段已废弃不再读取，保留注释说明来龙去脉。
+      // 实测圆形扩散的掉帧来自 F3（~290 颜色过渡 p95 +100ms）与
+      // F4（VT 快照 18~36ms/帧），砍动画即归零，且与参考站行为一致。
     },
   },
 }
