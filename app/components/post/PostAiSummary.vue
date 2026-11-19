@@ -93,7 +93,9 @@ if (isDev) {
       }"
       role="region"
       :aria-expanded="!isFolded"
-    >{{ text }}{{ caret }}</div>
+    >
+      <span class="summary-text">{{ text }}{{ caret }}</span>
+    </div>
 
     <div v-if="showToggle" class="summary-toggle-row">
       <button
@@ -163,21 +165,31 @@ if (isDev) {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background-color: var(--background);
+  color: var(--muted-foreground);
+}
+
+/*
+ * 裁切只发生在无内边距的内层文本上：overflow:hidden 的裁切边界是
+ * padding box（贴着边框），若直接裁带 padding 的元素，溢出行会画进
+ * 底部 padding 区、被齐着边框切半。内层按整行高度裁切（折叠 2 行 ×
+ * 1.8 行高 = 3.6em；展开 16 行 = 28.8em），底边永远是完整留白。
+ */
+.summary-text {
+  display: block;
   font-size: var(--fs-meta);
   line-height: 1.8;
-  color: var(--muted-foreground);
   white-space: pre-wrap;
   word-break: break-word;
   transition: max-height 0.28s var(--easing-base);
 }
 
-.summary-content--folded {
-  max-height: 4.8em;
+.summary-content--folded .summary-text {
+  max-height: 3.6em;
   overflow: hidden;
 }
 
-.summary-content--unfolded {
-  max-height: 28em;
+.summary-content--unfolded .summary-text {
+  max-height: 28.8em;
   overflow: hidden;
 }
 
