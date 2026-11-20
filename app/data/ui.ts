@@ -373,6 +373,39 @@ export const ui = {
     timelineEmpty: '时间线为空',
     /** Tip 组件复制提示 */
     tipClickToCopy: '点击复制',
+    /** Demo 组件 Tab 标签 */
+    demoTabs: ['组件', '语法'],
+    /** Mermaid 图表组件 */
+    mermaid: {
+      fitWidth: '适应宽度',
+      scrollX: '横向滚动',
+      regionAria: 'Mermaid 图表',
+      renderFailed: '图表渲染失败，查看错误详情',
+    },
+    /** 乐谱组件 */
+    musicScore: {
+      soundFontsError: '[music-abc] 无法连接 SoundFonts，不启用播放能力\n',
+    },
+    /** 代码块组件 */
+    codeblock: {
+      scrollX: '横向滚动',
+      wrap: '自动换行',
+      expandAria: '展开代码块',
+      collapseAria: '折叠代码块',
+    },
+    /** 表格组件 */
+    table: {
+      wrap: '自动换行',
+      scrollX: '横向滚动',
+      toggleToWrapAria: '切换为自动换行',
+      toggleToScrollAria: '切换为横向滚动',
+    },
+  },
+
+  /** 示例预览页 */
+  preview: {
+    description: '{name}的组件样式示例页。',
+    hint: '组件样式总览 · 源文件 content/example.md',
   },
 
   math: {

@@ -5,7 +5,7 @@
  * 差异：无头卡/AI 摘要/上下篇/相关文章/评论区，正文末尾渲染 meta-copyright 插槽。
  */
 const { site } = useBlogConfig()
-const { ui } = useUi()
+const { ui, t } = useUi()
 
 const path = '/example'
 
@@ -24,7 +24,7 @@ const canonical = computed(() => `${site.url}${path}`)
 useHead({
   title,
   meta: [
-    { name: 'description', content: `${site.name}的组件样式示例页。` },
+    { name: 'description', content: t(ui.preview.description, { name: site.name }) },
     { property: 'og:type', content: 'article' },
     { property: 'og:title', content: title },
     { property: 'og:url', content: canonical },
@@ -77,7 +77,7 @@ function slotTree(name: string) {
 
         <header class="preview-header">
           <h1 class="preview-title">{{ title }}</h1>
-          <p class="preview-hint">组件样式总览 · 源文件 content/example.md</p>
+          <p class="preview-hint">{{ ui.preview.hint }}</p>
         </header>
 
         <ImageLightbox :enabled="true">

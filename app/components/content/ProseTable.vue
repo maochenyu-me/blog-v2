@@ -12,6 +12,8 @@
  *
  * 默认横向滚动（table.scroll），悬浮右上按钮可切换为自动换行。
  */
+const { ui } = useUi()
+
 const scroll = ref(true)
 function toggleScroll() {
   scroll.value = !scroll.value
@@ -23,8 +25,8 @@ function toggleScroll() {
     <button
       type="button"
       class="toggle-btn"
-      :aria-label="scroll ? '切换为自动换行' : '切换为横向滚动'"
-      :title="scroll ? '自动换行' : '横向滚动'"
+      :aria-label="scroll ? ui.content.table.toggleToWrapAria : ui.content.table.toggleToScrollAria"
+      :title="scroll ? ui.content.table.wrap : ui.content.table.scrollX"
       @click="toggleScroll()"
     >
       <Icon :name="scroll ? 'tabler:text-wrap' : 'tabler:text-wrap-disabled'" />

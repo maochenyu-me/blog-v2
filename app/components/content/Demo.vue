@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { ui } = useUi()
+
 defineProps<{
   raw: string
   meta?: string
@@ -6,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-  <Tab :tabs="['组件', '语法']">
+  <Tab :tabs="ui.content.demoTabs">
     <template #tab1>
       <slot />
     </template>

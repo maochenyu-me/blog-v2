@@ -3,6 +3,7 @@ const props = defineProps<{
   code: string
 }>()
 
+const { ui } = useUi()
 const { isDark } = useTheme()
 const container = useTemplateRef('mermaid')
 const scroll = ref(true)
@@ -89,18 +90,18 @@ watch(
       <button
         class="mermaid-toggle"
         type="button"
-        :title="scroll ? '适应宽度' : '横向滚动'"
+        :title="scroll ? ui.content.mermaid.fitWidth : ui.content.mermaid.scrollX"
         @click="scroll = !scroll"
       >
         <Icon :name="scroll ? 'tabler:arrows-minimize' : 'tabler:arrows-horizontal'" />
       </button>
-      <div class="scrollcheck-x" tabindex="0" role="region" aria-label="Mermaid 图表">
+      <div class="scrollcheck-x" tabindex="0" role="region" :aria-label="ui.content.mermaid.regionAria">
         <div :style="{ minWidth: scroll && diagram.width ? `${diagram.width}px` : undefined }" v-html="diagram.svg" />
       </div>
     </div>
     <template v-else-if="diagram.error">
       <details class="mermaid-error">
-        <summary>图表渲染失败，查看错误详情</summary>
+        <summary>{{ ui.content.mermaid.renderFailed }}</summary>
         <pre>{{ diagram.error }}</pre>
       </details>
       <ProsePre :code language="mermaid" meta="wrap" />

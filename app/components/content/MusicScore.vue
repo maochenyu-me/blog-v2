@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { AbcVisualParams, SynthObjectController, SynthVisualOptions, TuneObject } from 'abcjs'
 
+const { ui } = useUi()
+
 const props = defineProps<{
   abc: string
 }>()
@@ -29,7 +31,7 @@ async function checkSoundFonts() {
     return res.ok
   }
   catch (e) {
-    console.error('[music-abc] 无法连接 SoundFonts，不启用播放能力\n', e)
+    console.error(ui.content.musicScore.soundFontsError, e)
     return false
   }
 }

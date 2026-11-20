@@ -26,6 +26,7 @@ const copyText = computed(() => {
   return codeRef.value?.textContent ?? ''
 })
 
+const { ui } = useUi()
 const { copied, copy } = useCopyText()
 </script>
 
@@ -36,7 +37,7 @@ const { copied, copy } = useCopyText()
       v-if="language"
       type="button"
       class="copy-button"
-      aria-label="复制"
+      :aria-label="ui.code.copy"
       @click.stop="copy(copyText)"
     >
       <Icon :name="copied ? 'tabler:check' : 'tabler:copy'" />

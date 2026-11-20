@@ -79,6 +79,7 @@ const icon = computed(() =>
 const isWrap = ref(!!parsedMeta.value.wrap)
 
 /** 复制 */
+const { ui } = useUi()
 const { copied, copy } = useCopyText()
 function copyCode() {
   copy(props.code)
@@ -109,10 +110,10 @@ const byteSize = computed(() => {
       <span v-if="language && language !== 'text'" class="language">{{ language }}</span>
       <div class="operations">
         <button type="button" @click="isWrap = !isWrap">
-          {{ isWrap ? '横向滚动' : '自动换行' }}
+          {{ isWrap ? ui.content.codeblock.scrollX : ui.content.codeblock.wrap }}
         </button>
         <button type="button" @click="copyCode()">
-          {{ copied ? '已复制' : '复制' }}
+          {{ copied ? ui.code.copied : ui.code.copy }}
         </button>
       </div>
     </figcaption>
@@ -134,7 +135,7 @@ const byteSize = computed(() => {
       v-if="collapsible"
       type="button"
       class="toggle-btn"
-      :aria-label="isCollapsed ? '展开代码块' : '折叠代码块'"
+      :aria-label="isCollapsed ? ui.content.codeblock.expandAria : ui.content.codeblock.collapseAria"
       @click="isCollapsed = !isCollapsed"
     >
       <Icon
