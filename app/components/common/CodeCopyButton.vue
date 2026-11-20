@@ -34,25 +34,36 @@ let ro: ResizeObserver | null = null
 function collect() {
   if (!import.meta.client || !props.enabled) return
 
-  const pres = [...document.querySelectorAll<HTMLPreElement>('.prose pre')]
+  /*
+   * 只服务「原生」代码块：ProsePre 渲染的 pre 带 .codeblock-pre，
+   * 它已经有自己的 figure 外壳 + figcaption（文件名/语言/复制/换行），
+   * 再挂一条 Teleport 头部条就会出现两套 UI、按钮浮在两块交界处。
+   */
+  const pres = [...document.querySelectorAll<HTMLPreElement>('.prose pre:not(.codeblock-pre)')]
   const scrollY = window.scrollY || document.documentElement.scrollTop
   const scrollX = window.scrollX || document.documentElement.scrollLeft
 
-  targets.value = pres.map((pre, i) => {
+  targets.value = pres.flatMap((pre, i) => {
     const code = pre.querySelector('code')
     // Shiki 把 language-xxx 挂在 <pre> 上，普通 markdown 代码块可能在 <code> 上，两处都查
     const langClass = [...pre.classList, ...(code?.classList ?? [])].find((c) =>
       c.startsWith('language-'),
     )
     const rect = pre.getBoundingClientRect()
-    return {
+    /*
+     * 跳过没参与布局的代码块（典型：Tab 里未展开的面板 display:none）。
+     * 它们的 rect 全是 0，头部条会叠在视口左上角压住页头；而且这类代码块
+     * 本身带着 ProsePre 的自带复制按钮，不需要再挂一条。
+     */
+    if (!rect.width && !rect.height) return []
+    return [{
       id: i,
       lang: langClass?.replace('language-', '') ?? '',
       text: code?.textContent ?? '',
       top: rect.top + scrollY,
       left: rect.left + scrollX,
       width: rect.width,
-    }
+    }]
   })
 }
 

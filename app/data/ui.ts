@@ -354,6 +354,25 @@ export const ui = {
     copied: '已复制',
     failed: '失败',
     copyAria: '复制代码',
+    undoAria: '恢复原始内容',
+  },
+
+  /** 内容组件 */
+  content: {
+    /** Alert 组件类型标题 */
+    alert: {
+      tip: '提醒',
+      info: '信息',
+      question: '问题',
+      warning: '警告',
+      error: '错误',
+    },
+    /** Chat 组件空态 */
+    chatEmpty: '无会话内容',
+    /** Timeline 组件空态 */
+    timelineEmpty: '时间线为空',
+    /** Tip 组件复制提示 */
+    tipClickToCopy: '点击复制',
   },
 
   math: {

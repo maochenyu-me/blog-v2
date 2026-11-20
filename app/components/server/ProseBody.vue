@@ -132,8 +132,13 @@
  * padding-top 让出一条 2.25rem 的头部带，供 CodeCopyButton 的语言标签与
  * 复制按钮落脚（那个组件用 Teleport 把按钮浮在代码块上方，尺寸与这里对应）。
  * 不留这条带子，按钮就会压在首行代码上。
+ *
+ * `:not(.codeblock-pre)` 是必须的：ProsePre 已经接管了全部 fenced code，
+ * 自带 figure 外壳、头部条与 padding。让这条规则渗进去，会在每个代码块顶部
+ * 多垫 2.25rem 空白带，并叠上第二层 border/底色（表现为「代码块上下分裂成
+ * 两个」）。这里只服务当年没有 ProsePre 的原生 pre。
  */
-.prose :deep(pre) {
+.prose :deep(pre:not(.codeblock-pre)) {
   margin-block: var(--paragraph-spacing);
   padding: 2.25rem 1rem 1rem;
   background-color: var(--muted);
@@ -153,8 +158,12 @@
   border-radius: 0;
 }
 
-/* 代码块配色：shiki 用 CSS 变量输出，这里统一映射到明暗两套主题 */
-.prose :deep(.shiki) {
+/*
+ * 代码块配色：shiki 用 CSS 变量输出，这里统一映射到明暗两套主题。
+ * 同样排除 ProsePre 的代码区 —— 那边的底色由 figure 自己提供，
+ * pre 必须保持透明，否则会在圆角内再糊一层方角色块。
+ */
+.prose :deep(.shiki:not(.codeblock-pre)) {
   background-color: var(--muted) !important;
 }
 
@@ -193,7 +202,14 @@
 
 /* ---------- 图片 ---------- */
 
-.prose :deep(img) {
+/*
+ * 只接管「正文里的裸图片」。带 class 的图片（.badge-icon / .pic-image /
+ * LinkCard 图标 ……）都是组件自己排版的对象，必须让位：
+ * 这条规则的特异性 (0,2,1) 高于组件 scoped 的 (0,2,0)，一渗进去就会把
+ * `height: 1.6em` 覆盖成 auto、并强塞 margin-block 与边框，徽章头像于是
+ * 涨成整行高的大方图。
+ */
+.prose :deep(img:not([class])) {
   max-width: 100%;
   height: auto;
   margin-block: var(--paragraph-spacing);
@@ -243,6 +259,110 @@
   border-top: 1px solid var(--border);
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
+}
+
+.prose :deep(.footnotes sup) {
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.prose :deep(.footnotes a) {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.prose :deep(.footnotes a:hover) {
+  text-decoration: underline;
+}
+
+/* ---------- 标题锚点高亮 ---------- */
+
+.prose :deep(h2:target),
+.prose :deep(h3:target),
+.prose :deep(h4:target) {
+  border-radius: 0.2rem;
+  animation: highlight 3s ease-out;
+}
+
+@keyframes highlight {
+  0% { background-color: transparent; }
+  15% { background-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+  100% { background-color: transparent; }
+}
+
+/* ---------- 示例页专用类 ---------- */
+
+/* .icon：小尺寸内联图片（如 emoji 图标） */
+.prose :deep(img.icon) {
+  height: 1.4em;
+  width: auto;
+  vertical-align: middle;
+  transform: translateY(-0.1em);
+  margin: 0;
+  border: none;
+  cursor: default;
+  display: inline;
+}
+
+/* .title-like：标题感文字 */
+.prose :deep(.title-like) {
+  font-weight: 700;
+  text-align: center;
+  font-size: 1.25em;
+  letter-spacing: 0.05em;
+}
+
+/* .text-story：故事感斜体 */
+.prose :deep(.text-story) {
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+/* .text-repeat：阴影回声效果（字间距 + 左右重影） */
+.prose :deep(.text-repeat) {
+  text-shadow:
+    0.1em 0 var(--muted),
+    0.2em 0 var(--muted),
+    0.3em 0 var(--muted),
+    0.4em 0 var(--muted),
+    0.5em 0 var(--muted);
+  letter-spacing: 0.15em;
+}
+
+/* .text-zoom：滚动驱动动画（变大变高） */
+.prose :deep(.text-zoom) {
+  display: inline-block;
+  transform-origin: left bottom;
+}
+
+@supports (animation-timeline: view()) {
+  .prose :deep(.text-zoom) {
+    animation: text-zoom 1s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+  }
+}
+
+@keyframes text-zoom {
+  from {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+/* .example-info：示例说明绿字 */
+.prose :deep(.example-info) {
+  color: #2e7d32;
+  font-size: var(--fs-meta);
+}
+
+.dark .prose :deep(.example-info) {
+  color: #66bb6a;
 }
 
 /* ---------- 数学公式（KaTeX） ---------- */
@@ -295,7 +415,7 @@
    * padding-top 让出 CodeCopyButton 的头部条高度（2.25rem），
    * 使语言与复制按钮落在代码上方的空白带里，而不是压在首行代码上。
    */
-  .prose :deep(pre) {
+  .prose :deep(pre:not(.codeblock-pre)) {
     padding: 2.25rem 0.75rem 0.75rem;
     font-size: 0.8125rem;
     overscroll-behavior-x: contain;

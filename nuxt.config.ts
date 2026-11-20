@@ -1,8 +1,14 @@
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import { buildThemeInitScript } from './app/utils/theme-storage'
 import { umamiConfig } from './app/utils/umami-config'
 
 const THEME_INIT_SCRIPT = buildThemeInitScript()
+
+function pluginPath(path: string) {
+  return pathToFileURL(resolve(`./remark-plugins/${path}.ts`)).href
+}
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
@@ -23,12 +29,31 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    /*
+     * 内容组件的重量级依赖只在 /example 这类页面被按需 import，
+     * 不预打包会让 dev 首次进入时中断一次做依赖发现再整页刷新。
+     */
+    optimizeDeps: {
+      include: [
+        'abcjs',
+        'mermaid',
+        'shiki/core',
+        'shiki/engine/javascript',
+        'shiki/langs',
+        'shiki/themes',
+      ],
+    },
   },
 
   // ---------- TypeScript strict ----------
   typescript: {
     strict: true,
     typeCheck: false, // 由 pnpm typecheck 单独跑，避免拖慢 dev
+    nodeTsConfig: {
+      include: [
+        '../remark-plugins/**/*.ts',
+      ],
+    },
   },
 
   // ---------- 组件目录 ----------
@@ -46,6 +71,7 @@ export default defineNuxtConfig({
     { path: '~/components/gallery', pathPrefix: false },
     { path: '~/components/hot', pathPrefix: false },
     { path: '~/components/links', pathPrefix: false },
+    { path: '~/components/content', pathPrefix: false },
   ],
 
   // ---------- 渲染模式：纯 SSG ----------
@@ -325,9 +351,20 @@ export default defineNuxtConfig({
           ],
         },
         remarkPlugins: {
+          // demo 代码块在解析阶段展开为 containerComponent（Demo.vue 预览）。
+          [pluginPath('remark-demo')]: {},
+          // mermaid / music-abc 代码块映射为 Mermaid.vue / MusicScore.vue 组件。
+          [pluginPath('remark-code-component')]: {
+            options: {
+              'mermaid': { component: 'mermaid', prop: 'code' },
+              'music-abc': { component: 'music-score', prop: 'abc' },
+            },
+          },
           'remark-math': {},
         },
         rehypePlugins: {
+          // meta-* 根元素提取为文件插槽（file.data.slots → 查询行 meta.slots）。
+          [pluginPath('rehype-meta-slots')]: {},
           // 选项必须嵌在 options 里：@nuxt/content 的 importPlugins 只读
           // `{ instance, options }` 这两个键，直接摊平写会被当成空对象丢掉。
           //

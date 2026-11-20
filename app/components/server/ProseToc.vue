@@ -80,8 +80,11 @@ function revealActive() {
   const item = nav.querySelectorAll<HTMLElement>('.toc-item')[index]
   if (!item) return
 
-  // 向上找最近的、真正可滚动的祖先（桌面端是 .post-aside）
-  let container: HTMLElement | null = nav.parentElement
+  // 向上找最近的、真正可滚动的祖先。
+  // 目录条目多时，.toc-list 自身就是限高滚动容器（见样式段）；从 item 往上找
+  // 会先命中它。目录短时不溢出，会继续往上找到 aside —— 与加滚动前的
+  // 行为完全一致，短目录页不会有任何变化。
+  let container: HTMLElement | null = item.parentElement
   while (container) {
     const overflowY = getComputedStyle(container).overflowY
     if (/(auto|scroll)/.test(overflowY) && container.scrollHeight > container.clientHeight + 1) break
@@ -240,6 +243,63 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 0.375rem;
   border-inline-start: 1px solid var(--border);
+
+  /*
+   * 目录独立滚动（参考站 BlogWidget shrink 的效果）：
+   * 标题头 .toc-head 留在外面固定不动，只有列表本体在超长时滚动。
+   * max-height 只在条目真的很多时才生效 —— 短目录（大多数文章）不溢出，
+   * 下面这些属性不产生任何可见变化，旁的 PostRelated/插槽卡也不受影响。
+   */
+  max-height: min(20rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain; /* 滚到顶/底时不要把整页一起带走 */
+  padding-inline-start: 1px; /* 给 .toc-link 的 -1px 负边距留位，避免当前项高亮条被裁掉 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.toc-list::-webkit-scrollbar {
+  width: 5px;
+}
+.toc-list::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 4px;
+}
+.toc-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 滚到中间时上下羽化、提示还有内容（参考站 scrollcheck-y 同款）。
+ * 用 @supports 包住：不支持 scroll-driven animation 的浏览器整块跳过，
+ * 滚动本身完全不受影响。 */
+@supports (animation-timeline: scroll()) {
+  @keyframes toc-fade-y {
+    0% {
+      mask-image: linear-gradient(to bottom, #fff calc(100% - 1.5em), transparent);
+    }
+    0.01%,
+    99.99% {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #fff 1.5em,
+        #fff calc(100% - 1.5em),
+        transparent
+      );
+    }
+    100% {
+      mask-image: linear-gradient(to bottom, transparent, #fff 1.5em);
+    }
+  }
+  .toc-list {
+    animation: toc-fade-y linear;
+    animation-timeline: scroll(y self);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toc-list {
+      mask-image: none !important;
+    }
+  }
 }
 
 .toc-item {

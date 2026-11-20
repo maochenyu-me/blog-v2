@@ -41,5 +41,14 @@ export default defineContentConfig({
         title: z.string(),
       }),
     }),
+
+    /** 组件示例预览页，不进文章列表 */
+    previews: defineCollection({
+      type: 'page',
+      source: 'example.md',
+      schema: z.object({
+        title: z.string(),
+      }),
+    }),
   },
 })
