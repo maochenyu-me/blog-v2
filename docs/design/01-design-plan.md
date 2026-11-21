@@ -51,7 +51,7 @@
 | `site.author.name` | 克喵:) | 已提供 |
 | `site.locale` | `zh-CN` | 按提示词默认 |
 | `site.description` | *待你补* | 占位：一句话站点描述，用于 SEO / OG |
-| `site.author.avatar` | *待你补* | 占位 `/images/avatar.png`（第二轮程序化生成占位图） |
+| `site.author.avatar` | *待你补* | 占位 `/images/avatar.jpg`（第二轮程序化生成占位图） |
 | `site.author.bio` | *待你补* | 占位：一句话签名，首页顶部 |
 | `site.author.email` | *待你补* | 占位 `hi@kemiaosw.top` |
 | `site.social` | *待你补* | 占位：GitHub / X / Email / RSS |

@@ -108,22 +108,6 @@ function coverSvg(kind, seed) {
 </svg>`
 }
 
-/** 头像：zinc 底 + 陶土方块 + 猫耳剪影（极简几何，不画插画） */
-function avatarSvg(size) {
-  const s = size
-  const u = s / 100
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="${INK}" />
-  <path d="M28 44 L28 26 L42 36 Z" fill="${ACCENT}" />
-  <path d="M72 44 L72 26 L58 36 Z" fill="${ACCENT}" />
-  <circle cx="50" cy="58" r="22" fill="${ACCENT}" />
-  <circle cx="42" cy="55" r="2.6" fill="${INK}" />
-  <circle cx="58" cy="55" r="2.6" fill="${INK}" />
-  <path d="M46 65 Q50 68 54 65" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round" />
-  <rect x="0.5" y="0.5" width="99" height="99" fill="none" stroke="${PAPER}" stroke-opacity="0.12" stroke-width="1" />
-</svg>`
-}
-
 /** 友链头像：姓名首字母方块 */
 function letterSvg(letter, bg, fg) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
@@ -158,17 +142,15 @@ async function main() {
     console.log('cover:', name)
   }
 
-  // 头像 32 / 180 / 512 三档（提示词 §13 favicon）
-  for (const size of [32, 180, 512]) {
-    const svg = Buffer.from(avatarSvg(size))
-    await sharp(svg).png({ compressionLevel: 9 }).toFile(resolve(OUT, `avatar-${size}.png`))
+  // 头像 favicon 两档：从正式头像派生。头像本体是 public/images/avatar.jpg（手放素材），
+  // 这里只负责裁出 favicon 需要的方形 PNG，不再生成占位头像。
+  for (const size of [32, 180]) {
+    await sharp(resolve(OUT, 'avatar.jpg'))
+      .resize(size, size, { fit: 'cover', kernel: 'lanczos3' })
+      .png({ compressionLevel: 9 })
+      .toFile(resolve(OUT, `avatar-${size}.png`))
     console.log('avatar:', size)
   }
-
-  // 主头像（页面用）
-  await sharp(Buffer.from(avatarSvg(400)))
-    .png({ compressionLevel: 9 })
-    .toFile(resolve(OUT, 'avatar.png'))
 
   // 友链头像
   for (const [name, letter, bg, fg] of friends) {
