@@ -1,5 +1,5 @@
 import type { GalleryFolder, GalleryImage } from '~/types/gallery'
-import galleryBase from '~/gallery'
+import galleryBase from '~/data/gallery'
 
 /**
  * 相册数据访问层。
