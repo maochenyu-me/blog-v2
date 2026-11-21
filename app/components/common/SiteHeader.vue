@@ -34,12 +34,13 @@ onBeforeUnmount(() => {
       <div class="header-pill header-pill--left">
         <NavPanel />
         <!--
-          移动端站名换成头像圆标（参考站同款）：窄屏上文字站名挤压右胶囊
-          （≤375px 时还要省略号），图标+回首页语义更干净；桌面端保持站名。
+          移动端站名换成图标圆标（参考站同款）：窄屏上文字站名挤压右胶囊
+          （≤375px 时还要省略号），一个 house 图标的回首页语义比头像更干净
+          （头像需裁圆且亮暗不受控，图标直接吃 --foreground / --accent）。
           两个节点各自挂显示断点，aria-label 都带站名保证读屏一致。
         -->
-        <NuxtLink to="/" class="wordmark-avatar" :aria-label="site.name">
-          <img :src="site.author.avatar" :alt="site.name" class="wordmark-avatar-img" />
+        <NuxtLink to="/" class="wordmark-mark" :aria-label="site.name">
+          <Icon name="tabler:home" class="wordmark-mark-icon" aria-hidden="true" />
         </NuxtLink>
         <NuxtLink to="/" class="wordmark" :aria-label="site.name">
           {{ site.name }}
@@ -147,40 +148,45 @@ onBeforeUnmount(() => {
 }
 
 /*
- * 头像圆标（仅移动端显示）：替代窄屏上被挤压的站名。
- * 与右胶囊的动作按钮同尺寸（40px），头像裁圆、描边用玻璃边色，
- * hover 轻浮反馈与 ~ 根节点一致。
+ * 图标圆标（仅移动端显示）：替代窄屏上被挤压的站名。
+ * 与右胶囊的动作按钮同尺寸（40px），玻璃边色描边、图标取 --foreground，
+ * hover 染 accent（描边 + 底 + 图标色），反馈与参考站 nav-icon-btn 一致。
  */
-.wordmark-avatar {
+.wordmark-mark {
   display: none;
+  align-items: center;
+  justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  overflow: hidden;
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  color: var(--foreground);
+  /* 与左侧指纹触发钮（1.25rem）同号，两枚圆钮里的图标光学大小一致 */
+  font-size: 1.25rem;
   transition:
-    transform var(--duration-base) var(--easing-base),
+    color var(--duration-base) var(--easing-base),
+    background-color var(--duration-base) var(--easing-base),
     border-color var(--duration-base) var(--easing-base);
 }
 
-.wordmark-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.wordmark-mark-icon {
+  width: 1em;
+  height: 1em;
 }
 
-.wordmark-avatar:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
+.wordmark-mark:hover {
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
-/* 移动端：站名让位给头像圆标 */
+/* 移动端：站名让位给图标圆标 */
 @media (max-width: 640px) {
   .wordmark {
     display: none;
   }
 
-  .wordmark-avatar {
+  .wordmark-mark {
     display: inline-flex;
   }
 }
@@ -191,7 +197,7 @@ onBeforeUnmount(() => {
 
 .header-pill--left > :deep(.nav-panel-root),
 .header-pill--left > .wordmark,
-.header-pill--left > .wordmark-avatar {
+.header-pill--left > .wordmark-mark {
   transform: translateX(-0.5rem);
 }
 

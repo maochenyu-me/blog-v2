@@ -30,7 +30,7 @@ app/data/*.ts          友链、关于页元数据、系统文案
 ```vue
 <!-- 禁止 -->
 <h1>喵洛阁</h1>
-<a href="https://github.com/kemiaosw">GitHub</a>
+<a href="https://github.com/maochenyu-me">GitHub</a>
 
 <!-- 允许 -->
 <h1>{{ site.name }}</h1>
@@ -43,9 +43,7 @@ app/data/*.ts          友链、关于页元数据、系统文案
 
 ```ts
 // 改这一行
-nav: [
-  { label: '时间线', to: '/archive', icon: 'tabler:archive' },
-]
+nav: [{ label: "时间线", to: "/archive", icon: "tabler:archive" }];
 ```
 
 改完，桌面导航、平板汉堡菜单、移动端底部 Tab 栏，三处同时更新。
@@ -59,14 +57,14 @@ nav: [
 ```ts
 export default defineAppConfig({
   site: {
-    name: '喵洛阁',
+    name: "喵洛阁",
     nav: [
-      { label: '首页', to: '/', icon: 'tabler:home' },
-      { label: '归档', to: '/archive', icon: 'tabler:archive' },
+      { label: "首页", to: "/", icon: "tabler:home" },
+      { label: "归档", to: "/archive", icon: "tabler:archive" },
       // ...
     ],
   },
-})
+});
 ```
 
 这比翻 15 个 `.vue` 文件去找 `to="/archive"` 快得多。

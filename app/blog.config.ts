@@ -41,8 +41,9 @@ export default {
     beian: {} as { icp?: string; police?: string; moe?: string },
 
     social: [
-      { label: 'GitHub', url: 'https://github.com/maochenyu-me', icon: 'tabler:brand-github' },
-      { label: 'X', url: 'https://x.com/kemiaosw', icon: 'tabler:brand-x' },
+        { label: 'GitHub', url: 'https://github.com/maochenyu-me', icon: 'tabler:brand-github' },
+      { label: 'Telegram', url: 'https://t.me/Kemeow0815', icon: 'tabler:brand-telegram' },
+    //   { label: 'X', url: 'https://x.com/kemiaosw', icon: 'tabler:brand-x' },
       { label: 'Email', url: 'mailto:me@kemiaosw.top', icon: 'tabler:mail' },
     ],
 
@@ -154,7 +155,7 @@ export default {
           label: '关于',
           items: [
             { label: 'GitHub', to: 'https://github.com/maochenyu-me', icon: 'tabler:brand-github', external: true },
-            { label: 'X', to: 'https://x.com/kemiaosw', icon: 'tabler:brand-x', external: true },
+            // { label: 'X', to: 'https://x.com/kemiaosw', icon: 'tabler:brand-x', external: true },
             { label: '邮箱', to: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail', external: true },
             { label: '关于', to: '/about', icon: 'tabler:user' },
             { label: '更新日志', to: '/changelog', icon: 'tabler:history' },

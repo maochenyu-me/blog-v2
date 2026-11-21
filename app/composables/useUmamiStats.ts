@@ -10,7 +10,7 @@ import { umamiConfig } from '~/utils/umami-config'
  *   lastMonth 最近 30 天（滚动窗口，对应「最近月访问」）
  *   total     建站至今（startAt=0）
  *
- * 全链路失败时返回 null，页面继续展示 placeholder；成功结果在
+ * 全链路失败时返回 null，统计卡各指标显示占位符（不再有硬编码兜底数字）；成功结果在
  * sessionStorage 缓存 10 分钟，避免刷新反复打代理。
  */
 

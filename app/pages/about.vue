@@ -1,5 +1,24 @@
 <script setup lang="ts">
-import { aboutConfig as cfg, aboutRows, isBlockEnabled, type AboutBlockKey, type VisitStatsData } from '~/data/about'
+import type { Component } from 'vue'
+import AboutCard from '~/components/about/AboutCard.vue'
+import AboutHello from '~/components/about/AboutHello.vue'
+import AboutTips from '~/components/about/AboutTips.vue'
+import AboutSkills from '~/components/about/AboutSkills.vue'
+import AboutPersonality from '~/components/about/AboutPersonality.vue'
+import AboutCoverWall from '~/components/about/AboutCoverWall.vue'
+import AboutSiteCards from '~/components/about/AboutSiteCards.vue'
+import AboutVisitStats from '~/components/about/AboutVisitStats.vue'
+import AboutSelfInfo from '~/components/about/AboutSelfInfo.vue'
+import AboutReward from '~/components/about/AboutReward.vue'
+import {
+  aboutConfig as cfg,
+  buildAboutLayout,
+  isBlockEnabled,
+  type AboutBlockKey,
+  type RenderCell,
+  type RenderRow,
+  type VisitStatsData,
+} from '~/data/about'
 import sponsorsData from '~/data/sponsors.json'
 
 const { ui } = useUi()
@@ -8,11 +27,10 @@ const { data: about } = await useAsyncData('about', () =>
   queryCollection('about').first(),
 )
 
-/** 实时访问统计：客户端经 /api/umami 代理拉取，失败继续展示 placeholder */
+/** 实时访问统计：客户端经 /api/umami 代理拉自建 Umami；未就绪/失败时组件显示占位符 */
 const liveStats = ref<VisitStatsData | null>(null)
 
 onMounted(async () => {
-  if (!cfg.visitStats.apiUrl) return
   liveStats.value = await fetchVisitStats()
 })
 
@@ -23,24 +41,120 @@ useHead({ title: ui.pages.about })
 
 const vis = (key: AboutBlockKey) => isBlockEnabled(key)
 
+/** 渲染行：相邻两条「独苗行」自动合并成一行（上左、下右），任一行恢复满员即退回居中 */
+const layout = computed(() =>
+  buildAboutLayout((key) => vis(key) && (key !== 'aboutMe' || !!about.value)),
+)
+
 /** 同行组件按 span/总 span 分配宽度（保留行 gap 的份额）；
  *  关闭同行某个组件后，剩余组件保持自身原宽并由行居中。 */
-function cell(
-  row: Array<{ key: AboutBlockKey; span: number }> | undefined,
-  key: AboutBlockKey,
-) {
-  const sum = row?.reduce((acc, c) => acc + c.span, 0) ?? 1
-  const span = row?.find((c) => c.key === key)?.span ?? 1
-  return { '--about-basis': `calc((${span} / ${sum}) * (100% - 1.25rem))` }
+function cellStyle(row: RenderRow, cell: RenderCell) {
+  const total = row.totalSpan || 1
+  const span = cell.span || 1
+  return { '--about-basis': `calc((${span} / ${total}) * (100% - 1.25rem))` }
 }
 
-const rowHello = aboutRows[0]
-const rowSkills = aboutRows[1]
-const rowMbti = aboutRows[2]
-const rowGames = aboutRows[3]
-const rowData = aboutRows[4]
-const rowAboutMe = aboutRows[5]
-const rowReward = aboutRows[6]
+/** 行内锚点：打赏行带 id，供打赏弹窗「赞赏者名单」跳转 */
+function rowId(row: RenderRow) {
+  return row.cells.some((c) => c.key === 'reward') ? 'reward' : undefined
+}
+
+type BlockDef = { comp: Component; props: Record<string, unknown> }
+
+/** aboutMe 走模板内联（要渲染 ContentRenderer 正文），这里只占位 */
+const placeholderBlock: BlockDef = {
+  comp: { name: 'AboutBlockPlaceholder', render: () => null },
+  props: {},
+}
+
+const blocks = computed<Record<AboutBlockKey, BlockDef>>(() => ({
+  hello: {
+    comp: AboutHello,
+    props: {
+      prefix: cfg.hello.prefix,
+      tips: cfg.hello.tips,
+      name: cfg.hello.name,
+      intro: cfg.hello.intro,
+    },
+  },
+  tips: {
+    comp: AboutTips,
+    props: {
+      lead: cfg.tips.lead,
+      line1: cfg.tips.line1,
+      line2: cfg.tips.line2,
+      words: [...cfg.tips.words],
+    },
+  },
+  skills: {
+    comp: AboutSkills,
+    props: {
+      tips: cfg.skills.tips,
+      title: cfg.skills.title,
+      icons: [...cfg.skills.icons],
+    },
+  },
+  personality: {
+    comp: AboutPersonality,
+    props: {
+      tips: cfg.personality.tips,
+      title: cfg.personality.title,
+      mbti: cfg.personality.mbti,
+      desc: cfg.personality.desc,
+      link: cfg.personality.link,
+      image: cfg.personality.image || undefined,
+    },
+  },
+  anime: {
+    comp: AboutCoverWall,
+    props: {
+      tips: cfg.anime.tips,
+      title: cfg.anime.title,
+      items: [...cfg.anime.items],
+    },
+  },
+  games: {
+    comp: AboutCoverWall,
+    props: {
+      tips: cfg.games.tips,
+      title: cfg.games.title,
+      items: [...cfg.games.items],
+    },
+  },
+  siteCards: {
+    comp: AboutSiteCards,
+    props: { cards: [...cfg.siteCards.cards] },
+  },
+  selfInfo: {
+    comp: AboutSelfInfo,
+    props: { items: [...cfg.selfInfo.items] },
+  },
+  visitStats: {
+    comp: AboutVisitStats,
+    props: {
+      tips: cfg.visitStats.tips,
+      title: cfg.visitStats.title,
+      data: liveStats.value,
+      labels: cfg.visitStats.labels,
+    },
+  },
+  aboutMe: placeholderBlock,
+  reward: {
+    comp: AboutReward,
+    props: {
+      tips: cfg.reward.tips,
+      title: cfg.reward.title,
+      desc: cfg.reward.desc,
+      stats: cfg.reward.stats,
+      chargeLabel: cfg.reward.chargeLabel,
+      countText: cfg.reward.countText,
+      items: rewardItems ?? [],
+      emptyText: cfg.reward.emptyText,
+    },
+  },
+}))
+
+const blockOf = (key: AboutBlockKey): BlockDef => blocks.value[key]
 </script>
 
 <template>
@@ -57,111 +171,25 @@ const rowReward = aboutRows[6]
       />
 
       <div class="about-rows">
-        <!-- 问候 + 关键词轮播 -->
-        <div v-if="vis('hello') || vis('tips')" class="about-row">
-          <AboutHello
-            v-if="vis('hello')"
-            :style="cell(rowHello, 'hello')"
-            :prefix="cfg.hello.prefix"
-            :tips="cfg.hello.tips"
-            :name="cfg.hello.name"
-            :intro="cfg.hello.intro"
-          />
-          <AboutTips
-            v-if="vis('tips')"
-            :style="cell(rowHello, 'tips')"
-            :lead="cfg.tips.lead"
-            :line1="cfg.tips.line1"
-            :line2="cfg.tips.line2"
-            :words="[...cfg.tips.words]"
-          />
-        </div>
-
-        <!-- 技能墙 -->
-        <div v-if="vis('skills')" class="about-row">
-          <AboutSkills
-            :style="cell(rowSkills, 'skills')"
-            :tips="cfg.skills.tips"
-            :title="cfg.skills.title"
-            :icons="[...cfg.skills.icons]"
-          />
-        </div>
-
-        <!-- 性格 + 追番 -->
-        <div v-if="vis('personality') || vis('anime')" class="about-row">
-          <AboutPersonality
-            v-if="vis('personality')"
-            :style="cell(rowMbti, 'personality')"
-            :tips="cfg.personality.tips"
-            :title="cfg.personality.title"
-            :mbti="cfg.personality.mbti"
-            :desc="cfg.personality.desc"
-            :link="cfg.personality.link"
-            :image="cfg.personality.image || undefined"
-          />
-          <AboutCoverWall
-            v-if="vis('anime')"
-            :style="cell(rowMbti, 'anime')"
-            :tips="cfg.anime.tips"
-            :title="cfg.anime.title"
-            :items="[...cfg.anime.items]"
-          />
-        </div>
-
-        <!-- 游戏 + 站点资料 -->
-        <div v-if="vis('games') || vis('siteCards')" class="about-row">
-          <AboutCoverWall
-            v-if="vis('games')"
-            :style="cell(rowGames, 'games')"
-            :tips="cfg.games.tips"
-            :title="cfg.games.title"
-            :items="[...cfg.games.items]"
-          />
-          <AboutSiteCards
-            v-if="vis('siteCards')"
-            :style="cell(rowGames, 'siteCards')"
-            :cards="[...cfg.siteCards.cards]"
-          />
-        </div>
-
-        <!-- 访问统计 + 个人信息 -->
-        <div v-if="vis('visitStats') || vis('selfInfo')" class="about-row">
-          <AboutVisitStats
-            v-if="vis('visitStats')"
-            :style="cell(rowData, 'visitStats')"
-            :tips="cfg.visitStats.tips"
-            :title="cfg.visitStats.title"
-            :data="liveStats ?? cfg.visitStats.placeholder"
-            :labels="cfg.visitStats.labels"
-          />
-          <AboutSelfInfo
-            v-if="vis('selfInfo')"
-            :style="cell(rowData, 'selfInfo')"
-            :items="[...cfg.selfInfo.items]"
-          />
-        </div>
-
-        <!-- 关于我（正文来自 content/about.md） -->
-        <div v-if="vis('aboutMe') && about" class="about-row">
-          <AboutCard :style="cell(rowAboutMe, 'aboutMe')" class="aboutme-card">
-            <h2 class="aboutme-title">{{ cfg.aboutMe.title }}</h2>
-            <ContentRenderer :value="about" class="prose aboutme-prose" />
-          </AboutCard>
-        </div>
-
-        <!-- 打赏名单（id 供打赏弹窗「赞赏者名单」锚点跳转） -->
-        <div v-if="vis('reward')" id="reward" class="about-row">
-          <AboutReward
-            :style="cell(rowReward, 'reward')"
-            :tips="cfg.reward.tips"
-            :title="cfg.reward.title"
-            :desc="cfg.reward.desc"
-            :stats="cfg.reward.stats"
-            :charge-label="cfg.reward.chargeLabel"
-            :count-text="cfg.reward.countText"
-            :items="rewardItems ?? []"
-            :empty-text="cfg.reward.emptyText"
-          />
+        <div v-for="(row, i) in layout" :id="rowId(row)" :key="i" class="about-row">
+          <template v-for="cell in row.cells" :key="cell.key">
+            <!-- 关于我：正文来自 content/about.md -->
+            <component
+              :is="AboutCard"
+              v-if="cell.key === 'aboutMe' && about"
+              :style="cellStyle(row, cell)"
+              class="aboutme-card"
+            >
+              <h2 class="aboutme-title">{{ cfg.aboutMe.title }}</h2>
+              <ContentRenderer :value="about" class="prose aboutme-prose" />
+            </component>
+            <component
+              :is="blockOf(cell.key).comp"
+              v-else
+              :style="cellStyle(row, cell)"
+              v-bind="blockOf(cell.key).props"
+            />
+          </template>
         </div>
       </div>
     </div>

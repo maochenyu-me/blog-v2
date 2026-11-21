@@ -72,11 +72,15 @@ defineProps<{
 
 .mbti-link:hover { text-decoration: underline; }
 
+/* 立绘按卡片高度定尺寸（占 3/4 以上），而不是按宽度写死 px：
+   同行等高后卡片更高时立绘会跟着放大，始终贴住卡片底边。 */
 .mbti-figure {
   position: absolute;
   right: var(--space-item);
-  bottom: -96px;
-  width: 240px;
+  bottom: 0;
+  width: auto;
+  height: 76%;
+  max-height: 100%;
   transform-origin: 60% 100%;
   transition: transform 2s cubic-bezier(0.13, 0.45, 0.21, 1.02);
   z-index: 1;
@@ -89,7 +93,7 @@ defineProps<{
 
 @media (max-width: 768px) {
   .mbti-desc { max-width: 62%; }
-  .mbti-figure { width: 180px; right: -1rem; bottom: -72px; }
+  .mbti-figure { height: 72%; right: -0.75rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

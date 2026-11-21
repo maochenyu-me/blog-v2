@@ -2,34 +2,43 @@
 import type { VisitStatsData } from '~/data/about'
 
 /**
- * 访问统计卡：apiUrl 为空时展示 placeholder 占位数据，
- * 接入统计服务后由页面传入实时数据替换。
+ * 访问统计卡：数据全部来自自建 Umami（见 useUmamiStats）。
+ * 拉取中或失败时 data 为 null，各指标显示占位符——不展示任何假数据。
  */
-defineProps<{
+const props = defineProps<{
   tips: string
   title: string
-  data: VisitStatsData
+  data: VisitStatsData | null
   labels: Record<keyof VisitStatsData, string>
 }>()
 
-const rows = (d: VisitStatsData, l: Record<keyof VisitStatsData, string>) => [
-  { label: l.todayUv, value: d.todayUv },
-  { label: l.todayPv, value: d.todayPv },
-  { label: l.yesterdayUv, value: d.yesterdayUv },
-  { label: l.yesterdayPv, value: d.yesterdayPv },
-  { label: l.lastMonthPv, value: d.lastMonthPv },
-  { label: l.totalPv, value: d.totalPv },
-]
+/** 拉取中/失败时的占位符 */
+const DASH = '—'
+
+const rows = computed(() => {
+  const d = props.data
+  const l = props.labels
+  return [
+    { label: l.todayUv, value: d?.todayUv ?? DASH },
+    { label: l.todayPv, value: d?.todayPv ?? DASH },
+    { label: l.yesterdayUv, value: d?.yesterdayUv ?? DASH },
+    { label: l.yesterdayPv, value: d?.yesterdayPv ?? DASH },
+    { label: l.totalUv, value: d?.totalUv ?? DASH },
+    { label: l.totalPv, value: d?.totalPv ?? DASH },
+    // 最近月访问口径与上面几项不同（滚动 30 天），单独占满一行作区分
+    { label: l.lastMonthPv, value: d?.lastMonthPv ?? DASH, wide: true },
+  ]
+})
 </script>
 
 <template>
   <AboutCard class="stats-card">
     <p class="stats-tips">{{ tips }}</p>
     <p class="stats-title">{{ title }}</p>
-    <dl class="stats-grid">
-      <div v-for="row in rows(data, labels)" :key="row.label">
+    <dl class="stats-grid" :aria-busy="!data">
+      <div v-for="row in rows" :key="row.label" :class="{ 'is-wide': row.wide }">
         <dt>{{ row.label }}</dt>
-        <dd>{{ row.value }}</dd>
+        <dd :class="{ 'is-pending': !data }">{{ row.value }}</dd>
       </div>
     </dl>
   </AboutCard>
@@ -57,6 +66,9 @@ const rows = (d: VisitStatsData, l: Record<keyof VisitStatsData, string>) => [
 
 .stats-grid div { min-width: 0; }
 
+/* 口径不同的指标（滚动 30 天）整行铺开，与「今日/昨日/累计」分组区隔 */
+.stats-grid div.is-wide { grid-column: 1 / -1; }
+
 .stats-grid dt {
   font-size: var(--fs-meta);
   color: var(--muted-foreground);
@@ -69,6 +81,12 @@ const rows = (d: VisitStatsData, l: Record<keyof VisitStatsData, string>) => [
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--accent);
+}
+
+/* 拉取中/失败：占位符弱化，避免被误读成真实数字 */
+.stats-grid dd.is-pending {
+  color: var(--muted-foreground);
+  opacity: 0.65;
 }
 
 @media (max-width: 480px) {
