@@ -21,7 +21,7 @@ const titleChars = computed(() => site.name.split(''))
 <template>
   <NuxtLink to="/" class="blog-header">
     <img
-      src="/images/avatar.png"
+      src="/images/avatar.jpg"
       class="blog-avatar"
       :alt="site.name"
     />

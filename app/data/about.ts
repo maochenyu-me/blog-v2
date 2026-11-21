@@ -68,7 +68,7 @@ export const aboutConfig = {
   /** 置顶：头像 + 两侧漂浮标签（≤768px 隐藏标签） */
   hero: {
     enabled: true,
-    avatar: '/images/avatar.png',
+    avatar: '/images/avatar.jpg',
     name: '克喵',
     authorTags: [
       { left: '🐱 猫系前端', right: '🍊 布丁铲屎官' },

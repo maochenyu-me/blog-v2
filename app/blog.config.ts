@@ -9,16 +9,16 @@
 export default {
   site: {
     name: '喵洛阁',
-    shortName: '喵洛阁',
-    description: '克喵的博客，记录前端工程、设计与日常折腾。',
+    shortName: 'KeMiao Blog',
+    description: '克喵的小站，记录着我的一些文字。',
     url: 'https://www.kemiaosw.top',
     locale: 'zh-CN' as const,
 
     author: {
       name: '克喵:)',
-      avatar: '/images/avatar.png',
-      bio: '写前端，也写字。偶尔折腾点没用的东西。',
-      email: 'hi@kemiaosw.top',
+      avatar: '/images/avatar.jpg',
+      bio: '每一段旅行，都有终点。',
+      email: 'me@kemiaosw.top',
     },
 
     /** 建站起始日（ISO 日期）—— 页脚「小站已存活」计时的起点 */
@@ -41,9 +41,9 @@ export default {
     beian: {} as { icp?: string; police?: string; moe?: string },
 
     social: [
-      { label: 'GitHub', url: 'https://github.com/kemiaosw', icon: 'tabler:brand-github' },
+      { label: 'GitHub', url: 'https://github.com/maochenyu-me', icon: 'tabler:brand-github' },
       { label: 'X', url: 'https://x.com/kemiaosw', icon: 'tabler:brand-x' },
-      { label: 'Email', url: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail' },
+      { label: 'Email', url: 'mailto:me@kemiaosw.top', icon: 'tabler:mail' },
     ],
 
     /**
@@ -153,7 +153,7 @@ export default {
         {
           label: '关于',
           items: [
-            { label: 'GitHub', to: 'https://github.com/kemiaosw', icon: 'tabler:brand-github', external: true },
+            { label: 'GitHub', to: 'https://github.com/maochenyu-me', icon: 'tabler:brand-github', external: true },
             { label: 'X', to: 'https://x.com/kemiaosw', icon: 'tabler:brand-x', external: true },
             { label: '邮箱', to: 'mailto:hi@kemiaosw.top', icon: 'tabler:mail', external: true },
             { label: '关于', to: '/about', icon: 'tabler:user' },
@@ -280,8 +280,9 @@ export default {
      */
     whitelist: [
       'kemiaosw.top',
-      '518339.xyz',
-      'github.com',
+        '518339.xyz',
+        'github.com',
+      '081531.xyz'
     ],
     /** 倒计时秒数，到 0 自动跳转；0 或负数表示不自动跳转，只能手动点击 */
     countdown: 5,
