@@ -181,7 +181,9 @@ const blockOf = (key: AboutBlockKey): BlockDef => blocks.value[key]
               class="aboutme-card"
             >
               <h2 class="aboutme-title">{{ cfg.aboutMe.title }}</h2>
-              <ContentRenderer :value="about" class="prose aboutme-prose" />
+              <ProseBody class="aboutme-prose">
+                <ContentRenderer :value="about" />
+              </ProseBody>
             </component>
             <component
               :is="blockOf(cell.key).comp"

@@ -53,6 +53,8 @@
     "@iconify-json/tabler": "^1.2.43",
     "@nuxt/kit": "^4.6.4",
     "@tailwindcss/vite": "^4.3.4",
+    "@types/hast": "^3.0.5",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^26.6.6",
     "@types/qrcode": "^1.5.6",
     "better-sqlite3": "^12.5.0",
@@ -62,6 +64,7 @@
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.4",
     "typescript": "^5.9.3",
+    "vfile": "^6.0.3",
     "vue-tsc": "^3.3.12",
     "zod": "^3.25.76"
   },

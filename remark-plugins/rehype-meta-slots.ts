@@ -8,7 +8,14 @@ import type { VFile } from 'vfile'
 export type MinimarkNode = string | MinimarkTree
 export type MinimarkTree = [string, Properties, ...MinimarkNode[]]
 
-export interface MetaSlotsTree extends MinimarkTree {
+/**
+ * minimark 的对象形态：`fromHast` 抽出的是 `{ type, value, props }`，
+ * 不是上面的元组形态 —— 元组无法承载 MDC 属性，属性必须单独带出来
+ * 交给 MetaSlotsRenderer 读 title。
+ */
+export interface MetaSlotsTree {
+  type: 'minimark'
+  value: MinimarkNode[]
   props?: Properties
 }
 

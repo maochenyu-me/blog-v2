@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { MetaSlotsTree } from '~~/remark-plugins/rehype-meta-slots'
+
 /**
  * 组件示例预览页（previews collection，/example）。
  * 布局沿用 posts/[slug].vue 的骨架：正文 + 右侧目录沟槽 + 玻璃面板。
@@ -64,8 +66,9 @@ const asideSlotNames = computed(() => {
 })
 
 /** meta 插槽树存于 page.meta.slots（schema 外字段被 @nuxt/content 收进 meta） */
-function slotTree(name: string) {
-  return (page.value as { meta?: { slots?: Record<string, unknown> } })?.meta?.slots?.[name]
+function slotTree(name: string): MetaSlotsTree | undefined {
+  const slots = (page.value as { meta?: { slots?: Record<string, MetaSlotsTree> } })?.meta?.slots
+  return slots?.[name]
 }
 </script>
 

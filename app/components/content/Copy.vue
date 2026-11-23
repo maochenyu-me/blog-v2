@@ -81,15 +81,24 @@ function getInitialTheme(): 'light' | 'dark' {
 async function getHighlighter() {
   if (!highlighterPromise) {
     highlighterPromise = (async () => {
-      const [{ createHighlighterCore }, { createJavaScriptRegexEngine }, langs, themes] = await Promise.all([
+      const [{ createHighlighterCore }, { createJavaScriptRegexEngine }, { bundledLanguages }, { bundledThemes }] = await Promise.all([
         import('shiki/core'),
         import('shiki/engine/javascript'),
         import('shiki/langs'),
         import('shiki/themes'),
       ])
       const highlighter = await createHighlighterCore({
-        themes: [themes.githubLight, themes.githubDark],
-        langs: [langs.bash, langs.javascript, langs.typescript, langs.json, langs.powershell, langs.bat],
+        // shiki 4 的 `shiki/themes`、`shiki/langs` 只导出打包字典（值为惰性 import），
+        // 不再有 githubLight / bash 这类单条具名导出。
+        themes: [bundledThemes['github-light'], bundledThemes['github-dark']],
+        langs: [
+          bundledLanguages.bash,
+          bundledLanguages.javascript,
+          bundledLanguages.typescript,
+          bundledLanguages.json,
+          bundledLanguages.powershell,
+          bundledLanguages.bat,
+        ],
         engine: createJavaScriptRegexEngine(),
       })
       return highlighter

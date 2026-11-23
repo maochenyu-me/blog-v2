@@ -12,7 +12,7 @@ const { site } = useBlogConfig()
 const emojiMap: string[] = ['🐱', '🐟', '🐾', '🎣', '🐈']
 
 function getEmoji(charIndex: number): string {
-  return emojiMap[charIndex % emojiMap.length]
+  return emojiMap[charIndex % emojiMap.length] ?? ''
 }
 
 const titleChars = computed(() => site.name.split(''))

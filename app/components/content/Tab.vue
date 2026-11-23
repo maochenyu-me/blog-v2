@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  tabs: string[]
+  /** 只读元组也接受：文案常量常以 readonly 形式传入 */
+  tabs: readonly string[]
   center?: boolean
   active?: number
 }>()

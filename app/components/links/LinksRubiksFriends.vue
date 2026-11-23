@@ -288,8 +288,6 @@ async function waitVisible() {
 
 /* ---------- 生命周期 ---------- */
 
-let resizeClean: (() => void) | null = null
-
 onMounted(() => {
   cubieEls = [
     ...(rootEl.value?.querySelectorAll<HTMLElement>('.rubiks-cubie') ?? []),
@@ -317,7 +315,6 @@ onBeforeUnmount(() => {
   destroyed.value = true
   observer?.disconnect()
   scrollClean?.()
-  resizeClean?.()
   window.removeEventListener(THEME_TRANSITION_EVENT, onThemeTransition)
 })
 
