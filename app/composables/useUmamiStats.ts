@@ -14,12 +14,23 @@ import { umamiConfig } from '~/utils/umami-config'
  * sessionStorage 缓存 10 分钟，避免刷新反复打代理。
  */
 
+/**
+ * v2.16 的 /api/websites/:id/stats 把每个指标包成 { value, prev }（prev 是对比周期），
+ * 而 v3 返回的是裸数字。两种形状都兼容，避免换实例就白屏。
+ */
+type UmamiMetric = number | { value?: number }
+
 interface UmamiStats {
-  pageviews: number
-  visitors: number
-  visits: number
-  bounces: number
-  totaltime: number
+  pageviews: UmamiMetric
+  visitors: UmamiMetric
+  visits: UmamiMetric
+  bounces: UmamiMetric
+  totaltime: UmamiMetric
+}
+
+function metricValue(metric: UmamiMetric | undefined): number {
+  if (typeof metric === 'number') return metric
+  return metric?.value ?? 0
 }
 
 const CACHE_KEY = 'umami-stats-cache'
@@ -42,6 +53,7 @@ async function requestStats(startAt: number, endAt: number, token: string): Prom
       params: { startAt, endAt },
       headers: {
         'x-umami-share-token': token,
+        // v3 要求双头，v2.16 只认 token、忽略这个头；带着不影响 v2
         'x-umami-share-context': umamiConfig.shareId,
       },
       timeout: 10000,
@@ -75,13 +87,13 @@ async function loadStats(): Promise<VisitStatsData | null> {
   const fmt = (n: number) => n.toLocaleString('zh-CN')
 
   return {
-    todayUv: fmt(today.visitors),
-    todayPv: fmt(today.pageviews),
-    yesterdayUv: fmt(yesterday.visitors),
-    yesterdayPv: fmt(yesterday.pageviews),
-    lastMonthPv: fmt(lastMonth.pageviews),
-    totalUv: fmt(total.visitors),
-    totalPv: fmt(total.pageviews),
+    todayUv: fmt(metricValue(today.visitors)),
+    todayPv: fmt(metricValue(today.pageviews)),
+    yesterdayUv: fmt(metricValue(yesterday.visitors)),
+    yesterdayPv: fmt(metricValue(yesterday.pageviews)),
+    lastMonthPv: fmt(metricValue(lastMonth.pageviews)),
+    totalUv: fmt(metricValue(total.visitors)),
+    totalPv: fmt(metricValue(total.pageviews)),
   }
 }
 

@@ -155,8 +155,8 @@ export default defineNuxtConfig({
      * 不含服务端，线上依旧走 Functions；映射与 Functions 保持一致。
      */
     routeRules: {
-      '/api/umami/share/**': { proxy: 'https://um.081531.xyz/api/share/**' },
-      '/api/umami/websites/**': { proxy: 'https://um.081531.xyz/api/websites/**' },
+      '/api/umami/share/**': { proxy: `${umamiConfig.baseUrl}/api/share/**` },
+      '/api/umami/websites/**': { proxy: `${umamiConfig.baseUrl}/api/websites/**` },
     },
   },
 

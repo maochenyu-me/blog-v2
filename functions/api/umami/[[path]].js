@@ -7,14 +7,13 @@
  * 这里把 /api/umami/* 转发到 Umami 的 /api/*，只放行 share 与 stats
  * 两个只读端点，其余一律 403，防止代理被当开放网关滥用。
  *
- * 本站所用 Umami 版本要求双头鉴权：
- *   x-umami-share-token    分享 JWT（GET /api/share/{shareId} 颁发）
- *   x-umami-share-context  存在即可（值不限），缺失时返回 401
- * 两个头原样透传，代理自身不存任何密钥；上游地址可用环境变量
- * UMAMI_BASE_URL 覆盖，默认指向自建实例。
+ * 鉴权头（原样透传，代理自身不存任何密钥）：
+ *   x-umami-share-token    分享 JWT（GET /api/share/{shareId} 颁发，v2 无 exp）
+ *   x-umami-share-context  v3 必需、v2.16 忽略；保留透传以兼容两种实例
+ * 上游地址可用环境变量 UMAMI_BASE_URL 覆盖，默认指向自建实例（v2.16.1）。
  */
 
-const DEFAULT_BASE_URL = 'https://um.081531.xyz'
+const DEFAULT_BASE_URL = 'https://um.518339.xyz'
 
 const ALLOWED = [/^share\/[\w-]+$/, /^websites\/[\w-]+\/stats$/]
 

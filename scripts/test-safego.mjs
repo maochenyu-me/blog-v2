@@ -23,7 +23,7 @@ const whitelist = ['kemiaosw.top', '518339.xyz', 'github.com']
 // Trusted: exact domain match
 assert.equal(isTrustedLink('https://www.kemiaosw.top/about', whitelist), true)
 assert.equal(isTrustedLink('https://kemiaosw.top/', whitelist), true)
-assert.equal(isTrustedLink('https://ecoku.518339.xyz/api', whitelist), true)
+assert.equal(isTrustedLink('https://pl.518339.xyz/api', whitelist), true)
 assert.equal(isTrustedLink('https://github.com/maochenyu-me', whitelist), true)
 
 // Trusted: subdomain contains whitelist entry

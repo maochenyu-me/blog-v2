@@ -273,7 +273,7 @@ export default {
         /** 是否启用留言区 */
         enabled: true,
         /** 自部署的 Ecoku 实例地址（不带尾斜杠） */
-        serverUrl: 'https://ecoku.518339.xyz',
+        serverUrl: 'https://pl.518339.xyz',
         /** Ecoku 后台注册的站点 ID */
         siteId: 'blog-v2',
         /** 留言板固定作用域键：与文章页的 route.path 命名空间隔开，避免串页 */
@@ -319,7 +319,7 @@ export default {
         /** 是否启用文章评论区（Ecoku，仅文章页渲染） */
         enabled: true,
         /** 自部署的 Ecoku 实例地址（不带尾斜杠） */
-        serverUrl: 'https://ecoku.518339.xyz',
+        serverUrl: 'https://pl.518339.xyz',
         /** Ecoku 后台注册的站点 ID */
         siteId: 'blog-v2',
         /** 每页根评论数（1～100） */
@@ -329,7 +329,7 @@ export default {
 
     shuoshuo: {
       /** Ech0 实例地址（不带尾斜杠），说说数据源 */
-      apiBase: 'https://m.081531.xyz',
+      apiBase: 'https://ech0.518339.xyz',
       /** 每页说说数量 */
       pageSize: 10,
       /** 卡片显示名称，空串回落到 site.author.name */
