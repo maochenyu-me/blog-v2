@@ -6,6 +6,9 @@ import { umamiConfig } from './app/utils/umami-config'
 
 const THEME_INIT_SCRIPT = buildThemeInitScript()
 
+/** 自建 api-enhanced 实例；与 functions/api/ncm/[[path]].js 的默认上游一致。 */
+const ncmBaseUrl = 'https://ncm.518339.xyz'
+
 function pluginPath(path: string) {
   return pathToFileURL(resolve(`./remark-plugins/${path}.ts`)).href
 }
@@ -157,6 +160,13 @@ export default defineNuxtConfig({
     routeRules: {
       '/api/umami/share/**': { proxy: `${umamiConfig.baseUrl}/api/share/**` },
       '/api/umami/websites/**': { proxy: `${umamiConfig.baseUrl}/api/websites/**` },
+      /**
+       * 本地 dev 代理 /api/ncm/* → 自建 api-enhanced。
+       * 与 functions/api/ncm/[[path]].js 同一份上游；线上由 Function 承担，
+       * 这里只是让 dev server 有同样的同源入口（上游 CORS 不放行 localhost）。
+       * 路径白名单只在 Function 里生效，dev 代理是通配——它不出现在静态产物中。
+       */
+      '/api/ncm/**': { proxy: `${ncmBaseUrl}/**` },
     },
   },
 

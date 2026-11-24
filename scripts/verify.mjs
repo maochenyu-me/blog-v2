@@ -50,7 +50,7 @@ const isLocalCapBlocked = (text) =>
  * 豁免只针对该服务域名的 5xx，不豁免网络失败（ERR_*）——
  * 那是真的连不上，应该暴露出来。
  */
-const MUSIC_API_HOSTS = ['netease.518339.xyz']
+const MUSIC_API_HOSTS = ['netease.518339.xyz', 'ncm.518339.xyz']
 
 const isMusicApi5xx = (text) =>
   text.includes('Failed to load resource') &&

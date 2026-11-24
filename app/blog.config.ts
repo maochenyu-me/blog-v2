@@ -230,8 +230,8 @@ export default {
    */
   music: {
     enabled: true,
-    /** 统一数据源：netease = 网易云解析，meting = 下方 Meting 配置；修改后重新构建。 */
-    source: 'meting' as const,
+    /** 统一数据源：netease = 网易云解析，meting = 下方 Meting 配置，ncm = 下方 NCM 配置；修改后重新构建。 */
+    source: 'ncm' as const,
     /** 解析服务地址，末尾不要带斜杠 */
     api: 'https://netease.518339.xyz',
     /** 歌单 ID：从 https://music.163.com/playlist?id=xxx 里取纯数字部分 */
@@ -265,6 +265,24 @@ export default {
         playlist: '2607560262',
         name: 'Meting · 网易云歌单',
       },
+      /**
+       * NCM 数据源：自建 api-enhanced（NeteaseCloudMusicApi Enhanced）。
+       *
+       * api 指向站内代理 /api/ncm，不是上游实例。原因有三个，缺一不可：
+       *   1. 上游 CORS 只放行 https://www.kemiaosw.top，localhost 与其它域名一律
+       *      不给 Access-Control-Allow-Origin，本地 dev 直接跨域失败；
+       *   2. 上游 /song/url/v1 返回的播放直链是 http://m*.music.126.net，
+       *      https 页面会被混合内容策略拦掉；
+       *   3. 上游按账号 fee 限流，收费曲目必须逐曲带 unblock=true 才给地址。
+       * 代理见 functions/api/ncm/[[path]].js（线上）与 nuxt.config.ts routeRules（本地 dev）。
+       */
+      ncm: {
+        enabled: true,
+        /** 站内代理前缀，末尾不要带斜杠 */
+        api: '/api/ncm',
+        playlist: '2607560262',
+        name: 'NCM · 网易云歌单',
+      } as import('./utils/music').NcmConfig,
   },
 
   /**

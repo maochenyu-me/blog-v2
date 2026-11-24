@@ -1,9 +1,9 @@
 import { computed, ref, shallowRef } from 'vue'
-import { activeLyricIndex, normalizeApiTrack, normalizeLibrary, normalizePlaylist, nextTrackIndex, parseLrc, readPlaybackState, streamUrl, metingUrl, normalizeMetingPlaylist } from './music.ts'
-import type { LibraryTrack, LyricLine, MusicLevel, MusicTrack, PlayMode, MusicSource, MetingConfig } from './music.ts'
+import { activeLyricIndex, normalizeApiTrack, normalizeLibrary, normalizeNcmPlaylist, normalizeNcmSearch, normalizePlaylist, nextTrackIndex, parseLrc, readPlaybackState, streamUrl, metingUrl, normalizeMetingPlaylist, upgradeMediaUrl } from './music.ts'
+import type { LibraryTrack, LyricLine, MusicLevel, MusicTrack, PlayMode, MusicSource, MetingConfig, NcmConfig } from './music.ts'
 
 interface PlayerConfig {
-  enabled: boolean; api: string; playlist: string; warmup: string; level: MusicLevel; volume: number; tracks?: LibraryTrack[]; source?: MusicSource; meting?: MetingConfig
+  enabled: boolean; api: string; playlist: string; warmup: string; level: MusicLevel; volume: number; tracks?: LibraryTrack[]; source?: MusicSource; meting?: MetingConfig; ncm?: NcmConfig
 }
 interface PlayerDependencies {
   audioFactory?: () => HTMLAudioElement
@@ -53,9 +53,9 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
   const listeners: Array<[string, EventListener]> = []
   let playlistGeneration = 0
   function cacheKey() {
-    return source === 'meting'
-      ? `kemiao:music:playlist:meting:${config.meting?.api}:${config.meting?.server}:${config.meting?.playlist}`
-      : `kemiao:music:playlist:${config.api}:${config.playlist}`
+    if (source === 'meting') return `kemiao:music:playlist:meting:${config.meting?.api}:${config.meting?.server}:${config.meting?.playlist}`
+    if (source === 'ncm') return `kemiao:music:playlist:ncm:${config.ncm?.api}:${config.ncm?.playlist}`
+    return `kemiao:music:playlist:${config.api}:${config.playlist}`
   }
 
   function persist() {
@@ -79,8 +79,56 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
     return payload
   }
 
+  /**
+   * NCM 走自己的入口（Pages Function 代理），与 netease 的 config.api 分开。
+   * 上游对收费曲目只放行 unblock 逐曲请求，故这里不做批量。
+   */
+  async function ncmRequest(path: string, signal?: AbortSignal) {
+    const base = (config.ncm?.api || '').replace(/\/+$/, '')
+    if (!base) throw new Error('ncm disabled')
+    const response = await fetcher(`${base}${path}`, {
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000),
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    return response.json()
+  }
+
+  /** 直链内嵌时间戳，约 20 分钟过期；留一半余量，过期就当没缓存。 */
+  const STREAM_TTL = 600000
+  const streamCache = new Map<string, { url: string; at: number }>()
+
+  function cachedStream(id: string): string {
+    const entry = streamCache.get(id)
+    if (!entry) return ''
+    if (Date.now() - entry.at > STREAM_TTL) { streamCache.delete(id); return '' }
+    return entry.url
+  }
+
+  async function resolveNcmSource(track: MusicTrack, signal?: AbortSignal): Promise<string> {
+    const cached = cachedStream(track.id)
+    if (cached) return cached
+    try {
+      const payload = await ncmRequest(`/song/url/v1?${new URLSearchParams({ id: track.id, level: config.level, unblock: 'true' })}`, signal)
+      const url = upgradeMediaUrl(payload?.data?.[0]?.url)
+      if (!url) return ''
+      streamCache.set(track.id, { url, at: Date.now() })
+      if (streamCache.size > 60) streamCache.delete(streamCache.keys().next().value!)
+      return url
+    } catch { return '' }
+  }
+
   function sourceOf(track: MusicTrack) {
+    if (track.source === 'ncm') return cachedStream(track.id)
     return track.source === 'api' ? streamUrl(config.api, track.id, config.level) : track.src || ''
+  }
+
+  /** 预取下一首的直链，切歌时省掉 unblock 的 1~2s。 */
+  function prefetchNext() {
+    if (source !== 'ncm' || disposed) return
+    const index = nextTrackIndex(currentIndex.value, tracks.value.length, 1, mode.value)
+    const next = index >= 0 ? tracks.value[index] : null
+    if (!next || next.source !== 'ncm' || cachedStream(next.id)) return
+    void resolveNcmSource(next)
   }
 
   function mediaSession() {
@@ -113,6 +161,10 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
         const payload = await request(`/song?${new URLSearchParams({ id: track.id, type: 'lyric' })}`, controller.signal)
         raw = payload?.data?.lrc?.lyric || ''
         translation = payload?.data?.tlyric?.lyric || ''
+      } else if (track.source === 'ncm') {
+        const payload = await ncmRequest(`/lyric?${new URLSearchParams({ id: track.id })}`, controller.signal)
+        raw = payload?.lrc?.lyric || ''
+        translation = payload?.tlyric?.lyric || ''
       } else if (track.lyricsUrl && !raw) {
         const response = await fetcher(track.lyricsUrl, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
         if (!response.ok) throw new Error('lyrics')
@@ -141,6 +193,8 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
   function prepare() {
     if (!audio || !current.value || playing.value || wanted) return
     const source = sourceOf(current.value)
+    // NCM 直链要异步换，还没拿到就不预热，交给 playAt 去解。
+    if (!source) return
     if (audio.src === source || audio.getAttribute?.('src') === source) return
     audio.preload = 'metadata'
     audio.src = source
@@ -149,7 +203,7 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
 
   function applyPlaylist(name: string, list: MusicTrack[]) {
     const activeId = current.value?.id
-    const online = source === 'meting' ? 'meting' : 'api'
+    const online = source === 'meting' ? 'meting' : source === 'ncm' ? 'ncm' : 'api'
     const configured = [...normalizeLibrary(config.tracks || []), ...list]
     const ids = new Set(configured.map(track => track.id))
     tracks.value = [...configured, ...tracks.value.filter(track => (track.source === online || track.source === 'file') && !ids.has(track.id))]
@@ -178,11 +232,14 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
     if (loading) return loading
     if (status.value === 'ready' && !force) return
     const selectedSource = source
-    const selectedPlaylist = selectedSource === 'meting' ? config.meting?.playlist : config.playlist
+    const selectedPlaylist = selectedSource === 'meting'
+      ? config.meting?.playlist
+      : selectedSource === 'ncm' ? config.ncm?.playlist : config.playlist
     if (!selectedPlaylist) { playlistLoading.value = false; playlistError.value = false; status.value = 'ready'; prepare(); return }
     const token = ++playlistGeneration
     const key = cacheKey()
     const metingName = config.meting?.name || 'Meting'
+    const ncmName = config.ncm?.name || 'NCM'
     playlistLoading.value = true
     status.value = tracks.value.length ? 'ready' : 'loading'
     playlistError.value = false
@@ -199,6 +256,10 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
               const normalized = normalizePlaylist({ data: { playlist: { name: cached.name, tracks: cached.tracks } } })
               if (normalized.tracks.length) { applyPlaylist(normalized.name, normalized.tracks); return }
             }
+            if (selectedSource === 'ncm' && cached && Date.now() - cached.at < 1800000 && Array.isArray(cached.tracks)) {
+              const normalized = normalizeNcmPlaylist({ playlist: { name: cached.name, tracks: cached.tracks.map((track: MusicTrack) => ({ ...track, ar: track.artists, al: { name: track.album, picUrl: track.cover } })) } })
+              if (normalized.tracks.length) { applyPlaylist(normalized.name, normalized.tracks); return }
+            }
             const legacy = selectedSource === 'netease' ? JSON.parse(storage?.getItem(`kemiao:music:playlist:${config.playlist}`) || 'null') : null
             if (legacy && Date.now() - legacy.at < 1800000 && Array.isArray(legacy.tracks)) {
               const normalized = normalizePlaylist({ data: { playlist: { name: legacy.name, tracks: legacy.tracks.map((track: MusicTrack) => ({ ...track, picUrl: track.cover })) } } })
@@ -209,9 +270,11 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
         playlistAbort = new AbortController()
         const result = selectedSource === 'meting'
           ? { name: metingName, tracks: await fetchMeting('playlist', selectedPlaylist, playlistAbort.signal) }
-          : normalizePlaylist(await request(`/playlist?${new URLSearchParams({ id: selectedPlaylist })}`, playlistAbort.signal))
+          : selectedSource === 'ncm'
+            ? normalizeNcmPlaylist(await ncmRequest(`/playlist/detail?${new URLSearchParams({ id: selectedPlaylist })}`, playlistAbort.signal))
+            : normalizePlaylist(await request(`/playlist?${new URLSearchParams({ id: selectedPlaylist })}`, playlistAbort.signal))
         if (disposed || token !== playlistGeneration) return
-        applyPlaylist(result.name, result.tracks)
+        applyPlaylist(result.name || (selectedSource === 'ncm' ? ncmName : ''), result.tracks)
         try {
           const data = selectedSource === 'meting'
             ? { at: Date.now(), items: result.tracks.map(track => ({ id: track.resourceId, title: track.name, author: track.artists, url: track.src, pic: track.cover, lrc: track.lyricsUrl })) }
@@ -229,6 +292,12 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
     try { await operation } finally {
       if (token === playlistGeneration) { loading = null; playlistLoading.value = false }
     }
+  }
+
+  /** 同步源能直接给；NCM 需要先换直链，返回 '' 表示取不到。 */
+  async function resolveSource(track: MusicTrack): Promise<string> {
+    if (track.source !== 'ncm') return sourceOf(track)
+    return resolveNcmSource(track)
   }
 
   async function playAt(index: number) {
@@ -253,7 +322,15 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
       audio.load()
       await new Promise(resolve => setTimeout(resolve, 60))
       if (disposed || token !== selection || !wanted) return
-      audio.src = sourceOf(track)
+      const resolved = await resolveSource(track)
+      if (disposed || token !== selection || !wanted) return
+      if (!resolved) {
+        buffering.value = false
+        wanted = false
+        unavailable.value = true
+        return
+      }
+      audio.src = resolved
     }
     if (lyricsStatus.value === 'idle' || !reused) void loadLyrics()
     mediaSession()
@@ -266,6 +343,7 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
       if ((error as Error)?.name === 'NotAllowedError') blocked.value = true
       else if ((error as Error)?.name !== 'AbortError') unavailable.value = true
     }
+    prefetchNext()
     persist()
   }
 
@@ -311,6 +389,7 @@ export function createMusicPlayer(config: PlayerConfig, dependencies: PlayerDepe
     const query = keyword.trim().slice(0, 100)
     if (!query) return []
     if (source === 'meting') return fetchMeting('search', query, signal)
+    if (source === 'ncm') return normalizeNcmSearch(await ncmRequest(`/cloudsearch?${new URLSearchParams({ keywords: query, limit: '30' })}`, signal))
     const result = await request(`/search?${new URLSearchParams({ keyword: query, limit: '30' })}`, signal)
     return (Array.isArray(result.data) ? result.data : []).map((track: unknown) => normalizeApiTrack(track)).filter((track: MusicTrack | null): track is MusicTrack => !!track)
   }

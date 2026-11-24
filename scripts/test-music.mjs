@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { parseLrc, activeLyricIndex, normalizePlaylist, normalizeLibrary, streamUrl, nextTrackIndex, readPlaybackState, formatTime } from '../app/utils/music.ts'
+import { parseLrc, activeLyricIndex, normalizePlaylist, normalizeLibrary, streamUrl, nextTrackIndex, readPlaybackState, formatTime, upgradeMediaUrl, normalizeNcmPlaylist, normalizeNcmSearch } from '../app/utils/music.ts'
 
 const lines = parseLrc('[offset:100]\n[00:02.50][00:06.000]Hello\n[00:01.000]Start\n[ar:Artist]\n[00:09.000]End', '[00:02.500]你好')
 assert.deepEqual(lines.map(({ time, text, translation }) => ({ time, text, translation })), [
@@ -239,3 +239,90 @@ for (const selected of ['netease', 'meting']) {
   assert.equal(configuredStore.get('kemiao:music:source'), selected === 'meting' ? 'netease' : 'meting', 'legacy preference is ignored and not rewritten')
 }
 console.log('PASS: code-only source selection, legacy preference ignored, protocol-specific playback/search/lyrics, no runtime switch')
+
+const { createMusicPlayer: createNcmPlayer } = await import('../app/utils/music-player.ts')
+assert.equal(upgradeMediaUrl('http://m801.music.126.net/a/b.flac'), 'https://m801.music.126.net/a/b.flac')
+assert.equal(upgradeMediaUrl('https://p1.music.126.net/c.jpg'), 'https://p1.music.126.net/c.jpg')
+assert.equal(upgradeMediaUrl('javascript:alert(1)'), '')
+assert.equal(upgradeMediaUrl('/music/a.mp3'), '/music/a.mp3')
+
+const ncmPlaylistPayload = { code: 200, playlist: { name: '夜声羽烦喜欢的音乐', coverImgUrl: 'http://p1.music.126.net/cover.jpg', tracks: [
+  { id: 2603290364, name: 'One', ar: [{ name: 'A' }, { name: 'B' }], al: { name: 'First', picUrl: 'http://p3.music.126.net/one.jpg' }, dt: 200000, fee: 1 },
+  { id: 2603290364, name: 'Duplicate' },
+  { id: 1901371647, name: 'Two', ar: [{ name: 'C' }], al: { name: 'Second' }, fee: 0 },
+  { name: 'Invalid' },
+] } }
+const ncmParsed = normalizeNcmPlaylist(ncmPlaylistPayload)
+assert.equal(ncmParsed.name, '夜声羽烦喜欢的音乐')
+assert.equal(ncmParsed.tracks.length, 2)
+assert.equal(ncmParsed.tracks[0].id, '2603290364')
+assert.equal(ncmParsed.tracks[0].artists, 'A / B')
+assert.equal(ncmParsed.tracks[0].album, 'First')
+assert.equal(ncmParsed.tracks[0].cover, 'https://p3.music.126.net/one.jpg', 'http cover is upgraded')
+assert.equal(ncmParsed.tracks[0].source, 'ncm')
+assert.equal(ncmParsed.tracks[1].cover, 'https://p1.music.126.net/cover.jpg', 'playlist cover is the fallback')
+assert.throws(() => normalizeNcmPlaylist({ code: 200 }), /ncm playlist/)
+assert.deepEqual(normalizeNcmPlaylist({ playlist: { name: 'x', tracks: [] } }).tracks, [])
+
+const ncmSearch = normalizeNcmSearch({ result: { songs: [
+  { id: 1, name: 'Hit', ar: [{ name: 'Singer' }], al: { name: 'Album', picUrl: 'http://p4.music.126.net/s.jpg' }, fee: 0 },
+  { id: 1, name: 'Dup' },
+] } })
+assert.equal(ncmSearch.length, 1)
+assert.equal(ncmSearch[0].source, 'ncm')
+assert.equal(ncmSearch[0].cover, 'https://p4.music.126.net/s.jpg')
+assert.deepEqual(normalizeNcmSearch({ result: {} }), [])
+assert.deepEqual(normalizeNcmSearch(null), [])
+console.log('PASS: NCM payload normalization, http upgrade, ar/al mapping, duplicates dropped')
+
+const ncmConfig = { enabled: true, api: '/api/ncm', playlist: '2607560262', name: 'NCM' }
+const ncmAudio = new FakeAudio()
+const ncmRequests = []
+const ncmPlayer = createNcmPlayer({ ...config, playlist: '2607560262', source: 'ncm', ncm: ncmConfig }, {
+  audioFactory: () => ncmAudio,
+  storage: { getItem: () => null, setItem() {} },
+  fetcher: async url => {
+    const address = String(url); ncmRequests.push(address)
+    if (address.includes('/playlist/detail')) return { ok: true, json: async () => ncmPlaylistPayload }
+    if (address.includes('/song/url/v1')) {
+      const id = new URL(address, 'https://local.invalid').searchParams.get('id')
+      return { ok: true, json: async () => ({ code: 200, data: [{ id, url: `http://m801.music.126.net/${id}.flac`, fee: 0 }] }) }
+    }
+    if (address.includes('/lyric')) return { ok: true, json: async () => ({ code: 200, lrc: { lyric: '[00:01.00]NCM lyric' }, tlyric: { lyric: '[00:01.00]译文' } }) }
+    if (address.includes('/cloudsearch')) return { ok: true, json: async () => ({ code: 200, result: { songs: [{ id: 777, name: 'Found', ar: [{ name: 'X' }], al: { name: 'Y' } }] } }) }
+    return { ok: false, status: 500 }
+  },
+})
+await ncmPlayer.init()
+assert.equal(ncmPlayer.source, 'ncm')
+assert.equal(ncmPlayer.tracks.value.length, 2)
+assert.equal(ncmPlayer.current.value.id, '2603290364')
+assert.ok(ncmRequests.some(url => url.startsWith('/api/ncm/playlist/detail')), 'playlist goes through the proxy prefix')
+await ncmPlayer.togglePlay()
+assert.equal(ncmAudio.src, 'https://m801.music.126.net/2603290364.flac', 'http direct link is upgraded to https')
+await ncmPlayer.loadLyrics()
+assert.equal(ncmPlayer.lyrics.value[0].text, 'NCM lyric')
+assert.equal(ncmPlayer.lyrics.value[0].translation, '译文')
+const ncmFound = await ncmPlayer.search('keyword')
+assert.equal(ncmFound[0].id, '777')
+assert.equal(ncmFound[0].source, 'ncm')
+assert.ok(ncmRequests.every(url => url.startsWith('/api/ncm')), 'every NCM call stays on the same-origin proxy')
+ncmPlayer.dispose()
+console.log('PASS: NCM source plays through proxy prefix, resolves and upgrades the direct link, lyrics and search')
+
+const ncmCachePlayer = createNcmPlayer({ ...config, playlist: '2607560262', source: 'ncm', ncm: ncmConfig }, {
+  audioFactory: () => new FakeAudio(),
+  storage: { getItem: () => null, setItem() {} },
+  fetcher: async url => {
+    const address = String(url)
+    if (address.includes('/playlist/detail')) return { ok: true, json: async () => ncmPlaylistPayload }
+    // 这首取不到地址：上游未登录时 fee 曲目就是 url=null
+    return { ok: true, json: async () => ({ code: 200, data: [{ id: '2603290364', url: null }] }) }
+  },
+})
+await ncmCachePlayer.init()
+await ncmCachePlayer.togglePlay()
+assert.equal(ncmCachePlayer.unavailable.value, true, 'a null direct link marks the track unavailable instead of playing an empty src')
+assert.equal(ncmCachePlayer.playing.value, false)
+ncmCachePlayer.dispose()
+console.log('PASS: NCM missing direct link degrades to unavailable, not a silent empty src')

@@ -541,6 +541,7 @@ export const ui = {
       file: '临时导入',
       api: '在线音乐',
       meting: 'Meting',
+      ncm: 'NCM',
       unknownArtist: '未知歌手',
       selected: '当前曲目',
       playTrack: '播放《{name}》',

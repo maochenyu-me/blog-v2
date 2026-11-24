@@ -84,6 +84,7 @@ export interface MusicConfig {
   volume: number
   tracks: import('../utils/music').LibraryTrack[]
   meting: import('../utils/music').MetingConfig
+  ncm: import('../utils/music').NcmConfig
 }
 
 export interface SearchConfig {

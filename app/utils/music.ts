@@ -1,14 +1,16 @@
 export type PlayMode = 'list' | 'one' | 'shuffle'
 export type MusicLevel = 'standard' | 'exhigh' | 'lossless'
-export type MusicSource = 'netease' | 'meting'
+export type MusicSource = 'netease' | 'meting' | 'ncm'
 export interface MetingConfig { enabled: boolean; api: string; server: 'netease' | 'tencent'; playlist: string; name: string }
+/** NCM（自建 api-enhanced）入口；api 指向 Pages Function 代理，避免跨域与明文直链。 */
+export interface NcmConfig { enabled: boolean; api: string; playlist: string; name: string }
 export interface MusicTrack {
   id: string
   name: string
   artists: string
   album: string
   cover: string
-  source: 'api' | 'meting' | 'local' | 'url' | 'file'
+  source: 'api' | 'meting' | 'ncm' | 'local' | 'url' | 'file'
   src?: string
   lyric?: string
   translation?: string
@@ -36,6 +38,18 @@ export function safeMediaUrl(value: unknown): string {
     const url = new URL(value)
     return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''
   } catch { return '' }
+}
+
+/**
+ * 把明文 http 升级成 https 后再走 safeMediaUrl。
+ *
+ * 只给 NCM 数据源用：网易云直链（m*.music.126.net）与封面（p*.music.126.net）
+ * 都返回 http，而本站是 https，浏览器会按混合内容直接拦掉。这两个域名的
+ * https 端口同样可用且带 `Access-Control-Allow-Origin: *`，改协议即可。
+ */
+export function upgradeMediaUrl(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return safeMediaUrl(value.replace(/^http:\/\//i, 'https://'))
 }
 
 function timedLines(raw: string, offset: number) {
@@ -138,6 +152,45 @@ export function normalizeMetingPlaylist(payload: unknown, server: string): Music
       cover: safeMediaUrl(item.pic || item.cover), source: 'meting', resourceId, src, lyricsUrl: safeMediaUrl(item.lrc) })
   }
   return tracks
+}
+
+/**
+ * NCM（api-enhanced）曲目：ar/al 是新版接口结构，artists/album 兼容本地缓存的精简形态。
+ */
+export function normalizeNcmTrack(item: any, fallbackCover = ''): MusicTrack | null {
+  if (!item || !/^\d+$/.test(String(item.id))) return null
+  const artists = Array.isArray(item.ar)
+    ? item.ar.map((artist: any) => String(artist?.name || '')).filter(Boolean).join(' / ')
+    : String(item.artists || '')
+  const cover = item.al?.picUrl || item.picUrl || item.cover || fallbackCover
+  return {
+    id: String(item.id), name: String(item.name || ''), artists,
+    album: item.al ? String(item.al.name || '') : String(item.album || ''),
+    cover: upgradeMediaUrl(cover), source: 'ncm',
+  }
+}
+
+function dedupeNcm(list: unknown[], fallbackCover = ''): MusicTrack[] {
+  const seen = new Set<string>()
+  const tracks: MusicTrack[] = []
+  for (const item of list) {
+    const track = normalizeNcmTrack(item, fallbackCover)
+    if (!track || seen.has(track.id)) continue
+    seen.add(track.id)
+    tracks.push(track)
+  }
+  return tracks
+}
+
+export function normalizeNcmPlaylist(payload: any): { name: string; tracks: MusicTrack[] } {
+  const playlist = payload?.playlist
+  if (!playlist || !Array.isArray(playlist.tracks)) throw new Error('ncm playlist')
+  return { name: String(playlist.name || ''), tracks: dedupeNcm(playlist.tracks, playlist.coverImgUrl) }
+}
+
+export function normalizeNcmSearch(payload: any): MusicTrack[] {
+  const songs = payload?.result?.songs
+  return Array.isArray(songs) ? dedupeNcm(songs) : []
 }
 
 export function nextTrackIndex(index: number, total: number, direction: number, mode: PlayMode, random = Math.random): number {
