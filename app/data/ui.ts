@@ -10,6 +10,7 @@ export const ui = {
   common: {
     close: '关闭',
     count: '{n} 篇',
+    skipToContent: '跳到正文',
   },
 
   /** 导航与页头 */

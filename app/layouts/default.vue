@@ -2,6 +2,7 @@
 const { site, feed } = useBlogConfig()
 const theme = useTheme()
 const route = useRoute()
+const { ui } = useUi()
 const musicPage = computed(() => route.path.replace(/\/$/, '') === '/music')
 
 /**
@@ -54,6 +55,8 @@ useHead({ link: feedLinks })
     <div v-if="backdropEnabled" class="site-backdrop" aria-hidden="true" />
     <div v-if="backdropEnabled" class="paper-grain" aria-hidden="true" />
 
+    <a href="#main-content" class="skip-link" data-safego-ignore>{{ ui.common.skipToContent }}</a>
+
     <SiteHeader />
 
     <main id="main-content" class="app-main">
@@ -61,13 +64,32 @@ useHead({ link: feedLinks })
     </main>
 
     <SiteFooter v-if="!musicPage" />
-    <SearchDialog />
+    <LazySearchDialog hydrate-on-idle />
     <FloatingActions v-if="!musicPage" />
     <MusicPlayer />
   </div>
 </template>
 
 <style scoped>
+.skip-link {
+  position: fixed;
+  inset-inline: 0;
+  top: -100%;
+  z-index: 100;
+  width: min(20rem, calc(100% - var(--space-gutter) * 2));
+  margin-inline: auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--accent);
+  background-color: var(--background);
+  color: var(--foreground);
+  text-align: center;
+  font-size: var(--fs-meta);
+}
+
+.skip-link:focus {
+  top: var(--space-gutter);
+}
+
 .site-backdrop {
   position: fixed;
   inset: 0;

@@ -100,7 +100,7 @@ export default {
         announcement: {
           /** 是否显示公告栏 */
           enabled: true,
-          /** 公告正文（Markdown，GFM 语法，单换行即换行） */
+          /** 公告正文（Markdown，GFM 语法，单换行即换行；构建期转为 HTML） */
           text: '博客正在持续改版中，首页焕然一新。遇到问题欢迎通过社交链接反馈！',
           /** 「了解更多」链接（空字符串则不显示链接） */
           moreLabel: '了解更多',
@@ -110,7 +110,7 @@ export default {
         visitor: {
           /** 是否显示访客信息卡 */
           enabled: true,
-          /** 欢迎语（Markdown，支持 emoji 与链接） */
+          /** 欢迎语（Markdown，支持 emoji 与链接；构建期转为 HTML） */
           text: '欢迎来到喵洛阁！这里记录技术与生活，欢迎与我交流 💡，一起进步 🚀',
           /** 博主所在纬度（与访客 IP 定位算直线距离）：南京仙林 · 栖霞区 */
           bloggerLat: 32.1116,

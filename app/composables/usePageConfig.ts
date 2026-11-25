@@ -58,13 +58,17 @@ export interface HomePageConfig {
     }
     announcement: {
       enabled: boolean
-      text: string
+      /** 旧版 Markdown 配置；构建期转换为 html */
+      text?: string
+      html?: string
       moreLabel: string
       moreTo: string
     }
     visitor: {
       enabled: boolean
-      text: string
+      /** 旧版 Markdown 配置；构建期转换为 welcomeHtml */
+      text?: string
+      welcomeHtml?: string
       bloggerLat: number
       bloggerLon: number
       showIpCard: boolean

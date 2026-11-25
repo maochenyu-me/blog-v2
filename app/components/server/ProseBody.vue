@@ -215,6 +215,10 @@
   margin-block: var(--paragraph-spacing);
   border: 1px solid var(--border);
   cursor: zoom-in;
+
+  &[height] {
+    width: auto;
+  }
 }
 
 /* ---------- 分隔线 ---------- */

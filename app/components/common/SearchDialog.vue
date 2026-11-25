@@ -84,7 +84,7 @@ watch(isLoading, (loading) => {
 })
 
 /** 弹窗打开：拉索引 + 聚焦 + 重置；关闭：清输入、解锁滚动 */
-watch(isOpen, async (open_) => {
+async function focusOnOpen(open_: boolean) {
   if (!import.meta.client) return
 
   if (open_) {
@@ -102,7 +102,9 @@ watch(isOpen, async (open_) => {
   debouncedQuery.value = ''
   results.value = []
   activeIndex.value = 0
-})
+}
+
+watch(isOpen, focusOnOpen)
 
 function moveActive(delta: number) {
   const total = results.value.length
@@ -166,6 +168,7 @@ let unbind: (() => void) | null = null
 
 onMounted(() => {
   unbind = bindShortcut()
+  if (isOpen.value) void focusOnOpen(true)
 })
 
 onBeforeUnmount(() => {

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 /**
- * 侧栏公告栏：Markdown 公告（GFM，单换行即 <br>）；可配「了解更多」链接。
+ * 侧栏公告栏：支持构建期生成的 HTML，以及旧版 text Markdown 配置。
  */
-import { marked } from 'marked'
-
-marked.use({ breaks: true, gfm: true })
-
 interface AnnouncementConfig {
-  text: string
+  text?: string
+  html?: string
   moreLabel: string
   moreTo: string
 }
@@ -18,7 +15,7 @@ const props = defineProps<{
 
 const { ui } = useUi()
 
-const html = computed(() => marked.parse(props.cfg.text, { async: false }) as string)
+const html = computed(() => props.cfg.html ?? '')
 </script>
 
 <template>

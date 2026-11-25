@@ -15,33 +15,37 @@ const currentPage = ref(1)
 /** 分类筛选：'' = 全部；与卡片流分页联动，切换分类时回到第 1 页 */
 const activeCategory = ref('')
 
-const { data } = await useAsyncData('home-posts', async () => {
-  const [featured, pinned, all, siteStats] = await Promise.all([
-    pageCfg.carousel.enabled ? posts.featuredPosts(pageCfg.carousel.maxFeatured) : Promise.resolve([]),
-    posts.pinned(pageCfg.pinnedCount),
-    posts.list(),
-    posts.siteStats(),
-  ])
+const [postsAsync, statsAsync] = await Promise.all([
+  useAsyncData('home-posts', async () => {
+    const [featured, pinned, all] = await Promise.all([
+      pageCfg.carousel.enabled ? posts.featuredPosts(pageCfg.carousel.maxFeatured) : Promise.resolve([]),
+      posts.pinned(pageCfg.pinnedCount),
+      posts.list(),
+    ])
 
-  // 卡片流：全部文章（已按 pinned DESC, date DESC 排序），分页在前端做
-  // （数据集为个人博客量级，全量返回足够轻；分页逻辑与归档页口径一致）
-  const categories = await posts.categories()
-  const tags = await posts.tags()
+    // 卡片流：全部文章（已按 pinned DESC, date DESC 排序），分页在前端做
+    // （数据集为个人博客量级，全量返回足够轻；分页逻辑与归档页口径一致）
+    const categories = await posts.categories()
+    const tags = await posts.tags()
 
-  // 发文热力图在构建期定稿：窗口以构建日为锚点，随 payload 序列化到客户端，
-  // 客户端不重算，避免「今天」两端不一致造成的水合错位
-  const heat = buildHeatmapDays(all, new Date(), pageCfg.heatmap.weeks)
+    // 发文热力图在构建期定稿：窗口以构建日为锚点，随 payload 序列化到客户端，
+    // 客户端不重算，避免「今天」两端不一致造成的水合错位
+    const heat = buildHeatmapDays(all, new Date(), pageCfg.heatmap.weeks)
 
-  return {
-    featured,
-    pinnedPaths: new Set(pinned.map((p) => p.path)),
-    all,
-    categories,
-    tags,
-    siteStats,
-    heat,
-  }
-})
+    return {
+      featured,
+      pinnedPaths: new Set(pinned.map((p) => p.path)),
+      all,
+      categories,
+      tags,
+      heat,
+    }
+  }),
+  useAsyncData('home-site-stats', () => posts.siteStats()),
+])
+
+const data = postsAsync.data
+const siteStats = statsAsync.data
 
 const filteredPosts = computed(() => {
   const list = data.value?.all ?? []
@@ -172,11 +176,11 @@ useHead({
             <StatsCard
               v-else-if="key === 'stats' && pageCfg.sidebar.stats.enabled"
               :cfg="pageCfg.sidebar.stats"
-              :post-count="data?.siteStats.postCount ?? 0"
-              :word-count="data?.siteStats.wordCount ?? 0"
+              :post-count="siteStats?.postCount ?? 0"
+              :word-count="siteStats?.wordCount ?? 0"
               :visitor-count="siteUv"
               :view-count="sitePv"
-              :latest-update="data?.siteStats.latestUpdate ?? null"
+              :latest-update="siteStats?.latestUpdate ?? null"
             />
             <SponsorCard
               v-else-if="key === 'sponsors' && pageCfg.sidebar.sponsors.enabled"

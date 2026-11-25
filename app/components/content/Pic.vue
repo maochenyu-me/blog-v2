@@ -18,6 +18,18 @@ const props = withDefaults(defineProps<{
 })
 
 const isOptimizable = computed(() => canOptimizeImage(props.src))
+
+const sizeStyle = computed(() => ({
+  cursor: props.zoom ? 'zoom-in' : undefined,
+  width: props.width && props.height ? 'auto' : undefined,
+  maxWidth: props.width && props.height ? `min(100%, ${toCssSize(props.width)})` : undefined,
+  maxHeight: toCssSize(props.height),
+}))
+
+function toCssSize(value?: number | string) {
+  if (value === '' || value === undefined) return value
+  return Number.isFinite(Number(value)) ? `${value}px` : value
+}
 </script>
 
 <template>
@@ -26,7 +38,7 @@ const isOptimizable = computed(() => canOptimizeImage(props.src))
       v-if="isOptimizable"
       class="pic-image"
       :class="{ 'no-lightbox': !zoom }"
-      :style="{ cursor: zoom ? 'zoom-in' : undefined }"
+      :style="sizeStyle"
       :src
       :alt="caption"
       :width
@@ -40,7 +52,7 @@ const isOptimizable = computed(() => canOptimizeImage(props.src))
       v-else
       class="pic-image"
       :class="{ 'no-lightbox': !zoom }"
-      :style="{ cursor: zoom ? 'zoom-in' : undefined }"
+      :style="sizeStyle"
       :src
       :alt="caption"
       :width

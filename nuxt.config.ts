@@ -16,6 +16,22 @@ function pluginPath(path: string) {
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
 
+  /**
+   * 静态产物只使用预渲染 payload。Nuxt Content 默认仍会打包客户端
+   * SQLite/WASM 作为 queryCollection 的兜底，但纯静态部署没有
+   * 对应的运行时查询接口，这份兜底不可用且会增加约 1.1 MB。
+   * 开发环境保留真实实现，便于 Content 查询和 HMR。
+   */
+  $production: {
+    vite: {
+      resolve: {
+        alias: {
+          '@sqlite.org/sqlite-wasm': resolve('./app/utils/content-client-database.ts'),
+        },
+      },
+    },
+  },
+
   // ---------- 模块 ----------
   modules: [
     '@nuxt/content',
@@ -251,6 +267,7 @@ export default defineNuxtConfig({
      * 全部声明在 app/blog.config.ts 里，默认值一个都扫不到。
      */
     clientBundle: {
+      includeCustomCollections: true,
       scan: {
         globInclude: ['**/*.{vue,ts,mdc,md}'],
       },
@@ -330,6 +347,15 @@ export default defineNuxtConfig({
      * 本站的 head 声明是有意的（显式声明便于审计），所以关掉这条校验。
      */
     validateAppHead: false,
+  },
+
+  /**
+   * 本项目使用纯静态 Cloudflare Pages。旧版 skew protection 会把过去
+   * 10 次构建的 _nuxt 资产复制回每次发布，使已删除的依赖永久留在产物中。
+   * 保留版本检测，但不再打包/恢复历史构建资产。
+   */
+  skewProtection: {
+    bundleAssets: false,
   },
 
   // ---------- Content ----------

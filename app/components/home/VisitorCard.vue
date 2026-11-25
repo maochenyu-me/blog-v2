@@ -4,7 +4,6 @@
  * 所有外部数据均为客户端拉取（onMounted），SSG 预渲染输出加载占位文案，
  * 与水合后的首帧一致，不会产生 hydration mismatch。
  */
-import { marked } from 'marked'
 import {
   fetchVisitorGeo,
   getBrowserFromUA,
@@ -14,10 +13,9 @@ import {
   type CdnKind,
 } from '~/utils/visitor'
 
-marked.use({ breaks: true, gfm: true })
-
 interface VisitorConfig {
-  text: string
+  text?: string
+  welcomeHtml?: string
   bloggerLat: number
   bloggerLon: number
   showIpCard: boolean
@@ -32,7 +30,7 @@ const { ui, t } = useUi()
 
 const v = ui.pages.home.sidebar.visitor
 
-const welcomeHtml = computed(() => marked.parse(props.cfg.text, { async: false }) as string)
+const welcomeHtml = computed(() => props.cfg.welcomeHtml ?? '')
 
 /* ---- 客户端信息状态（初值 = SSG 占位文案；显式 string，避免 ui.ts as const 字面量锁死类型） ---- */
 const ipText = ref<string>(v.loading)
