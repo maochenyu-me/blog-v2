@@ -234,6 +234,22 @@ await browser.close()
 // ---- 汇总 ----
 const fails = []
 
+/**
+ * 采集完整性：下面的逐页断言只遍历 report.routes，空集合会让所有检查
+ * 空真通过（预览服务没起来时就是 0 页 + 90 条导航异常，却打印 PASS）。
+ * 所以先把导航异常与缺失页数本身算作失败，再逐页检查。
+ */
+const expected = ROUTES.length * VIEWPORTS.length * 2
+if (report.routes.length < expected) {
+  fails.push(`采集不完整：期望 ${expected} 个页面状态，实际 ${report.routes.length} 个`)
+}
+for (const e of report.errors.slice(0, 5)) {
+  fails.push(`${e.route}@${e.viewport}/${e.scheme}: 导航失败 ${e.error}`)
+}
+if (report.errors.length > 5) {
+  fails.push(`另有 ${report.errors.length - 5} 条导航失败未逐条列出`)
+}
+
 for (const r of report.routes) {
   const m = r.metrics
   const tag = `${r.route}@${r.viewport}/${r.scheme}`
