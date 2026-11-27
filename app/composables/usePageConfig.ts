@@ -74,6 +74,36 @@ export interface HomePageConfig {
       showIpCard: boolean
       ipCardUrl: string
     }
+    siteInfo: {
+      enabled: boolean
+      defaultCollapsed: boolean
+      /**
+       * 主信息行。value 写点路径（如 'build.platform'）时取构建期采集值，
+       * 否则按字面量展示。
+       */
+      mainRows: Array<{ icon: string; labelKey: string; value: string }>
+      showDomain: boolean
+      versionCells: Array<{ icon: string; label: string; value: string }>
+      showBuildTime: boolean
+      buildTimeZone: string
+      showSystem: boolean
+    }
+    weather: {
+      enabled: boolean
+      defaultCollapsed: boolean
+      apiUrl: string
+      extended: boolean
+      city: string
+      cacheMinutes: number
+      metricOrder: WeatherMetricKey[]
+      showPollutants: boolean
+      showReportTime: boolean
+    }
+    cloud: {
+      enabled: boolean
+      providers: CloudProviderItem[]
+      ctaExternal: boolean
+    }
     motto: {
       enabled: boolean
       mottos: Array<{ text: string; from: string }>
@@ -112,12 +142,44 @@ export type SidebarWidgetKey =
   | 'profile'
   | 'announcement'
   | 'visitor'
+  | 'siteInfo'
+  | 'weather'
+  | 'cloud'
   | 'motto'
   | 'stats'
   | 'sponsors'
   | 'categories'
   | 'tags'
   | 'calendar'
+
+/** 云服务商推荐卡的单条数据（侧栏 cloud 模块，一项一张卡） */
+export interface CloudProviderItem {
+  enabled: boolean
+  /** 卡片标题：服务商名 */
+  name: string
+  /** 标题前的 tabler 图标 */
+  icon: string
+  /** 一句话定位 */
+  desc: string
+  /** 卖点标签 */
+  tags: string[]
+  /** CTA 按钮；url 留空则整颗按钮不渲染 */
+  cta: { label: string; url: string }
+}
+
+/** 天气卡指标键，与 ui.pages.home.sidebar.weather.metrics 的字段一一对应 */export type WeatherMetricKey =
+  | 'wind'
+  | 'visibility'
+  | 'feelsLike'
+  | 'humidity'
+  | 'pressure'
+  | 'aqi'
+  | 'cloud'
+  | 'uv'
+  | 'precipitation'
+  | 'precipProbability'
+  | 'sunrise'
+  | 'sunset'
 
 export interface ArchivePageConfig {
   groupBy: 'year' | 'month'

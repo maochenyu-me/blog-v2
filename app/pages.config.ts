@@ -76,11 +76,12 @@ export default {
         enabled: true,
         /**
          * 侧栏组件排列顺序，从上到下。
-         * 可选项：profile / announcement / visitor / motto / stats / categories / tags / calendar
+         * 可选项：profile / announcement / visitor / siteInfo / weather / cloud / motto /
+         *         stats / sponsors / categories / tags / calendar
          * 想隐藏某个组件：把它的 enabled 设为 false，或从数组中移除。
          * 注意：分类已默认由顶部 categoryBar 承担，此处默认不再重复展示。
          */
-        order: ['profile', 'announcement', 'visitor', 'motto', 'stats', 'sponsors', 'tags', 'calendar'],
+        order: ['profile', 'announcement', 'visitor', 'siteInfo', 'weather', 'motto', 'stats', 'sponsors', 'tags', 'calendar', 'cloud'],
 
         profile: {
           /** 是否显示资料卡 */
@@ -120,6 +121,113 @@ export default {
           showIpCard: true,
           /** IP 信息卡图源（ippure 生成，失效时可换其他服务或留空隐藏入口） */
           ipCardUrl: 'https://my.ippure.com/v1/card',
+        },
+
+        siteInfo: {
+          /** 是否显示站点信息卡 */
+          enabled: true,
+          /**
+           * 折叠区默认是否收起。true 时只露三行主信息，展开后才显示
+           * 域名 / 版本格子 / 构建时间 / 系统信息（截图里那部分）。
+           */
+          defaultCollapsed: true,
+          /**
+           * 主信息三行。value 支持两种写法：
+           *   'build.platform' 这类点路径 → 有该字段就用构建期自动采集值；
+           *   其他任意字符串 → 原样展示（用于写死不便自动探测的值）。
+           */
+          mainRows: [
+            { icon: 'tabler:cloud-upload', labelKey: 'buildPlatform', value: 'build.platform' },
+            { icon: 'tabler:versions', labelKey: 'siteVersion', value: 'build.siteVersion' },
+            { icon: 'tabler:license', labelKey: 'license', value: 'copyright.licenseShort' },
+          ],
+          /** 是否显示站点域名格（取自 site.url） */
+          showDomain: true,
+          /** 域名格外的技术栈格子，值来自构建期采集；label 为展示名 */
+          versionCells: [
+            { icon: 'tabler:brand-nuxt', label: 'Nuxt', value: 'build.nuxtVersion' },
+            { icon: 'tabler:brand-nodejs', label: 'Node', value: 'build.nodeVersion' },
+            { icon: 'tabler:package', label: 'pnpm', value: 'build.pnpmVersion' },
+            { icon: 'tabler:brand-vue', label: 'Vue', value: 'build.vueVersion' },
+          ],
+          /** 是否显示构建时间格 */
+          showBuildTime: true,
+          /** 构建时间的展示时区（构建机多为 UTC，按本站时区换算后再定格） */
+          buildTimeZone: 'Asia/Shanghai',
+          /** 是否显示构建机系统信息格 */
+          showSystem: true,
+        },
+
+        weather: {
+          /** 是否显示天气卡 */
+          enabled: true,
+          /** 折叠区默认是否收起 */
+          defaultCollapsed: true,
+          /**
+           * 天气数据接口（uapis.cn 免费源，无需 key）。
+           * extended=true 带体感/能见度/气压/紫外线/AQI/污染物，forecast=true 带日出日落。
+           *
+           * 默认走同源代理 /api/weather（Cloudflare Pages Function）：
+           * 上游限流时返回 429 且不带 CORS 头，直连会被浏览器当 CORS 失败、无法降级；
+           * 代理还顺带用 request.cf.city 保住「按访客所在地」的定位，并叠一层边缘缓存省配额。
+           * 想改回直连就把这里换成上游完整地址（需要接受偶发的 CORS 报错）。
+           */
+          apiUrl: '/api/weather',
+          /** 是否向接口请求扩展与预报字段（关闭后卡片只显示地点、温度与高低温） */
+          extended: true,
+          /**
+           * 固定城市。留空 = 按访客 IP 定位（每个访客看自己所在地）；
+           * 填城市名（如 '南京'）或 adcode（如 '320104'）则固定展示该地天气。
+           */
+          city: '',
+          /** 客户端缓存时长（分钟）：接口按 IP 计配额，同一访客该时长内翻页不重复请求 */
+          cacheMinutes: 30,
+          /**
+           * 指标格子显示顺序（键名对应 ui.weather.metrics 的字段）。
+           * precipProbability 需要接口返回 forecast[].pop，uapis 当前版本没有该字段，
+           * 默认不列（列了会永远显示 --）；接口升级后可自行加回。
+           */
+          metricOrder: [
+            'wind',
+            'visibility',
+            'feelsLike',
+            'humidity',
+            'pressure',
+            'aqi',
+            'cloud',
+            'uv',
+            'sunrise',
+            'sunset',
+            'precipitation',
+          ],
+          /** 是否显示底部污染物浓度行 */
+          showPollutants: true,
+          /** 是否显示数据更新时间 */
+          showReportTime: true,
+        },
+
+        cloud: {
+          /** 是否显示云服务商推荐（总开关，关掉后整块卡不渲染） */
+          enabled: true,
+          /**
+           * 服务商列表：一项渲染成一张卡（标题即服务商名）。
+           * 加第二家直接往数组里追加一项，不需要改组件。
+           */
+          providers: [
+            {
+              enabled: true,
+              name: '圣道云',
+              icon: 'tabler:server-2',
+              /** 官网原话（shengdaoyun.cn 首页主标题区）：香港 CN2 回国稳定、免备案 */
+              desc: '香港 CN2 与高防节点，回国稳定，无需备案',
+              /** 卖点取自官网产品导航，避开会变动的价格数字 */
+              tags: ['香港 CN2 云服务器', '美国 T 级高防', '物理服务器', '站长计划'],
+              /** 官网首页：https://www.shengdaoyun.cn */
+              cta: { label: '立即了解', url: 'https://www.shengdaoyun.cn/' },
+            },
+          ],
+          /** 是否在新标签页打开 CTA（站外链接建议保持 true） */
+          ctaExternal: true,
         },
 
         motto: {

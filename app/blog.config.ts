@@ -186,6 +186,8 @@ export default {
   copyright: {
     license: '署名-非商业性使用-相同方式共享 4.0 国际',
     licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans',
+    /** 协议短名（侧栏站点信息卡用，一行放得下） */
+    licenseShort: 'CC BY-NC-SA 4.0',
   },
 
   /**

@@ -183,6 +183,15 @@ export default defineNuxtConfig({
        * 路径白名单只在 Function 里生效，dev 代理是通配——它不出现在静态产物中。
        */
       '/api/ncm/**': { proxy: `${ncmBaseUrl}/**` },
+
+      /**
+       * 本地 dev 代理 /api/weather → uapis.cn。
+       * 与 functions/api/weather.js 同一个上游入口；线上由 Function 承担，
+       * 这里只解决 dev server 没有 Functions 运行时的问题。
+       * 注意：dev 代理是直连转发，拿不到 request.cf.city，因此本地调试时
+       * 上游按**本机出口 IP** 定位（等价于「你所在地」），符合预期。
+       */
+      '/api/weather': { proxy: 'https://uapis.cn/api/v1/misc/weather' },
     },
   },
 
@@ -230,8 +239,9 @@ export default defineNuxtConfig({
         // 继续 preload 只会让浏览器下载两个「无人使用」的 310 KB 文件，
         // 而且 preload 的优先级高于轮播封面图，等于亲手给 LCP 制造拥堵。
         //
-        // 拉丁字体（Inter / JetBrains Mono）的 preload 由 scripts/font-preload.mjs
-        // 在构建后自动注入，不需要在这里写死。
+        // 拉丁字体只有 Inter 需要 preload（JetBrains Mono 是等宽字体，只服务
+        // 代码块与数字元信息，7f35374 起不再 preload）。由 scripts/font-preload.mjs
+        // 在构建后按带哈希的实际文件名注入，不需要在这里写死。
       ],
       // 防 FOUC：首帧前同步读取主题偏好。
       // 放在 app.head 而不是布局里，因为 404 / error 页不渲染布局，

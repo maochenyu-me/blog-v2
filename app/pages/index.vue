@@ -169,6 +169,18 @@ useHead({
               v-else-if="key === 'visitor' && pageCfg.sidebar.visitor.enabled"
               :cfg="pageCfg.sidebar.visitor"
             />
+            <SiteInfoCard
+              v-else-if="key === 'siteInfo' && pageCfg.sidebar.siteInfo.enabled"
+              :cfg="pageCfg.sidebar.siteInfo"
+            />
+            <WeatherCard
+              v-else-if="key === 'weather' && pageCfg.sidebar.weather.enabled"
+              :cfg="pageCfg.sidebar.weather"
+            />
+            <CloudCard
+              v-else-if="key === 'cloud' && pageCfg.sidebar.cloud.enabled"
+              :cfg="pageCfg.sidebar.cloud"
+            />
             <MottoCard
               v-else-if="key === 'motto' && pageCfg.sidebar.motto.enabled"
               :cfg="pageCfg.sidebar.motto"

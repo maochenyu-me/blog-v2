@@ -140,6 +140,68 @@ export const ui = {
           cardAlt: 'IP 信息卡片',
           cdnAlt: '{name} CDN',
         },
+        /** 站点信息卡（构建期采集的版本/构建环境） */
+        siteInfo: {
+          title: '站点信息',
+          /** 主信息行标签，键名对应 pages.config.ts 的 mainRows[].labelKey */
+          labels: {
+            buildPlatform: '构建平台',
+            siteVersion: '博客版本',
+            license: '文章许可',
+          },
+          domain: '站点域名',
+          buildTime: '构建时间',
+          system: '系统信息',
+          expand: '展开构建信息',
+          collapse: '收起构建信息',
+          unknown: 'unknown',
+        },
+        /** 天气卡（客户端拉取，按访客 IP 定位） */
+        weather: {
+          title: '天气预报',
+          loading: '正在加载天气…',
+          failed: '天气加载失败',
+          retry: '重试',
+          expand: '展开',
+          collapse: '收起',
+          high: '高温',
+          low: '低温',
+          pollutants: '污染物浓度',
+          na: '--',
+          /** 指标格子标签与图标 */
+          metrics: {
+            wind: { label: '风力', icon: 'tabler:wind' },
+            visibility: { label: '能见度', icon: 'tabler:eye' },
+            feelsLike: { label: '体感温度', icon: 'tabler:thermometer' },
+            humidity: { label: '湿度', icon: 'tabler:droplet' },
+            pressure: { label: '气压', icon: 'tabler:gauge' },
+            aqi: { label: '空气质量', icon: 'tabler:leaf' },
+            cloud: { label: '云量', icon: 'tabler:cloud' },
+            uv: { label: '紫外线', icon: 'tabler:sun' },
+            precipitation: { label: '降水量', icon: 'tabler:cloud-rain' },
+            precipProbability: { label: '降水概率', icon: 'tabler:umbrella' },
+            sunrise: { label: '日出', icon: 'tabler:sunrise' },
+            sunset: { label: '日落', icon: 'tabler:sunset' },
+          },
+          units: {
+            temp: '°C',
+            visibility: 'km',
+            humidity: '%',
+            pressure: 'hPa',
+            precipitation: 'mm',
+            cloud: '%',
+            probability: '%',
+          },
+        },
+        /** 云服务商推荐卡（标题取自配置里的服务商名，这里只放通用文案） */
+        cloud: {
+          /** 卡片标题区的 aria：服务商推荐 */
+          sectionLabel: '云服务商推荐',
+          /** CTA 按钮的 aria 后缀：{name} 替换为服务商名 */
+          ctaAria: '{name} 官网，新标签页打开',
+          /** 标签组的 aria */
+          tagsLabel: '{name} 的服务特色',
+        },
         motto: '一言',
         stats: '网站信息',
         sponsors: '赞赏者',
