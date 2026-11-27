@@ -71,6 +71,7 @@ const ROUTES = [
   ['gallery', '/gallery'],
   ['gallery-folder', '/gallery/museum'],
   ['changelog', '/changelog'],
+  ['analytics', '/analytics'],
   ['about', '/about'],
   ['post', '/posts/90a855a1'],
   ['post-stress', '/posts/57060fdd'],
@@ -275,8 +276,9 @@ for (const r of report.routes) {
   // 内容宽度与居中（只在有 probe 的页面检查）
   // 上限按路由区分：正文类页面受 --wide-max-width（1000px）约束；
   // 首页与相册是 Dusklight 式宽版式（主内容 + 侧栏 / 图片墙），受 --home-max-width（1400px）约束。
+  // 站点统计是三栏仪表盘（260 / 弹性 / 260），不属于正文阅读版式，同样走宽版上限。
   if (m.contentWidth !== null && r.viewport === 'desktop') {
-    const wide = r.route === 'home' || r.route.startsWith('gallery')
+    const wide = r.route === 'home' || r.route.startsWith('gallery') || r.route === 'analytics'
     const limit = wide ? 1420 : 1010
     if (m.contentWidth > limit) fails.push(`${tag}: 内容宽度 ${m.contentWidth} 超上限 ${limit}`)
   }

@@ -4,6 +4,25 @@
  */
 export default {
   pages: {
+    analytics: {
+      /** Umami 实例根地址（不带尾斜杠），分享页 /share/<shareId> 由它拼出 */
+      shareApiBase: 'https://um.518339.xyz',
+      /** 公开分享 ID —— 来自 /share/JpUoQVPO8FOzyZyS/www.kemiaosw.top */
+      shareId: 'JpUoQVPO8FOzyZyS',
+      /** 被统计站点地址，仅用于展示与「在 Umami 查看完整看板」的链接 */
+      siteUrl: 'https://www.kemiaosw.top',
+      /** 趋势图默认范围（天） */
+      defaultRange: 7,
+      /** 趋势图可选范围（天） */
+      ranges: [7, 30, 90] as ReadonlyArray<7 | 30 | 90>,
+      /** 客户端指标缓存时长（分钟）：公开接口有速率限制，翻页重复访问不重复请求 */
+      cacheMinutes: 5,
+      /** 热门页面 / 来源 / 地区榜单条数 */
+      rankLimit: 6,
+      /** 活跃热力图取数天数；Umami 只在约 2 天内给小时粒度，超出自动降级为按天 */
+      activityDays: 2,
+    },
+
     home: {
       pinnedCount: 2,
       latestCount: 10,

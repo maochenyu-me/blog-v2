@@ -108,6 +108,7 @@ export default {
         children: [
           { label: '关于', to: '/about', icon: 'tabler:user' },
           { label: '更新日志', to: '/changelog', icon: 'tabler:history' },
+          { label: '站点统计', to: '/analytics', icon: 'tabler:chart-histogram' },
         ],
       },
     ],

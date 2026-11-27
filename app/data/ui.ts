@@ -72,6 +72,7 @@ export const ui = {
     equipment: '我的装备',
     about: '关于',
     changelog: '更新日志',
+    analytics: '站点统计',
     /** 相册页 */
     gallery: {
       title: '相册',
@@ -333,6 +334,7 @@ export const ui = {
       gallery: '相册',
       about: '关于',
       changelog: '更新日志',
+      analytics: '站点统计',
       legal: '法务',
       posts: '文章',
     },
@@ -1069,4 +1071,148 @@ export const ui = {
     pageAria: '第 {n} 页',
     pageStatus: '第 {n} / {pages} 页 · 共 {total} 条',
   },
+
+  /** 站点统计（数据源：Umami 公开分享接口） */
+  analytics: {
+    kicker: 'UMAMI / PUBLIC TELEMETRY',
+    lead: '这里展示的是本站的整体访问趋势。不记录任何可识别个人身份的信息，只保留聚合后的数量。',
+    notePublic: '公开只读',
+    noteTimezone: '按北京时间汇总',
+    statusLoading: '连接中',
+    statusReady: '数据已同步',
+    statusError: '数据源暂不可用',
+    sourceLabel: 'Umami',
+    sourceTitle: '打开 Umami 公开看板',
+    sourceHint: '公开分享数据 · 自动刷新',
+
+    /** 概览四卡 */
+    summaryAria: '站点概览',
+    summaryAllTime: '累计',
+    summaryToday: '今日',
+    visitors: '累计访客',
+    pageviews: '累计浏览',
+    todayVisitors: '今日访客',
+    todayPageviews: '今日浏览',
+    todaySince: '北京时间 00:00 起',
+    realtime: '实时公开数据',
+
+    /** 访问趋势 */
+    trafficKicker: 'TRAFFIC / SIGNAL',
+    trafficTitle: '访问脉冲',
+    trafficDesc: '每天的浏览量与访客数',
+    rangeAria: '选择统计时间范围',
+    rangeLabel: '{n} 天',
+    refresh: '刷新统计数据',
+    chartAria: '最近 {n} 天的浏览量与访客趋势',
+    chartEmptyTitle: '这段时间还没有访问记录',
+    chartEmptyDesc: '公开数据接口没有返回该区间的数据，换个范围试试。',
+    legendPageviews: '浏览量',
+    legendVisitors: '访客',
+
+    /** 本周期数据 */
+    periodTitle: '本周期数据',
+    periodRange: '近 {n} 天 · 北京时间',
+    periodPageviews: '浏览量',
+    periodVisitors: '访客数',
+    periodActiveDays: '活跃天数',
+    periodActiveDaysHint: '有访问记录的日期',
+    periodPeak: '单日峰值',
+    periodPeakHint: '最高浏览量',
+
+    /** 热门页面 */
+    pagesTitle: '大家在看什么',
+    pagesRange: '近 {n} 天 · 浏览量',
+    pagesEmpty: '这段时间还没有页面访问记录',
+
+    /** 推送节奏 */
+    pushKicker: 'OPERATIONS / RELEASES',
+    pushTitle: '推送节奏',
+    pushDesc: '按提交时间观察博客的更新密度',
+    pushLatest: '最近一次推送',
+    pushRecent: '近 30 天提交',
+    pushAverage: '平均节奏',
+    pushStreak: '连续活跃',
+    pushStreakUnit: '天',
+    pushInterval: '距上次 {n} 天',
+    pushToday: '就在今天',
+    pushAverageUnit: '次 / 周',
+    pushHeatmapAria: '近一年提交活动，每格代表一天，颜色越深表示当天提交越多',
+    pushLess: '少',
+    pushMore: '多',
+    pushCount: '共 {n} 次提交',
+    pushSource: '按构建期 git log 统计',
+    pushTip: '{date} · {n} 次提交',
+
+    /** 访客活跃时间 */
+    activityKicker: 'VISITOR / ACTIVITY',
+    activityTitle: '访客活跃时间',
+    activityDesc: '看看大家通常在什么时候来这里',
+    activityRange: '近 {n} 天',
+    activityAria: '近 {n} 天访客按星期与小时的活跃分布',
+    activityCellAria: '{day} {hour}:00 · {n} 次浏览',
+    activityPeakTime: '最活跃时间',
+    activityPeakDay: '最活跃星期',
+    activityNight: '夜间访问占比',
+    activityToday: '今日访客',
+    activityNote: '按北京时间聚合 · 数据只保留统计维度',
+    activityDegraded: '公开接口只提供近几天的小时粒度，较早日期已按天汇总，热力图为部分数据。',
+
+    /** 设备与浏览器 */
+    deviceTitle: '设备与浏览器',
+    deviceDesc: '访客从哪里来',
+    deviceLabel: '设备分布',
+    browserLabel: '浏览器偏好',
+
+    /** 地域分布 */
+    regionKicker: 'VISITORS / MAP',
+    regionTitle: '访客地域分布',
+    regionDesc: '按国家 / 地区聚合',
+    regionEmpty: '这段时间还没有地域记录',
+    regionOther: '其他',
+    viewDetail: '查看数据',
+
+    /** 流量来源 */
+    sourcesTitle: '流量来源',
+    sourcesRange: '近 {n} 天',
+    sourcesEmpty: '暂时只有直接访问',
+    sourcesDirect: '直接访问',
+    sourcesInternal: '站内跳转',
+    sourcesVisitors: '本周期访客',
+
+    /** 星期与月份（图表坐标轴用） */
+    weekdays: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+    monthShort: '{n} 月',
+    hourShort: '{n} 时',
+
+    /** 国家 / 地区代码 → 名称 */
+    countries: {
+      CN: '中国',
+      HK: '中国香港',
+      MO: '中国澳门',
+      TW: '中国台湾',
+      JP: '日本',
+      KR: '韩国',
+      US: '美国',
+      GB: '英国',
+      DE: '德国',
+      FR: '法国',
+      CA: '加拿大',
+      AU: '澳大利亚',
+      SG: '新加坡',
+      RU: '俄罗斯',
+      IN: '印度',
+      BR: '巴西',
+      NL: '荷兰',
+      SE: '瑞典',
+    } as Record<string, string>,
+
+    /** 设备类型 → 名称 */
+    devices: {
+      desktop: '桌面',
+      laptop: '笔记本',
+      mobile: '手机',
+      tablet: '平板',
+    } as Record<string, string>,
+  },
 } as const
+

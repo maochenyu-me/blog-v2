@@ -327,7 +327,27 @@ export interface HotPageConfig {
   cache: boolean
 }
 
+export interface AnalyticsPageConfig {
+  /** Umami 实例根地址（不带尾斜杠） */
+  shareApiBase: string
+  /** 公开分享 ID（/share/<id> 里那段） */
+  shareId: string
+  /** 站点公开地址，仅用于文案展示与分享页链接 */
+  siteUrl: string
+  /** 趋势图默认时间范围（天） */
+  defaultRange: 7 | 30 | 90
+  /** 趋势图可选范围（天） */
+  ranges: ReadonlyArray<7 | 30 | 90>
+  /** 客户端指标缓存时长（分钟） */
+  cacheMinutes: number
+  /** 热门页面 / 来源 / 地区榜单条数 */
+  rankLimit: number
+  /** 活跃热力图取数天数（Umami 仅约 2 天内返回小时粒度，超出自动降级为按天） */
+  activityDays: number
+}
+
 export interface PagesConfig {
+  analytics: AnalyticsPageConfig
   home: HomePageConfig
   archive: ArchivePageConfig
   categories: CategoriesPageConfig

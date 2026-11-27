@@ -68,6 +68,7 @@ const ROUTE_TABLE: Array<{ test: RegExp; parents: Crumb[]; leaf?: string }> = [
   },
   { test: /^\/about\/?$/, parents: [], leaf: ui.breadcrumb.routes.about },
   { test: /^\/changelog\/?$/, parents: [], leaf: ui.breadcrumb.routes.changelog },
+  { test: /^\/analytics\/?$/, parents: [], leaf: ui.breadcrumb.routes.analytics },
   {
     // 法务页没有 /legal 索引页，父级不挂链接
     test: /^\/legal\/[^/]+\/?$/,
