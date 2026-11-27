@@ -2,22 +2,25 @@
  * 给产物 HTML 补拉丁字体的 preload。
  *
  * ── 为什么需要这一步 ─────────────────────────────
- * 中文字体（LXGW WenKai Lite）的文件名是固定的，已在 nuxt.config 的 app.head 里 preload。
- * 但 Inter 与 JetBrains Mono 来自 @fontsource，经 Vite 处理后文件名带构建哈希：
+ * 中文字体已改走系统楷体栈（见 fonts.css），不再下载 webfont。
+ * Inter 来自 @fontsource，经 Vite 处理后文件名带构建哈希：
  *
  *   inter-latin-wght-normal.Dx4kXJAl.woff2
- *   jetbrains-mono-latin-400-normal.V6pRDFza.woff2
  *
  * 配置阶段无法预知这个哈希，只能等产物落盘后按实际文件名注入。
  *
  * ── 为什么值得做（冷启动实测帧差）────────────────
  *   基线            [12.29, 11.54, 2.29, 3.85, 0]
  *   阻断 inter      [11.11, 0]            ← 跳变消失
- *   阻断 mono       [11.05, 2.53, 0]      ← 只剩 inter 那一次
  *   阻断全部字体    [11.54, 0, 3.52, 0]
  *
- * 即：中文字体靠 preload 已赶在首帧前到达，剩下的两次跳变全部来自这两个后到的拉丁字体。
- * 两者合计 69 KB，preload 成本远低于收益。
+ * 即：中文字形首帧即定稿，剩下的跳变全部来自后到的 Inter。
+ * 单个 latin 子集 34 KB，preload 成本远低于收益。
+ *
+ * ── 为什么不含 JetBrains Mono ───────────────────
+ * 7f35374 把等宽字体的 preload 去掉了：它只服务代码块与数字元信息，
+ * 首屏正文命中不到，多一条 preload 只会跟 LCP 抢带宽。
+ * verify-font-flash.mjs 里有反向断言守着这个决定，别顺手加回来。
  *
  * 只取 latin 子集：latin-ext / cyrillic / greek 等首屏用不到，preload 反而抢带宽。
  */
